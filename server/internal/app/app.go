@@ -235,7 +235,7 @@ func (a *App) health(w http.ResponseWriter, r *http.Request) error {
 	if e := a.db.PingContext(r.Context()); e != nil {
 		return e
 	}
-	ok(w, 200, obj{"mode": a.cfg.Mode, "version": "0.1.0", "ready": true})
+	ok(w, 200, obj{"mode": a.cfg.Mode, "version": "0.1.1", "ready": true})
 	return nil
 }
 func (a *App) allow(key string, max int, d time.Duration) bool {

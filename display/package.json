@@ -1,6 +1,6 @@
 {
   "name": "classroom-display",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "private": true,
   "type": "module",
   "main": "dist-electron/electron/main.js",
@@ -30,6 +30,7 @@
   "build": {
     "appId": "school.classroom.notice",
     "productName": "教室公告大屏",
+    "artifactName": "Setup.${version}.${ext}",
     "files": [
       "dist/**",
       "dist-electron/**",
