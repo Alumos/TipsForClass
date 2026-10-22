@@ -1,6 +1,6 @@
 # 实现状态与交付边界
 
-更新日期：2026-10-22。文档版本：v1.5。当前状态：**三端自动构建已配置 / 真实目标环境待验收**。
+更新日期：2026-10-22。文档版本：v1.6。当前状态：**v0.1.1 三端交付已发布 / 真实目标环境待验收**。
 
 ## 当前产品行为
 
@@ -27,7 +27,7 @@ Windows 公告助手绑定后完全在系统托盘后台待机，不显示常驻
 | 语音 | 播报账本、批次与轮次去重、静默/过期/撤回处理、Windows 语音适配器源码 |
 | 服务端交付 | `server/Dockerfile` 多阶段构建与非 root 运行；`compose.yaml` 持久卷、健康检查和可选 Caddy HTTPS/WSS 反代 |
 | 三端自动构建 | GitHub Actions `Project checks`（CI）项目检查与 smoke；`Server image` 构建、健康检查、GHCR 推送及离线镜像包；`Windows installer` 生成 Windows 安装包 |
-| Windows 安装包 | `windows-2022` 上编译 TTS、测试 Electron、生成 x64 NSIS 与 `SHA256SUMS.txt`；推送 `v*` 标签生成 Release 的条件已配置 |
+| Windows 安装包 | `windows-2022` 上编译 TTS、测试 Electron、生成 x64 NSIS 与 `SHA256SUMS.txt`；`v0.1.1` Release 已生成并完成下载校验 |
 
 服务端已验证 `GET/PUT /rooms/:id/display-settings` 的同教室共享与顺序规则；设置修改会增加 `revision` 并产生 `room.display`。消息级展示位置、编辑目标教室锁定、删除即撤回、置顶清理和审计记录也有自动化覆盖。呼叫与作业缺少 `destination` 会被 API 拒绝。普通通知使用教师填写的标题；呼叫与作业的标题分别为 `呼叫 · 到 <destination>` 和 `批量作业 · <count>人 · <destination>`。
 
@@ -44,7 +44,7 @@ Windows 公告助手绑定后完全在系统托盘后台待机，不显示常驻
 | 国内 VPS | `compose.yaml` + `deploy/Caddyfile` 提供持久 SQLite 卷、API 健康检查、可选 Caddy HTTPS/WSS 反代；可拉取 GHCR 镜像，也可 `docker load` 离线镜像包 |
 | `Windows installer` | `.github/workflows/windows.yml` 在 `windows-2022` 生成 x64 NSIS 安装包与 `SHA256SUMS.txt`；推送 `v*` 标签生成 GitHub Release 的触发条件已配置 |
 
-以上是仓库中的配置事实。本记录没有收录 GitHub 远程运行日志、GHCR 推送结果、产物下载、Release 创建或 Windows 实机安装结果，因此不把这些工作流写成已运行通过、已发布或已验收。
+以上配置已在 GitHub 远程流水线执行。`v0.1.1` 标签的 `Project checks`、`Server image` 和 `Windows installer` 均成功；Release 安装包、校验清单和 GHCR 镜像标签已核验。Windows 物理机安装与课堂焦点行为仍单独列为待验收项。
 
 ## 验证结果要分层阅读
 
@@ -52,7 +52,9 @@ Windows 公告助手绑定后完全在系统托盘后台待机，不显示常驻
 
 - GitHub Actions `Project checks`（CI）、`Server image`、`Windows installer` 三个工作流文件已存在，触发条件和构建步骤与仓库配置一致。
 - Go 服务端 Docker 镜像、`compose.yaml` + Caddy HTTPS、GHCR/离线镜像路径和 Windows x64 NSIS/SHA-256 已形成文档化交付配置。
-- 推送 `v*` 标签生成 Release 的条件已配置；本节没有据此声称已提交、已推送、已创建 Release 或远程工作流已通过。
+- 提交 `58efb4d` 的 `Project checks`、`Server image` 与 `Windows installer` 均成功。
+- 已推送 `v0.1.1` 标签；Release 包含 `Setup.0.1.1.exe` 和 LF 换行的 `SHA256SUMS.txt`，下载后 SHA-256 校验为 `OK`。
+- GHCR 中的 `ghcr.io/alumos/tipsforclass-api:v0.1.1` 与 `latest` 标签可读取。
 - 真实 VPS 的域名、DNS、ICP 备案、证书签发与镜像实装仍未验收。
 
 ### 2. Mac 自动化与浏览器已验证
@@ -79,7 +81,7 @@ Windows 公告助手绑定后完全在系统托盘后台待机，不显示常驻
 - PPT/WPS/浏览器课件/视频播放时前台窗口句柄不变、键盘不中断、浮层区域鼠标穿透。
 - 多显示器与缩放、托盘操作、暂停/恢复和退出。
 - 中文 TTS、声卡切换、音频并发、静音回执和语音适配器编译。
-- NSIS 安装包与 `SHA256SUMS.txt` 的实际下载和校验、代码签名、更新回滚、备份恢复和长时间稳定性。
+- NSIS 安装包的安装与卸载、代码签名、更新回滚、备份恢复和长时间稳定性；安装包与校验清单的下载校验已在 Release 上完成。
 
 详细命令、截图和复现步骤见 [验证记录](verification.md)。自动化通过只证明已覆盖的代码与协议路径正常，不能替代上述目标环境验收。
 
@@ -87,7 +89,7 @@ Windows 公告助手绑定后完全在系统托盘后台待机，不显示常驻
 
 1. **真实微信联调、ICP 备案与发布：**需要自己的 AppID、服务端 AppSecret、合法 HTTPS/WSS 域名、备案与平台配置；本仓库没有代为登录、提交审核或保证过审。
 2. **Windows 实机验收：**完全托盘待机、两类提醒尺寸、焦点、鼠标穿透、多显示器、中文声音、NSIS 安装与卸载仍以物理机结果为准。
-3. **远程流水线与 Release 证据：**三个工作流的配置已存在，但 GitHub 远程运行、GHCR 推送、Actions 产物下载、`v*` 标签 Release 及校验和仍未在本文档中作为通过结果记录。
+3. **真实 VPS 实装：**GitHub 远程构建、GHCR 标签、`v0.1.1` Release 和安装包校验已经完成；VPS 上的 DNS、备案、Caddy 证书、Compose 启动、离线镜像导入与备份恢复仍需实机记录。
 4. **Windows 签名分发和自动更新回滚：**NSIS 打包、SHA-256 与标签触发条件已配置；代码签名证书、正式分发渠道、可靠自动更新和失败回滚尚未完成验收。
 5. **长期运维：**真实 VPS 的域名、DNS、ICP 备案、Caddy 证书签发/续期、自动加密备份、异机备份、历史清理、恢复演练和 72 小时/30 天稳定性尚未完成；性能预算不是实测承诺。
 6. **扩展能力：**多校租户、多实例高可用、复杂走班等未实现。XLSX 已支持，但不等于已兼容所有第三方表格工具生成的工作簿。
@@ -104,5 +106,6 @@ Windows 公告助手绑定后完全在系统托盘后台待机，不显示常驻
 - 小程序采用无 npm 构建的原生 JavaScript/WXML/WXSS 和自定义样式，没有引入额外组件库。
 - 首版单校服务的实际 SQL 以 `server/internal/app/schema.sql` 为准；HTML 中的 DDL 是设计基线，不是可直接覆盖运行中数据库的迁移文件。
 - 微信请求方法限制下，教师、教室和班级修改提供 POST `/:id/update`；PATCH 只保留给其他兼容客户端。
+- v1.6 记录了 `v0.1.1` 正式 Release、Windows 安装包下载校验与 GHCR 版本化镜像结果；真实 Windows、微信和 VPS 验收边界保持不变。
 - v1.5 将交付状态同步为“三端自动构建已配置、真实目标环境待验收”，并记录 Docker/Compose/Caddy、GHCR/离线镜像、Windows NSIS/SHA-256 与 `v*` Release 触发条件；这些配置不被写成远程运行或目标环境已通过。
 - v1.4 将 Windows 默认行为修订为绑定后完全托盘待机，只在收到新消息或定时消息生效时显示两类短时提醒；HTML 设计文档、实施状态与验证记录同步记录该行为。

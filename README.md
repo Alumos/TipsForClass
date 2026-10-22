@@ -1,10 +1,10 @@
 # 教室公告双端系统
 
-文档版本：v1.5；基线日期：2026-10-22。
+文档版本：v1.6；发布版本：v0.1.1；基线日期：2026-10-22。
 
 教师通过微信原生小程序发布公告，Windows 公告助手绑定后完全在系统托盘后台待机，不显示常驻公告墙、公告卡或时钟。收到新消息或定时消息到点生效时，才按消息选择的展示方式出现约 15 秒提醒：居中窗口约 760×480 并使用大字正文，右上角浮窗约 460×300。提醒不抢课件焦点、默认鼠标穿透和设备语音静音，刷新或重连不补弹历史消息。Go 服务端负责身份权限、SQLite 持久化、REST/WebSocket 同步与投递回执。
 
-当前状态为**可自动构建、待目标环境验收的试点**。GitHub Actions 已覆盖项目检查、Go 服务端 Docker 镜像和 Windows NSIS 安装包；微信开发者工具真机验收、微信审核与 Windows 10/11 物理机验收仍需在目标环境完成。开发说明见 [classroom-notice-dev-spec.html](classroom-notice-dev-spec.html)，实现事实与剩余边界见 [实现状态](docs/implementation-status.md)，验证证据见 [验证记录](docs/verification.md)。
+当前状态为**已发布自动构建试点版、待目标环境验收**。`v0.1.1` 的 GitHub Release、Windows NSIS 安装包、SHA-256 校验清单和 GHCR 版本化服务端镜像均已生成并验证；微信开发者工具真机验收、微信审核与 Windows 10/11 物理机验收仍需在目标环境完成。开发说明见 [classroom-notice-dev-spec.html](classroom-notice-dev-spec.html)，实现事实与剩余边界见 [实现状态](docs/implementation-status.md)，验证证据见 [验证记录](docs/verification.md)。
 
 ## 项目组成
 
@@ -65,8 +65,16 @@
 ## 三端构建与发布
 
 - **Go 服务端：**`Server image` 工作流用 Docker Compose 构建镜像、执行健康检查、推送到 GHCR，并上传可离线部署的镜像包。国内 VPS 的完整步骤见 [Docker Compose 部署](docs/deployment.md)。
-- **Windows 大屏：**`Windows installer` 工作流在 `windows-2022` 编译中文 TTS 适配器、测试 Electron 并生成 x64 NSIS 安装包。推送 `v*` 标签时自动创建 GitHub Release；普通提交可从 Actions 运行记录下载 30 天有效的安装包。
+- **Windows 大屏：**`Windows installer` 工作流在 `windows-2022` 编译中文 TTS 适配器、测试 Electron 并生成 x64 NSIS 安装包。推送 `v*` 标签时自动创建 GitHub Release；当前正式下载见 [v0.1.1 Release](https://github.com/Alumos/TipsForClass/releases/tag/v0.1.1)。普通提交也可从 Actions 运行记录下载 30 天有效的安装包。
 - **微信小程序：**`Project checks` 工作流执行结构和逻辑测试。发布需要自己的 AppID、合法 HTTPS/WSS 域名、微信开发者工具上传、体验版测试和平台审核，步骤见 [微信小程序发布教程](docs/miniapp-release.md)。
+
+Windows 用户应同时下载 `Setup.0.1.1.exe` 和 `SHA256SUMS.txt`。在 PowerShell 中核对：
+
+```powershell
+Get-FileHash .\Setup.0.1.1.exe -Algorithm SHA256
+```
+
+v0.1.1 的 SHA-256 为 `b5e9df1bc80704f101cffa56194339ab9dbc5c11c762adb40310e715b13bd25a`。服务端镜像可固定使用 `ghcr.io/alumos/tipsforclass-api:v0.1.1`，也可用 `latest` 跟随主分支。v0.1.0 的 Windows 资产曾使用中文文件名，建议统一使用 v0.1.1 及以后版本。
 
 首次部署前复制 `.env.production.example` 为 `.env` 并填写密钥。不要提交 `.env`、AppSecret、学生名册或生产数据库。
 

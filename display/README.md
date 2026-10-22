@@ -30,7 +30,7 @@ npm run electron
 .\package-win.ps1
 ```
 
-脚本先将独立中文 TTS 适配器发布为 self-contained x64 程序，再安装锁定依赖、测试、构建 NSIS 试点安装包到 `release/`。未配置签名证书时产物未签名，尚不适合学校规模分发。
+脚本先将独立中文 TTS 适配器发布为 self-contained x64 程序，再安装锁定依赖、测试、构建 NSIS 试点安装包到 `release/`。正式自动构建产物从 [GitHub Releases](https://github.com/Alumos/TipsForClass/releases) 下载，当前推荐 `Setup.0.1.1.exe` 与 `SHA256SUMS.txt`；PowerShell 可用 `Get-FileHash .\Setup.0.1.1.exe -Algorithm SHA256` 核对。未配置签名证书时产物未签名，尚不适合学校规模分发。
 
 首次启动显示绑定界面，绑定成功自动收回托盘。已绑定后，启动、刷新和断线重连都保持完全后台待机，不显示常驻公告墙、公告卡或时钟。托盘菜单用于暂停/恢复提醒、进入维护设置和确认退出。新消息和定时生效消息按逐条选择的展示位置出现约 15 秒的非交互提醒：居中窗口约 760×480、正文大字，右上角浮窗约 460×300。提醒使用 `showInactive`，不可聚焦、鼠标穿透且不出现在任务栏。已有快照、刷新和断线重连不会补弹历史；只有新消息或明确重播的新 generation 可提醒一次。
 

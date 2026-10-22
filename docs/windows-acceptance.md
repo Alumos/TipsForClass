@@ -6,6 +6,8 @@
 
 Windows版本/构建号、PPT/WPS版本、显示器数量和分辨率、缩放比例、音频输出设备、还原软件、运行账户。使用虚构学生资料验收。
 
+从 [v0.1.1 Release](https://github.com/Alumos/TipsForClass/releases/tag/v0.1.1) 同时下载 `Setup.0.1.1.exe` 和 `SHA256SUMS.txt`。安装前在 PowerShell 中执行 `Get-FileHash .\Setup.0.1.1.exe -Algorithm SHA256`，结果应与清单一致。
+
 ## 背景驻留和不打断课件
 
 1. 首次打开完成绑定。已绑定后重新启动，确认只在系统托盘运行，任务栏不出现自动激活的公告主窗口。

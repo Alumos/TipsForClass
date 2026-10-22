@@ -110,7 +110,7 @@ curl -fsS http://127.0.0.1:8080/healthz
 
 1. 使用 Docker Compose 构建服务端；
 2. 以 demo 模式启动容器并检查 `/healthz`；
-3. 推送 `ghcr.io/alumos/tipsforclass-api`；
+3. 推送 `ghcr.io/alumos/tipsforclass-api` 的提交 SHA、`latest` 和版本标签；
 4. 上传可离线部署的镜像压缩包。
 
 在 Actions 对应运行记录底部下载 `classroom-notice-api-linux-amd64-*`，上传 VPS 后：
@@ -122,12 +122,20 @@ docker compose --profile proxy up -d --no-build
 
 压缩包同时包含提交 SHA 和 `latest` 两个标签；`.env` 保持默认 `IMAGE_TAG=latest` 即可直接启动。若希望锁定某次构建，可把 `IMAGE_TAG` 改为 Actions 中对应的提交 SHA，再执行同一启动命令。
 
-若 GHCR 中的包已设为公开，可直接拉取：
+当前 GHCR 包可直接匿名读取。生产部署建议在 `.env` 中把 `IMAGE_TAG` 固定到已验证版本，例如：
+
+```dotenv
+IMAGE_TAG=v0.1.1
+```
+
+然后拉取并启动：
 
 ```sh
 docker compose pull api
 docker compose --profile proxy up -d --no-build
 ```
+
+`latest` 跟随 `main` 的最新成功构建；固定版本标签便于回滚。Actions 导出的离线镜像压缩包目前包含提交 SHA 和 `latest` 标签，使用离线包时保持 `IMAGE_TAG=latest`，或先给导入镜像补充与 `.env` 一致的标签。
 
 若包保持私有，需要在 GitHub 创建至少具有 `read:packages` 权限的令牌：
 
