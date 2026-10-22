@@ -51,7 +51,12 @@ jobs:
             $hash = (Get-FileHash -Algorithm SHA256 $_.FullName).Hash.ToLowerInvariant()
             "$hash  $($_.Name)"
           }
-          $lines | Set-Content -Encoding ascii release/SHA256SUMS.txt
+          $content = ($lines -join "`n") + "`n"
+          [System.IO.File]::WriteAllText(
+            (Join-Path $PWD 'release/SHA256SUMS.txt'),
+            $content,
+            [System.Text.Encoding]::ASCII
+          )
           Get-Content release/SHA256SUMS.txt
 
       - name: Upload installer artifact
