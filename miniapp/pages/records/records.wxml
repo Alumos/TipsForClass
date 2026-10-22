@@ -1,0 +1,31 @@
+<view class="page">
+  <view class="eyebrow">每一次提醒，都有记录</view>
+  <view class="title">发布记录</view>
+  <view class="records-toolbar">
+    <view class="subtitle records-intro">查看回执，或直接编辑、删除消息</view>
+    <view class="record-actions">
+      <button class="plain small-button" bindtap="arrange">屏幕排序</button>
+      <picker range="{{filters}}" value="{{filterIndex}}" bindchange="filterChange"><view class="chip active">{{filters[filterIndex]}} ▾</view></picker>
+    </view>
+  </view>
+  <view wx:if="{{error}}" class="error pre">{{error}}<button class="plain" bindtap="load">重新加载</button></view>
+  <view wx:for="{{items}}" wx:key="id" class="card record-card" data-id="{{item.id}}" bindtap="detail">
+    <view class="record-topline"><text class="badge">{{item.typeLabel}}</text><text class="muted record-state">{{item.stateLabel}}</text></view>
+    <view class="notice-title record-title">{{item.recordTitle}}</view>
+    <view wx:if="{{item.recordInfo}}" class="pre record-info record-info-preview">{{item.recordInfo}}</view>
+    <view wx:if="{{item.recordInfoLong}}" class="helper record-read-more">正文较长，点“详情”查看全文。</view>
+    <view class="divider"></view>
+    <view class="record-footer">
+      <text class="helper record-meta">{{item.createdLabel}} · {{item.teacherName}}</text>
+      <view class="record-action-row">
+        <button class="plain small-button record-edit" data-id="{{item.id}}" catchtap="edit">编辑</button>
+        <button class="plain small-button record-detail" data-id="{{item.id}}" catchtap="detail">详情 ›</button>
+        <button class="danger small-button record-delete" data-id="{{item.id}}" disabled="{{deletingId === item.id}}" catchtap="remove">{{deletingId === item.id ? '删除中…' : '删除公告'}}</button>
+      </view>
+    </view>
+  </view>
+  <view wx:if="{{loading}}" class="loading">正在加载记录…</view>
+  <view wx:if="{{!loading && !items.length && !error}}" class="card empty">还没有发布记录<view class="helper">前往班级选择教室，发布第一条公告。</view></view>
+  <button wx:if="{{hasMore && !loading}}" class="plain" bindtap="more">加载更多</button>
+  <view wx:if="{{items.length && !hasMore}}" class="footer-note">已显示全部记录</view>
+</view>

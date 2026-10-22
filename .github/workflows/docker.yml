@@ -1,0 +1,97 @@
+name: Server image
+
+on:
+  push:
+    branches: [main]
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: docker-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  IMAGE_NAME: ghcr.io/alumos/tipsforclass-api
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare Compose environment
+        run: cp .env.production.example .env
+
+      - name: Validate Compose file
+        run: docker compose config --quiet
+
+      - name: Build server image with Compose
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: docker compose build api
+
+      - name: Test image health
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker run --detach --name classroom-api-smoke \
+            --env APP_MODE=demo \
+            --env HTTP_ADDR=0.0.0.0:8080 \
+            --env DATABASE_PATH=/data/notice.db \
+            --publish 18080:8080 \
+            "${IMAGE_NAME}:${GITHUB_SHA}"
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:18080/healthz; then
+              exit 0
+            fi
+            sleep 1
+          done
+          docker logs classroom-api-smoke
+          exit 1
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Push image tags
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker tag "${IMAGE_NAME}:${GITHUB_SHA}" "${IMAGE_NAME}:latest"
+          docker push "${IMAGE_NAME}:${GITHUB_SHA}"
+          docker push "${IMAGE_NAME}:latest"
+          if [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            docker tag "${IMAGE_NAME}:${GITHUB_SHA}" "${IMAGE_NAME}:${GITHUB_REF_NAME}"
+            docker push "${IMAGE_NAME}:${GITHUB_REF_NAME}"
+          fi
+
+      - name: Export image for offline deployment
+        env:
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker save "${IMAGE_NAME}:${GITHUB_SHA}" "${IMAGE_NAME}:latest" | gzip -9 > classroom-notice-api-linux-amd64.tar.gz
+          sha256sum classroom-notice-api-linux-amd64.tar.gz > classroom-notice-api-linux-amd64.tar.gz.sha256
+
+      - name: Upload deployable image
+        uses: actions/upload-artifact@v4
+        with:
+          name: classroom-notice-api-linux-amd64-${{ github.sha }}
+          path: |
+            classroom-notice-api-linux-amd64.tar.gz
+            classroom-notice-api-linux-amd64.tar.gz.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Show container logs on failure
+        if: failure()
+        run: docker logs classroom-api-smoke || true

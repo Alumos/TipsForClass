@@ -1,0 +1,115 @@
+<view class="page with-bottom">
+  <view class="eyebrow">{{editing ? '编辑提醒' : '新建提醒'}}</view>
+  <view class="title">{{editing ? '更新这条教室提醒' : '把提醒送到教室'}}</view>
+  <view class="subtitle">{{editing ? '目标教室保持锁定，可修改类型、内容、展示位置与到期时间。' : '呼叫、作业和通知使用同一套目标教室与名册流程。'}}</view>
+
+  <view wx:if="{{loading}}" class="loading">正在验证权限与获取名册…</view>
+  <view wx:if="{{restored}}" class="tip">已恢复本账号在此教室的草稿，并重新核验学生及教室权限。请确认日期与时间。</view>
+
+  <view class="card room-switch {{editing ? 'locked' : ''}}" bindtap="switchRoom">
+    <view class="room-icon compact">教</view>
+    <view class="room-switch-copy"><view class="muted">{{editing ? '目标教室（已锁定）' : '发送到'}}</view><view class="card-title room-current-name">{{roomName}}</view></view>
+    <text class="{{editing ? 'muted room-switch-link' : 'link room-switch-link'}}">{{editing ? '已锁定' : '切换 ›'}}</text>
+  </view>
+
+  <view class="type-grid">
+    <view class="type-card {{type === 'call' ? 'active' : ''}}" data-type="call" bindtap="chooseType">
+      <view class="type-mark">叫</view><view class="type-name">呼叫学生</view><view class="type-desc">到指定地点</view>
+    </view>
+    <view class="type-card {{type === 'batch' ? 'active' : ''}}" data-type="batch" bindtap="chooseType">
+      <view class="type-mark">作</view><view class="type-name">作业布置</view><view class="type-desc">通知作业内容</view>
+    </view>
+    <view class="type-card {{type === 'notice' ? 'active' : ''}}" data-type="notice" bindtap="chooseType">
+      <view class="type-mark">通</view><view class="type-name">普通通知</view><view class="type-desc">可发多间教室</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <block wx:if="{{type === 'notice'}}">
+      <view class="card-section-head">
+        <view class="card-section-copy"><view class="card-title">追加其他教室</view><view class="helper">当前教室会固定发送，无需再次勾选。普通通知最多发送到 20 间教室。</view></view>
+        <text class="badge">已选 {{roomIds.length}} 间</text>
+      </view>
+      <block wx:if="{{editing}}">
+        <text class="label">其他目标教室</text>
+        <view class="locked-room-names">{{lockedRoomNames || '无，仅发送到上方当前教室'}}</view>
+      </block>
+      <block wx:else>
+        <block wx:if="{{otherRooms.length}}">
+          <text class="label">其他教室（可选）</text>
+          <view wx:for="{{otherRooms}}" wx:key="id" class="student-row room-check-row" data-id="{{item.id}}" bindtap="toggleRoom">
+            <view class="check {{item.checked ? 'checked' : ''}}">{{item.checked ? '✓' : ''}}</view>
+            <view class="room-option-copy"><view class="room-option-name">{{item.name}}</view><view class="helper">{{item.deviceCount}} 台设备 · {{item.onlineDeviceCount}} 台在线</view></view>
+          </view>
+        </block>
+        <view wx:else class="helper">无需再选择，本条通知只发送到上方当前教室。</view>
+      </block>
+      <text class="label"><text class="required">*</text> 通知标题</text>
+      <input class="field" placeholder="例如：周五 15:00 家长会" value="{{title}}" maxlength="60" data-field="title" bindinput="input"/>
+    </block>
+    <block wx:else>
+      <view class="audience-banner">
+        <view class="audience-count">{{selected.length}}</view>
+        <view class="audience-copy"><view class="card-title">{{selected.length ? audienceMode + '提醒' : '选择学生'}}</view><view class="helper">{{selected.length ? '将按人数自动使用个人或多人展示' : '选择 1 人显示个人，选择多人自动切换为多人'}}</view></view>
+        <text class="badge">最多 {{type === 'call' ? 3 : 60}} 人</text>
+      </view>
+      <view wx:if="{{selected.length}}" class="selected-list"><view wx:for="{{selected}}" wx:key="id" class="chip active" data-id="{{item.id}}" bindtap="toggleStudent">{{item.name}} · {{item.studentNo}} ×</view></view>
+      <button class="secondary select-student-button" bindtap="openDrawer" disabled="{{!ready || busy}}">＋ 从共用名册选择学生</button>
+      <view class="helper">呼叫和作业布置共用同一份勾选结果；切换类型时会保留符合人数上限的选择。</view>
+      <text class="label"><text class="required">*</text> {{type === 'call' ? '呼叫地点' : '作业地点'}}</text>
+      <input class="field" placeholder="{{type === 'call' ? '例如：3 楼教师办公室' : '例如：物理实验室'}}" value="{{destination}}" maxlength="40" data-field="destination" bindinput="input"/>
+    </block>
+
+    <text class="label"><text wx:if="{{type === 'batch'}}" class="required">*</text> {{type === 'notice' ? '通知正文（可选）' : type === 'batch' ? '作业内容' : '补充说明（可选）'}}</text>
+    <textarea class="field body-field" placeholder="{{type === 'batch' ? '请填写需要学生完成的作业内容' : type === 'notice' ? '请填写简明清楚的通知内容' : '可补充需要学生携带的物品或注意事项'}}" value="{{body}}" maxlength="{{type === 'call' ? 120 : 300}}" data-field="body" bindinput="input" adjust-position="true" cursor-spacing="110"/>
+    <view class="helper">{{type === 'call' ? '最多 120 字，呼叫对象与地点将自动组成播报内容。' : type === 'batch' ? '作业内容和地点均必填，最多 300 字。' : '最多 300 字，普通通知只展示，不语音播报。'}}</view>
+  </view>
+
+  <view class="card">
+    <view class="card-section-head"><view class="card-section-copy"><view class="card-title">展示与到期</view><view class="helper">学校时区 UTC+8</view></view><text class="badge">默认不播报</text></view>
+    <text class="label">展示位置</text>
+    <view class="position-grid">
+      <view class="position-option {{displayPosition === 'top_right' ? 'active' : ''}}" data-value="top_right" bindtap="choosePosition">
+        <view class="position-preview"><view class="position-mini-window top-right"></view></view>
+        <view class="position-option-head"><text class="position-name">右上角浮窗</text><text class="position-check">{{displayPosition === 'top_right' ? '✓' : ''}}</text></view>
+        <view class="helper">在屏幕右上角短暂显示</view>
+      </view>
+      <view class="position-option {{displayPosition === 'center' ? 'active' : ''}}" data-value="center" bindtap="choosePosition">
+        <view class="position-preview"><view class="position-mini-window centered"></view></view>
+        <view class="position-option-head"><text class="position-name">居中窗口</text><text class="position-check">{{displayPosition === 'center' ? '✓' : ''}}</text></view>
+        <view class="helper">在屏幕中央突出显示</view>
+      </view>
+    </view>
+    <view wx:if="{{type !== 'notice'}}" class="divider"></view>
+    <view wx:if="{{type !== 'notice'}}" class="row">
+      <text>语音播报</text>
+      <picker range="{{broadcastOptions}}" value="{{broadcastTimes}}" bindchange="broadcastChange"><view class="link picker-value">{{broadcastOptions[broadcastTimes]}} ›</view></picker>
+    </view>
+    <text class="label">到期时间</text>
+    <view class="date-row"><picker mode="date" value="{{expireDate}}" data-field="expireDate" bindchange="timeChange"><view class="field">{{expireDate}}</view></picker><picker mode="time" value="{{expireTime}}" data-field="expireTime" bindchange="timeChange"><view class="field">{{expireTime}}</view></picker></view>
+    <button class="plain more-toggle" bindtap="toggleMore">{{more ? '收起更多设置 −' : '更多设置 ＋'}}</button>
+    <block wx:if="{{more}}">
+      <view class="row"><text>定时生效</text><switch color="#0F6E56" checked="{{scheduled}}" bindchange="scheduleChange"/></view>
+      <view wx:if="{{scheduled}}" class="date-row start-row"><picker mode="date" value="{{startDate}}" data-field="startDate" bindchange="timeChange"><view class="field">{{startDate}}</view></picker><picker mode="time" value="{{startTime}}" data-field="startTime" bindchange="timeChange"><view class="field">{{startTime}}</view></picker></view>
+      <view class="helper">最多提前 7 天，持续最多 7 天。电脑提醒短暂显示后收起，公告保留至到期。设备语音默认关闭，需电脑端明确开启。</view>
+      <view wx:if="{{type !== 'notice'}}" class="tip">拟播报（设备开启语音后）：请{{selectedNames || '（选择学生）'}}到{{destination || '（请填写地点）'}}。{{body}}</view>
+    </block>
+  </view>
+
+  <view wx:if="{{error}}" class="error pre">{{error}}</view>
+  <view class="bottom-actions"><button class="primary" loading="{{busy}}" disabled="{{busy || !ready || loading}}" bindtap="submit">{{busy ? '正在保存，请稍候' : editing ? '保存修改' : type === 'notice' ? '发布到 ' + roomIds.length + ' 间教室' : '发布到 ' + roomName}}</button></view>
+</view>
+
+<view wx:if="{{drawer}}" class="overlay" bindtap="closeDrawer">
+  <view class="drawer" catchtap="noop">
+    <view class="drawer-heading"><view class="drawer-heading-copy"><view class="card-title">选择学生 · {{selected.length}} 人</view><view class="helper">{{audienceMode}} · 最多 {{type === 'call' ? 3 : 60}} 人</view></view><button class="plain small-button drawer-close" bindtap="closeDrawer">完成</button></view>
+    <picker range="{{classes}}" range-key="name" value="{{classIndex}}" bindchange="classChange"><view class="field drawer-picker">{{classes[classIndex].name}} ›</view></picker>
+    <input class="field search-field" placeholder="搜索姓名或学号" value="{{search}}" bindinput="searchInput"/>
+    <view class="drawer-filter"><text class="helper drawer-filter-count">当前筛选 {{filtered.length}} 人</text><button class="plain small-button drawer-filter-action" bindtap="selectFiltered">选择当前筛选</button></view>
+    <scroll-view class="drawer-scroll" scroll-y>
+      <view wx:for="{{filtered}}" wx:key="id" class="student-row" data-id="{{item.id}}" bindtap="toggleStudent"><view class="check {{item.checked ? 'checked' : ''}}">{{item.checked ? '✓' : ''}}</view><view class="student-copy"><view class="student-name">{{item.name}}</view><view class="muted student-meta">{{item.className}} · 学号 {{item.studentNo}}</view></view></view>
+      <view wx:if="{{!filtered.length}}" class="empty">未找到该学生，请调整班级或清除搜索。</view>
+    </scroll-view>
+    <button class="primary" bindtap="closeDrawer">确认选择 {{selected.length}} 人</button>
+  </view>
+</view>

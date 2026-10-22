@@ -1,0 +1,48 @@
+{
+  "pages": [
+    "pages/login/login",
+    "pages/home/home",
+    "pages/records/records",
+    "pages/profile/profile",
+    "pages/publish/publish",
+    "pages/detail/detail",
+    "pages/arrange/arrange",
+    "pages/admin/admin"
+  ],
+  "window": {
+    "navigationBarTitleText": "教室公告",
+    "navigationBarBackgroundColor": "#F6F8F7",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#F6F8F7",
+    "backgroundTextStyle": "dark"
+  },
+  "tabBar": {
+    "color": "#7C8F84",
+    "selectedColor": "#0F6E56",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "white",
+    "list": [
+      {
+        "pagePath": "pages/home/home",
+        "text": "班级",
+        "iconPath": "assets/tabbar/home.png",
+        "selectedIconPath": "assets/tabbar/home-active.png"
+      },
+      {
+        "pagePath": "pages/records/records",
+        "text": "记录",
+        "iconPath": "assets/tabbar/records.png",
+        "selectedIconPath": "assets/tabbar/records-active.png"
+      },
+      {
+        "pagePath": "pages/profile/profile",
+        "text": "我的",
+        "iconPath": "assets/tabbar/profile.png",
+        "selectedIconPath": "assets/tabbar/profile-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

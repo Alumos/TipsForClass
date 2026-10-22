@@ -1,0 +1,1 @@
+.login-page{padding-top:80rpx}.brand{height:108rpx;width:108rpx;border-radius:28rpx;background:#0F6E56;color:#fff;font-size:58rpx;display:flex;align-items:center;justify-content:center;margin-bottom:48rpx}.login-page .title{font-size:56rpx;margin-top:26rpx;margin-bottom:24rpx}.login-page .card{margin-top:64rpx}.login-button{margin-top:26rpx}

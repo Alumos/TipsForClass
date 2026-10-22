@@ -1,0 +1,457 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="description" content="教室公告双端系统 v1.5 开发文档：微信原生小程序、Win10/11 公告助手、Go + SQLite 服务端、三端自动构建、Docker Compose/Caddy 部署、实现状态与验收边界。">
+<title>教室公告双端系统 · 开发文档 v1.5</title>
+<style>
+:root{--bg:#f5f7f5;--paper:#fff;--ink:#172b25;--sub:#52635b;--muted:#65776d;--line:#dee7e0;--green:#0f6e56;--soft:#e9f4ef;--red:#a93230;--amber:#8a5a12;--mono:ui-monospace,SFMono-Regular,Consolas,monospace}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:30px}body{margin:0;background:var(--bg);font:15px/1.85 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:var(--ink)}a{color:var(--green);text-underline-offset:4px}button,select{font:inherit}button{cursor:pointer}a:focus-visible,button:focus-visible,select:focus-visible,summary:focus-visible{outline:3px solid #7bbbad;outline-offset:4px}.shell{display:grid;grid-template-columns:228px minmax(0,1fr);max-width:1440px;margin:auto}.sidebar{height:100vh;position:sticky;top:0;padding:38px 20px 28px 28px;border-right:1px solid var(--line);overflow-y:auto}.brand{font-weight:700;font-size:17px;line-height:1.5;letter-spacing:-.4px}.brand-icon{display:inline-grid;place-items:center;background:var(--green);color:white;border-radius:9px;width:30px;height:30px;margin-bottom:14px}.side-meta{font-size:12px;color:var(--muted);margin:8px 0 24px}.sidebar nav a{display:block;text-decoration:none;padding:6px 9px;border-radius:7px;color:var(--sub);font-size:12.5px;margin:2px 0;line-height:1.6}.sidebar nav a.active,.sidebar nav a:hover{background:var(--soft);color:var(--green)}.sidebar nav a span{font-family:var(--mono);font-size:10px;color:var(--muted);display:inline-block;width:25px}.side-footer{border-top:1px solid var(--line);margin-top:24px;padding-top:15px;font-size:11px;color:var(--muted)}main{min-width:0;padding:52px 52px 80px}.toolbar{display:flex;align-items:center;justify-content:space-between;gap:16px;font-size:12px;color:var(--muted);margin-bottom:42px}.toolbar button{background:transparent;border:1px solid var(--line);color:var(--sub);padding:6px 13px;border-radius:7px;font-size:12px}.cover{position:relative;border-bottom:1px solid var(--line);padding-bottom:36px}.eyebrow{font-size:10px;font-weight:600;letter-spacing:1.5px;color:var(--green)}.cover .eyebrow{font-size:12px;letter-spacing:2px;margin-bottom:20px}h1{font-size:52px;font-weight:650;line-height:1.2;letter-spacing:-2px;margin:0 0 20px}.cover-subtitle{font-size:17px;line-height:1.8;max-width:700px;color:var(--sub);margin-bottom:24px}.tag{font-size:11px;line-height:1.6;border-radius:20px;padding:3px 9px;display:inline-block;white-space:nowrap}.green{background:var(--soft);color:var(--green)}.tag.neutral{background:#e8ece9;color:var(--sub)}.tags{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:28px}.cover-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}.cover-meta small{display:block;color:var(--muted);font-size:11px}.cover-meta strong{display:block;font-size:13px;font-weight:600}.chapter{padding-top:52px;margin-top:18px;scroll-margin-top:16px;min-width:0}.chapter h2{font-size:28px;line-height:1.4;margin:0 0 24px;font-weight:600;letter-spacing:-.6px}.chapter h2>span{display:block;font:12px/1.5 var(--mono);letter-spacing:2px;color:var(--green);margin-bottom:8px}h3{font-size:18px;line-height:1.5;margin:30px 0 13px;font-weight:650}h4{font-size:16px;margin:12px 0 8px}p{margin:0 0 15px;color:var(--sub)}strong{font-weight:650;color:var(--ink)}.lead{font-size:19px;line-height:1.7;color:var(--ink)}ul,ol{padding-left:23px;margin:14px 0 20px;color:var(--sub)}li{margin:7px 0;padding-left:2px}.note,.warn{padding:17px 20px;border-left:3px solid #72ad94;background:var(--soft);border-radius:0 10px 10px 0;margin:22px 0;color:var(--sub);font-size:14px}.note strong,.warn strong{display:block;margin-bottom:4px}.warn{background:#fcf0ea;border-left-color:#b87949}.table-wrap{overflow-x:auto;max-width:100%;border:1px solid var(--line);border-radius:10px;margin:18px 0 24px;background:var(--paper)}table{width:100%;border-collapse:collapse;font-size:13px;line-height:1.8}th{font-size:12px;background:#eef3ef;color:#445a4d;text-align:left;font-weight:600;padding:11px 14px}td{padding:13px 14px;border-top:1px solid var(--line);color:var(--sub);vertical-align:top;overflow-wrap:anywhere}td:first-child{color:var(--ink);width:23%;font-weight:550}th:first-child{min-width:110px}tbody tr:hover{background:#fafcf9}pre{max-width:100%;overflow-x:auto;padding:22px 24px;background:#182d26;color:#e4eee8;border-radius:10px;font:12px/1.8 var(--mono);margin:20px 0;tab-size:2}code{font:12.5px/1.6 var(--mono);background:#e7eee9;padding:2px 5px;border-radius:4px;overflow-wrap:anywhere}pre code{background:transparent;padding:0;color:inherit;white-space:pre;overflow-wrap:normal}details{margin:18px 0;border:1px solid var(--line);border-radius:10px;padding:0 16px;background:#fff}summary{cursor:pointer;padding:14px 0;font-size:14px;color:var(--green)}details pre{margin-top:0}.architecture,.process{display:flex;align-items:stretch;gap:9px;margin:24px 0;flex-wrap:wrap}.architecture>div{flex:1;min-width:145px;border:1px solid var(--line);border-radius:10px;background:white;padding:17px 14px}.architecture small,.architecture strong,.architecture span{display:block}.architecture small{font-size:10px;letter-spacing:1px;color:var(--green)}.architecture strong{font-size:15px;margin:5px 0}.architecture span{font-size:11px;color:var(--muted)}.architecture>b,.process>b{align-self:center;color:#71897c}.process>span{background:white;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px;flex:1;min-width:120px;text-align:center}.caption{font-size:11.5px;text-align:center;color:var(--muted);margin:13px 0 25px}.phones{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:18px;margin:26px 0;align-items:start}.phone{background:#f6f8f7;border:5px solid #233d32;border-radius:32px;overflow:hidden;min-height:655px;display:flex;flex-direction:column;box-shadow:0 12px 28px #21352a0c;position:relative}.phone-status{display:flex;justify-content:space-between;padding:13px 18px 0;font-size:10px;font-weight:600;color:#203329}.phone-bar{display:flex;justify-content:space-between;align-items:center;padding:12px 13px 13px;font-size:13px;font-weight:600;background:#f6f8f7}.phone-bar>span{font-size:10px;border:1px solid #dce3dd;border-radius:15px;padding:1px 7px}.phone-content{padding:17px 15px;flex:1;min-width:0}.phone h4{font-size:20px;line-height:1.5;margin:7px 0}.phone p{font-size:11px;line-height:1.7;margin:7px 0 14px}.muted{color:var(--muted)}.stat{display:grid;grid-template-columns:1fr 1fr;background:#e5f0e9;padding:16px;border-radius:14px;margin:22px 0}.stat b{display:block;font-size:27px;line-height:1.4;color:var(--green);font-variant-numeric:tabular-nums}.stat small{font-size:10px;color:var(--sub)}.mini-label{display:flex;justify-content:space-between;font-size:11px;font-weight:600;color:var(--sub);margin:15px 0 9px}.mini-label span{font-size:10px;font-weight:400;color:var(--muted)}.room-card{display:flex;gap:9px;align-items:center;padding:13px 9px;border-radius:12px;background:white;border:1px solid var(--line);margin:11px 0}.room-card>span{margin-left:auto;color:var(--muted)}.room-icon{background:var(--soft);color:var(--green);display:grid;place-items:center;width:34px;height:38px;flex:none;font-size:16px;border-radius:8px}.room-icon.amber{background:#f7f0e4;color:var(--amber)}.room-card b{font-size:12px}.room-card small{display:block;font-size:9px;color:var(--muted)}.dot{display:inline-block;width:6px;height:6px;background:#24835d;border-radius:50%;margin-right:5px;vertical-align:middle}.dot.gray{background:#919b95}.soft-tip{font-size:10px;line-height:1.8;background:#edf2ee;border-radius:8px;color:var(--sub);padding:11px;margin:18px 0}.phone-tabs{display:flex;justify-content:space-around;font-size:20px;line-height:1.2;padding:13px 8px 20px;border-top:1px solid var(--line);background:white;color:#6d7a70}.phone-tabs small{display:block;font-size:10px;line-height:1.8;margin-top:4px}.phone-tabs b{color:var(--green);font-weight:500;text-align:center}.phone-tabs span{text-align:center}.target-chip{font-size:12px;font-weight:600;display:flex;justify-content:space-between}.target-chip span{font-weight:400;font-size:10px;color:var(--green)}.segments{display:flex;align-items:center;justify-content:space-around;background:#e9eeea;border-radius:8px;padding:4px;gap:3px;margin:19px 0}.segments>*{font-size:10px;padding:6px 3px;white-space:nowrap}.segments b{background:white;color:var(--green);box-shadow:0 1px 2px #142a1b14;border-radius:5px}.selected-person{background:#e5f1e9;display:inline-block;color:var(--green);border-radius:6px;padding:3px 11px;font-size:11px}.selected-person span{margin-left:12px}.mock-input{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px;font-size:12px}.mock-input.light{color:var(--muted);min-height:49px}.setting-row{display:flex;align-items:center;justify-content:space-between;font-size:11px;padding:12px 0;border-bottom:1px solid var(--line)}.setting-row b{font-weight:500}.phone-bottom{padding:12px 15px 20px;background:white;border-top:1px solid var(--line)}.mock-button{background:var(--green);color:white;text-align:center;font-size:12px;border-radius:10px;padding:12px 5px}.result-icon{display:grid;place-items:center;width:56px;height:56px;margin:18px auto;background:#e1efe5;color:var(--green);border-radius:50%;font-size:26px}.center{text-align:center}.receipt-card{border:1px solid var(--line);background:#fff;border-radius:13px;padding:13px;margin:24px 0}.receipt-card>div:first-child{display:flex;align-items:center;justify-content:space-between;gap:5px}.receipt-card b{font-size:11px}.receipt-card .tag{font-size:9px}.receipt-line{display:flex;align-items:center;font-size:9px;color:var(--sub);padding:7px 0}.secondary-button{border:1px solid #bed3c5;border-radius:9px;padding:10px;text-align:center;color:var(--green);font-size:12px;background:white}.text-button{color:var(--red);font-size:10px;text-align:center;padding:13px}.display-preview{background:#fffdf9;border:1px solid #dce1d8;border-radius:16px;padding:30px;box-shadow:0 10px 30px #21352a08;margin:25px 0}.display-head{display:flex;justify-content:space-between;align-items:center;padding-bottom:19px;border-bottom:1px solid var(--line);gap:15px}.display-head strong,.display-head small,.display-head span{display:block}.display-head strong{font-size:24px;font-weight:600}.display-head small{font-size:9px;letter-spacing:1px;color:var(--green)}.display-head span{font-size:11px;color:var(--muted)}.display-clock{text-align:right;font-size:32px;line-height:1.5;font-variant-numeric:tabular-nums}.display-clock small{font-size:10px;letter-spacing:0;color:var(--muted)}.display-card{background:white;border:1px solid var(--line);border-left:5px solid #bec8c0;border-radius:10px;display:flex;justify-content:space-between;align-items:center;padding:17px 20px;margin-top:15px;gap:18px}.display-card.call{border-left-color:var(--red)}.display-card.batch{border-left-color:#ba8a42}.display-type{font-size:10px;color:var(--muted)}.call .display-type{color:var(--red)}.batch .display-type{color:var(--amber)}.display-card h4{font-size:22px;font-weight:550;line-height:1.5;margin:4px 0}.display-card p{font-size:15px;margin:3px 0 8px}.display-card small{font-size:10px;color:var(--muted)}.display-status{font-size:12px;color:var(--red);white-space:nowrap;flex:none}.display-status small{display:block;text-align:right;font-size:10px}.display-status.muted{color:var(--muted)}.display-foot{font-size:10px;display:flex;justify-content:space-between;color:var(--muted);padding-top:19px;gap:16px}.checks li::marker{color:var(--green)}.references{font-size:13px}.endnote{border-top:1px solid var(--line);padding-top:22px;margin-top:54px;font-size:12px;color:var(--muted)}.mobile-nav{display:none}.skip-link{position:absolute;left:-9999px;top:5px}.skip-link:focus{left:8px;background:white;z-index:5;padding:10px}
+@media(min-width:1300px){.phone{min-height:680px}.phone-content{padding:18px}.phone h4{font-size:21px}}
+@media(max-width:1200px){.shell{grid-template-columns:200px minmax(0,1fr)}.sidebar{padding-left:18px;padding-right:13px}main{padding:36px 28px 70px}.phones{gap:10px}.phone{border-width:4px}.phone-content{padding:13px 10px}.phone-bar{font-size:11px;padding-left:10px;padding-right:10px}.phone-bar>span{font-size:9px}.room-card{gap:6px;padding:10px 7px}.room-icon{width:27px}.room-card b{font-size:11px}.room-card small{font-size:8.5px}.segments>*{font-size:9px}.receipt-card{padding:10px}}
+@media(max-width:1000px){.shell{display:block}.sidebar{display:none}main{max-width:940px;margin:auto;padding:30px 26px 64px}.mobile-nav{display:flex;position:sticky;top:0;z-index:3;align-items:center;gap:10px;padding:10px 20px;background:#f5f7f5f5;backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}.mobile-nav label{font-size:12px;flex:none}.mobile-nav select{width:100%;min-width:0;border:1px solid var(--line);background:white;color:var(--ink);padding:7px;border-radius:6px;font-size:12px}.chapter{scroll-margin-top:65px}.phones{gap:18px}.phone-content{padding:16px 14px}.phone-bar{font-size:12px}.room-card b{font-size:12px}.segments>*{font-size:10px}.room-icon{width:32px}.toolbar{margin-bottom:30px}h1{font-size:44px}}
+@media(max-width:740px){main{padding:25px 18px 50px}h1{font-size:37px;letter-spacing:-1px}.cover-subtitle{font-size:15px}.cover-meta{grid-template-columns:1fr 1fr;gap:15px}.phones{grid-template-columns:1fr;max-width:340px;margin:25px auto;gap:24px}.phone{min-height:650px;border-width:5px}.phone-content{padding:19px}.phone-bar{font-size:14px}.room-card b{font-size:14px}.room-card small{font-size:11px}.room-card{padding:16px 12px}.segments>*{font-size:12px}.phone p{font-size:12px}.mini-label{font-size:12px}.soft-tip{font-size:12px}.receipt-line{font-size:11px}.receipt-card b{font-size:13px}.receipt-card .tag{font-size:10px}.selected-person,.mock-input,.setting-row,.mock-button{font-size:13px}.chapter{padding-top:32px}.chapter h2{font-size:24px}h3{font-size:17px}.table-wrap table{min-width:550px}td:first-child{width:25%}.display-preview{padding:17px 12px}.display-head strong{font-size:19px}.display-clock{font-size:23px}.display-clock small{font-size:8px}.display-card{padding:13px 10px;gap:10px;align-items:flex-start;flex-direction:column}.display-card h4{font-size:18px}.display-card p{font-size:13px}.display-status{font-size:10px}.display-status small{display:inline;margin-left:10px}.display-foot{font-size:9px}.architecture{display:grid;grid-template-columns:1fr}.architecture>b{transform:rotate(90deg);text-align:center}.process{gap:8px}.process>b{display:none}.process>span{min-width:130px}pre{padding:16px;font-size:11px}pre code{font-size:11px}.toolbar{font-size:10px}.lead{font-size:17px}.note,.warn{padding:14px;font-size:13px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{animation:none!important;transition:none!important}}
+@media print{@page{size:A4;margin:16mm 13mm}html{scroll-behavior:auto}body{background:white;font-size:10pt;line-height:1.65}.shell{display:block;max-width:none}.sidebar,.toolbar,.mobile-nav,.skip-link{display:none}main{padding:0;max-width:none}.cover{break-after:page}h1{font-size:36pt}.chapter{padding-top:20pt;margin:0}.chapter h2{font-size:21pt;break-after:avoid}h3{font-size:13pt;break-after:avoid}p,li{orphans:3;widows:3}.table-wrap{overflow:visible;border-radius:0}table{font-size:9pt!important;min-width:0!important}th,td{padding:7pt;overflow-wrap:anywhere}tr{break-inside:avoid}pre{white-space:pre-wrap;overflow:visible;background:#f1f3f1;color:#172b25;font-size:8pt;padding:12pt}pre code{white-space:pre-wrap;font-size:8pt}details{border:none;padding:0}.phones{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:none}.phone{min-height:620px;break-inside:avoid}.phone-content{padding:12px 9px}.phone h4{font-size:17px}.room-card{padding:10px 6px;gap:5px}.room-card b{font-size:10px}.room-card small{font-size:8px}.room-icon{width:25px}.phone-bar{font-size:10px}.segments>*{font-size:8px}.phone p,.soft-tip,.mini-label,.receipt-line{font-size:9px}.receipt-card b{font-size:9px}.receipt-card .tag{font-size:8px}.selected-person,.mock-input,.setting-row,.mock-button{font-size:10px}.display-preview{break-inside:avoid}.architecture>div{min-width:110px}.architecture{display:flex}.architecture>b{transform:none}.note,.warn{break-inside:avoid}.endnote{font-size:9pt}a{color:inherit;text-decoration:none}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}}
+</style>
+</head>
+<body>
+<a class="skip-link" href="#main">跳到正文</a>
+<div class="mobile-nav"><label for="chapter-picker">章节导航</label><select id="chapter-picker"><option value="s0">00 修订说明与实施决策</option><option value="s1">01 产品范围与角色</option><option value="s2">02 小程序体验与视觉规范</option><option value="s3">03 Go 服务端与轻量部署</option><option value="s4">04 领域模型与数据库</option><option value="s5">05 REST 接口契约</option><option value="s6">06 实时同步与投递可靠性</option><option value="s7">07 Windows 10 / 11 大屏</option><option value="s8">08 播报、重播与静默时段</option><option value="s9">09 安全、隐私与内容检测</option><option value="s10">10 关键流程与边界场景</option><option value="s11">11 部署、备份与运维</option><option value="s12">12 验收标准与测试用例</option><option value="s13">13 里程碑与待确认事项</option><option value="s14">14 参考入口与版本记录</option></select></div>
+<div class="shell">
+<aside class="sidebar"><div class="brand-icon" aria-hidden="true">告</div><div class="brand">教室公告<br>双端系统</div><div class="side-meta">开发文档 · v1.5<br>2026-10-22 · 三端自动构建已配置<br>真实目标环境待验收</div><nav aria-label="章节目录"><a href="#s0"><span>00</span>修订说明与实施决策</a><a href="#s1"><span>01</span>产品范围与角色</a><a href="#s2"><span>02</span>小程序体验与视觉规范</a><a href="#s3"><span>03</span>Go 服务端与轻量部署</a><a href="#s4"><span>04</span>领域模型与数据库</a><a href="#s5"><span>05</span>REST 接口契约</a><a href="#s6"><span>06</span>实时同步与投递可靠性</a><a href="#s7"><span>07</span>Windows 10 / 11 大屏</a><a href="#s8"><span>08</span>播报、重播与静默时段</a><a href="#s9"><span>09</span>安全、隐私与内容检测</a><a href="#s10"><span>10</span>关键流程与边界场景</a><a href="#s11"><span>11</span>部署、备份与运维</a><a href="#s12"><span>12</span>验收标准与测试用例</a><a href="#s13"><span>13</span>里程碑与待确认事项</a><a href="#s14"><span>14</span>参考入口与版本记录</a></nav><div class="side-footer">教师端 · Windows 公告助手 · Go 服务<br>单校部署 / 轻量维护</div></aside>
+<main id="main">
+<div class="toolbar"><span>PRODUCT & ENGINEERING / 2026</span><button type="button" id="print-button">打印 / 存为 PDF</button></div>
+<header class="cover"><div class="eyebrow">CLEAR MESSAGES. CONNECTED CLASSROOMS.</div><h1>教室公告双端系统<br>开发文档</h1><p class="cover-subtitle">从教师手机，到教室屏幕。<br>代码与本地自动化已落地，三端自动构建配置已写入仓库；真实手机、Windows 物理机与微信审核仍需目标环境验收。</p><div class="tags"><span class="tag green">Go + SQLite</span><span class="tag neutral">微信原生小程序</span><span class="tag neutral">Windows 10 / 11</span><span class="tag neutral">Docker Compose + Caddy</span><span class="tag neutral">GitHub Actions</span><span class="tag neutral">单校 · 单实例</span></div><div class="cover-meta"><div><small>文档版本</small><strong>v1.5</strong></div><div><small>修订日期</small><strong>2026-10-22</strong></div><div><small>当前状态</small><strong>三端自动构建已配置 / 真实目标环境待验收</strong></div><div><small>本次重点</small><strong>Docker + Caddy · NSIS · GHCR / 离线镜像</strong></div></div></header>
+<section id="s0" class="chapter"><h2><span>00</span>修订说明与实施决策</h2>
+<p class="lead">让教师在课间迅速发出公告，让教室可靠地收到、看见，并在需要时听见。</p>
+<p>本文为 v1.5 实施与验证文档。2026-10-22 已完成 Go 服务端、微信原生小程序、Vue/Electron 公告助手及本地自动化；Mac 上的代码、协议和浏览器页面行为验证通过。仓库同时配置了项目检查、服务端镜像和 Windows 安装包工作流，以及 Docker Compose + Caddy HTTPS 部署路径。真实手机、Windows 物理机、微信审核和远程流水线结果仍需在目标环境验收。</p>
+<div class="table-wrap"><table><thead><tr><th>决策</th><th>当前方案</th><th>原因与边界</th></tr></thead><tbody><tr><td>教师入口</td><td>微信原生 JavaScript + WXML + WXSS，无 npm 前端构建</td><td>8 个页面直接导入微信开发者工具；使用自定义样式和六枚 81×81 RGBA tabbar 图标，不引入额外组件库。</td></tr><tr><td>Windows 公告助手</td><td>Electron + Vue 3 + TypeScript，目标 Win10 / Win11 x64</td><td>绑定后完全后台托盘待机，不显示常驻公告墙、公告卡或时钟；只有新消息或到点定时消息才出现提醒。TTS 默认关闭。原生焦点、穿透、托盘与安装仍需物理机验收。</td></tr><tr><td>服务端</td><td>Go 标准库 HTTP + SQLite WAL + WebSocket 适配层</td><td>单进程、单实例、单可执行文件；业务按模块组织，本阶段不拆微服务。</td></tr><tr><td>构建与部署</td><td>GitHub Actions 三端配置；Go 服务端 Docker 镜像；<code>compose.yaml</code> + Caddy HTTPS；Windows x64 NSIS</td><td>配置已写入仓库，不代表 GitHub 远程构建、标签 Release、Windows 安装或平台发布已经完成；国内 VPS 可使用 GHCR 镜像或 Actions 导出的离线镜像。</td></tr><tr><td>数据与同步</td><td>SQLite 持久化；REST 快照 + 持久事件序号 + WebSocket</td><td>适用于单校试点。公告、设置与事件在同一事务提交；多实例和更高写入容量需要迁移。</td></tr><tr><td>公告模型</td><td>呼叫学生 1–3 人/单教室、作业布置 1–60 人/单教室、普通通知 1–20 教室</td><td>呼叫和作业共用已选学生状态；1 人显示个人呼叫，多人显示多人呼叫，没有独立“批量呼叫”入口。</td></tr><tr><td>展示策略</td><td>每条消息单独选择居中窗口或右上角浮窗；居中约 760×480 且正文大字，右上角约 460×300</td><td>约 15 秒自动消失，不抢课件焦点，默认鼠标穿透与设备语音静音；启动、刷新和重连不补弹历史。展示排序页只管理置顶与顺序。</td></tr></tbody></table></div>
+<div class="note"><strong>当前交付状态</strong>三端自动构建和部署配置已写入仓库：GitHub Actions <code>Project checks</code>（CI）、<code>Server image</code> 与 <code>Windows installer</code>。Go 服务端提供 Docker 镜像、Compose 与 Caddy HTTPS；Windows 安装包配置为 NSIS，并生成 SHA-256；推送 <code>v*</code> 标签生成 Release 的条件已配置。Mac Chrome 已验证后台待机、两种提醒位置的网页渲染、约 15 秒隐藏与刷新不补弹历史。上述配置不等于 GitHub 远程构建、Windows 实机安装或微信审核已通过；真实手机、物理机、备案、证书与平台审核仍是验收边界。</div>
+<h3>v1.5 同步要点</h3>
+<ul><li>GitHub Actions <code>Project checks</code>（CI）配置项目检查与 HTTP/WebSocket smoke；<code>Server image</code> 配置 Docker Compose 构建、镜像健康检查、GHCR 推送及离线镜像包；<code>Windows installer</code> 在 <code>windows-2022</code> 生成 x64 NSIS 安装包和 SHA-256。</li><li>服务端部署配置为 <code>compose.yaml</code> 的 API 与可选 Caddy 代理：持久数据卷、健康检查、自动 HTTPS 和 <code>/api</code>、<code>/ws</code> 反向代理。国内 VPS 可直接拉取 GHCR 镜像，或下载 Actions 导出的离线镜像包后 <code>docker load</code>。</li><li>Windows 安装包与 <code>SHA256SUMS.txt</code> 的构建配置已存在；推送 <code>v*</code> 标签生成 GitHub Release 的触发条件已配置，但本稿不声称已提交、已推送、已创建 Release 或远程工作流已通过。</li><li>v1.4 的托盘待机与双尺寸短时提醒保持不变：居中约 760×480、正文大字，右上角约 460×300，约 15 秒自动消失，不抢焦点、默认鼠标穿透和静音。</li><li>记录卡继续支持详情、编辑和删除；编辑锁定原目标教室，删除即撤回并保留消息、投递回执与审计。保留 v1.0–v1.4 版本记录作为历史。</li></ul></section><section id="s1" class="chapter"><h2><span>01</span>产品范围与角色</h2>
+<h3>1.1 主要场景与默认值</h3><div class="table-wrap"><table><thead><tr><th>类型</th><th>内容与范围</th><th>当前默认行为</th></tr></thead><tbody><tr><td>呼叫学生 · call</td><td>一个教室，1–3 名学生；选择学生并填写地点</td><td>1 人显示个人呼叫，2–3 人显示多人呼叫；语音默认 0 遍；40 分钟后下屏。</td></tr><tr><td>作业布置 · batch</td><td>一个教室，1–60 名学生；与呼叫学生共用已选学生状态</td><td>服务端生成汇总标题；语音默认 0 遍；默认 2 小时后下屏，可改为指定时间。</td></tr><tr><td>普通通知 · notice</td><td>1–20 个授权教室；标题 + 可选正文</td><td>不播报；默认当天 22:00 下屏，若已超过 22:00 则改为次日 22:00。</td></tr></tbody></table></div>
+<p>支持立即发布或未来 7 天内定时生效；有效期不超过 7 天。学校时区为 Asia/Shanghai，客户端显示具体日期和时间，服务端按 ISO 8601 保存。呼叫和作业必须提供地点；缺少 `destination` 时服务端返回 400。</p>
+<p>小程序只有三个发布类型，没有独立的“批量呼叫”入口。呼叫学生与作业布置共享同一份勾选结果；切换类型时保留符合人数上限的选择。选中 1 名学生的呼叫显示个人内容，选中 2–3 名学生的呼叫显示多人内容。</p>
+<h3>1.2 权限边界</h3><div class="table-wrap"><table><thead><tr><th>角色</th><th>权限</th><th>限制</th></tr></thead><tbody><tr><td>教师</td><td>查看授权教室及共享名册，发布，查看自己的记录，撤回或重播本人公告</td><td>每次请求重新检查权限。撤回/重播必须仍拥有公告全部目标教室权限。</td></tr><tr><td>管理员</td><td>管理教师、教室、班级、名册、设备和静默时段；查看本校公告</td><td>班级创建、编辑、移动、删除；删除有学生的班级返回 409 <code>CLASS_IN_USE</code>。</td></tr><tr><td>设备</td><td>读取绑定教室快照，订阅事件，上报心跳、展示和播报回执</td><td>禁止访问其他教室、教师身份接口或完整学生名册。</td></tr></tbody></table></div>
+<div class="note"><strong>范围约束</strong> 首版一个班级只归属一个教室；管理员可以移动班级，但不会自动迁移既有公告。一个教室可关联多个班级。走班、临时换教室和多校共享设备列入后续版本。</div>
+<h3>1.3 首次使用与身份开通</h3>
+<p>运维通过本机初始化流程创建学校与一次性管理员激活码；首位管理员微信登录后输入该码完成绑定。之后新教师登录只创建“待审核身份”，无法读取名册或发布。管理员核对姓名与申请编号后批准并配置教室权限；拒绝、停用均有审计记录。</p>
+<p>账号被停用或教室权限撤销后，服务端立即拒绝新请求；教师端清理相应本地草稿中的学生信息，并提示联系管理员。同一教室的教师共享班级、名册与展示设置。</p></section><section id="s2" class="chapter"><h2><span>02</span>小程序体验与视觉规范</h2>
+<p class="lead">首页让老师找到班级，发布页把必要信息放在一屏，结果页说清楚屏幕是否收到。</p>
+<h3>2.1 页面与导航</h3>
+<p>底部固定三个入口：<strong>班级、记录、我的</strong>。发布页为二级页，管理入口位于管理员“我的”页。当前实现包含 8 个页面和 6 枚 81×81 RGBA tabbar 图标。首页显示授权教室、设备在线数和最近同步时间；点击教室卡片后，发布页固定该教室为当前目标。普通通知可在“其他教室”追加目标，但列表排除当前教室。离线教室仍可进入发布，但应明确提示上线后同步。呼叫学生与作业布置共用已选学生状态，1 人显示个人呼叫，2–3 人显示多人呼叫。</p>
+<div class="phones" aria-label="小程序三个页面的静态设计示意">
+ <div class="phone"><div class="phone-status">9:41 <span>● ▰</span></div><div class="phone-bar">班级公告 <span>••• ◉</span></div><div class="phone-content"><div class="eyebrow">教师工作台</div><h4>张老师，上午好</h4><p class="muted">选择教室，发布一条新公告</p><div class="stat"><div><b>03</b><small>今日发布</small></div><div><b>02</b><small>常用班级</small></div></div><div class="mini-label">常用班级 <span>全部 ›</span></div><div class="room-card"><div class="room-icon">二</div><div><b>高三（2）班</b><small><i class="dot"></i> 1 台设备在线</small></div><span>›</span></div><div class="room-card"><div class="room-icon amber">五</div><div><b>高三（5）班</b><small><i class="dot gray"></i> 离线 · 8 分钟前同步</small></div><span>›</span></div><div class="soft-tip">常用通知可从发布记录复制，修改后再发。</div></div><div class="phone-tabs"><b>▦<small>班级</small></b><span>▤<small>记录</small></span><span>○<small>我的</small></span></div></div>
+ <div class="phone"><div class="phone-status">9:41 <span>● ▰</span></div><div class="phone-bar">‹　发布公告 <span>••• ◉</span></div><div class="phone-content"><div class="mini-label">发送到</div><div class="target-chip">高三（2）班 <span>当前教室</span></div><div class="segments"><b>呼叫学生</b><span>作业布置</span><span>通知</span></div><div class="mini-label">选择学生 <span>已选 1 人</span></div><div class="selected-person">李明 <span>×</span></div><div class="mini-label">到哪里 <span>必填</span></div><div class="mock-input">3 楼教师办公室</div><div class="mini-label">补充说明</div><div class="mock-input light">请带上班牌</div><div class="setting-row"><span>展示位置</span><b>右上角浮窗 ›</b></div><div class="setting-row"><span>语音播报</span><b>2 遍 ›</b></div><div class="setting-row"><span>下屏时间</span><b>今天 10:21 ›</b></div><div class="soft-tip">将播报：请李明同学到 3 楼教师办公室。请带上班牌。</div></div><div class="phone-bottom"><div class="mock-button">发布到高三（2）班</div></div></div>
+ <div class="phone"><div class="phone-status">9:41 <span>● ▰</span></div><div class="phone-bar">‹　投递详情 <span>••• ◉</span></div><div class="phone-content"><div class="result-icon">✓</div><h4 class="center">公告已发布</h4><p class="center muted">1 / 1 台目标设备已上屏</p><div class="receipt-card"><div><b>高三（2）班</b><span class="tag green">已上屏</span></div><p>呼叫 · 到 3 楼教师办公室</p><div class="receipt-line"><i class="dot"></i><span>09:41:02　服务器已保存</span></div><div class="receipt-line"><i class="dot"></i><span>09:41:03　设备已展示</span></div><div class="receipt-line"><i class="dot"></i><span>09:41:06　语音默认关闭</span></div></div><div class="soft-tip">今天 10:21 自动下屏。可在记录中编辑，或删除即撤回。</div><div class="secondary-button">返回班级</div><div class="text-button">编辑 · 删除公告</div></div></div>
+</div>
+<p class="caption">图 2-1　首页、发布页、投递详情的静态视觉方向。模拟数据，不代表实际投递结果；生产界面使用原生控件和图标资源。</p>
+<h3>2.2 设计令牌</h3><div class="table-wrap"><table><thead><tr><th>项目</th><th>规范</th><th>实施要求</th></tr></thead><tbody><tr><td>主色与语义色</td><td>品牌深绿 #0F6E56；呼叫 #A93230；批量 #8A5A12；普通 #526071</td><td>颜色同时配合文字标签与图标，避免仅靠红绿判断在线/离线。</td></tr><tr><td>背景与卡片</td><td>页面 #F6F8F7；卡片 #FFFFFF；正文 #172B25；次级 #52635B</td><td>优先留白与轻边框，减少阴影和装饰渐变；正文对比度目标 ≥ 4.5:1。</td></tr><tr><td>字号</td><td>页面标题 40rpx，卡片标题 34rpx，正文/表单 32rpx，辅助文字 26rpx</td><td>375px 视口参考；使用系统中文字体，关键操作不能只用小号文字。</td></tr><tr><td>间距与圆角</td><td>8rpx 基础栅格；左右留白 32rpx；卡片间距 24rpx；圆角 20–24rpx</td><td>同类控件保持一致；按钮仅用一个明确主色。</td></tr><tr><td>触控尺寸</td><td>主按钮高 96rpx，其他点击区域至少 44 CSS px × 44 CSS px</td><td>在 320px 小屏上也保持实际 44px 下限，不能只依赖 rpx 换算。</td></tr><tr><td>动效与反馈</td><td>状态切换 160–220ms；请求按钮显示加载状态；错误定位到字段</td><td>不加营销轮播；兼容减少动态效果偏好，不使用持续闪烁。</td></tr><tr><td>适配</td><td>320 / 375 / 390 / 430px 宽度；iOS/Android 微信真机</td><td>顶部使用胶囊安全区；底部适配安全区与软键盘，不遮挡输入内容和发布按钮。</td></tr></tbody></table></div>
+<h3>2.3 发布交互细则</h3>
+<ul><li><strong>快速默认：</strong>从首页点击教室后，发布页固定该教室为当前目标；普通通知的“其他教室”列表排除当前教室，重复点击会提示无需重复选择。进入教室后默认最近使用类型；呼叫学生和作业布置先选学生，普通通知直接填标题。两类学生公告共用同一份选择状态；没有独立“批量呼叫”入口。</li><li><strong>选人：</strong>底部抽屉展示班级切换、姓名/学号搜索、已选数量与固定确认按钮。选 1 人时显示个人呼叫，选 2–3 人时显示多人呼叫。同名学生显示班级和学号尾号；“全选”只作用于当前明确标示的筛选结果，超过上限时说明原因。</li><li><strong>防误发：</strong>新建时切换当前教室会清空已选学生并提示；编辑时目标教室锁定，不能更换。切换类型保留兼容字段，清空不适用设置前告知。发布按钮显示目标班级或“发布到 8 间教室”。</li><li><strong>渐进设置：</strong>每条消息逐条选择“右上角浮窗”或“居中窗口”；默认语音次数为 0，显示不播报与下屏时间。定时生效、有效期和播报预览在“更多设置”中。选定静默时段时，立即说明届时仅展示。</li><li><strong>表单校验：</strong>标题 1–60 个 Unicode 字符，正文 ≤ 300，地点 ≤ 40 且呼叫/作业必须填写，补充说明 ≤ 120；前后空白裁剪，前后端一致校验；禁止 HTML 富文本。置顶和消息顺序在展示排序页管理，展示位置不放在排序页。</li><li><strong>防重复：</strong>提交时禁用按钮并保留同一个 clientToken；超时可安全重试。内容变更后生成新 token。失败不清空表单。</li><li><strong>草稿：</strong>按账号与教室保存一份本地草稿，最长 24 小时；退出账号立即清除，恢复前重新验证学生与权限，不自动发布。</li></ul>
+<h3>2.4 状态反馈</h3><div class="table-wrap"><table><thead><tr><th>状态</th><th>界面文案/行为</th></tr></thead><tbody><tr><td>首次加载</td><td>卡片骨架屏；超过 8 秒给出重试按钮，避免无限旋转。</td></tr><tr><td>没有授权教室</td><td>“你还没有可发布的班级”，显示管理员联系方式；不展示空白页面。</td></tr><tr><td>搜索无结果</td><td>“未找到该学生”，允许清除搜索和返回完整名单。</td></tr><tr><td>内容检测失败或服务超时</td><td>标记需修改字段；检测服务不可用时保留草稿并提示稍后重试，不绕过检测发布。</td></tr><tr><td>HTTP 成功</td><td>“公告已发布，等待设备上屏”；立即进入投递详情。</td></tr><tr><td>设备未回执</td><td>30 秒后显示“暂未确认上屏”，可重查状态；不能直接断言投递失败。</td></tr><tr><td>静默、TTS 异常</td><td>分别显示“静默时段，未播报”“语音不可用，已展示”；保留独立的展示状态。</td></tr><tr><td>定时公告</td><td>“已安排，今天 14:00 生效”；未来时间应完整显示日期，不把尚未生效视为投递失败。</td></tr></tbody></table></div>
+<p>投递详情打开后每 2 秒查询一次，最多持续 30 秒；之后停止自动轮询，提供手动刷新，页面退出立即取消请求。记录列表支持状态筛选、分页、下拉刷新，记录卡提供“详情 / 编辑 / 删除”。编辑页显示“目标教室（已锁定）”；删除需要一次确认，文案明确会从教室移除且保留审计与投递记录。普通发布不额外弹确认框，多教室通知在提交前展示清晰的目标摘要。</p></section><section id="s3" class="chapter"><h2><span>03</span>Go 服务端与轻量部署</h2>
+<h3>3.1 推荐拓扑</h3>
+<div class="architecture"><div><small>教师入口</small><strong>微信小程序</strong><span>HTTPS / JSON</span></div><b>→</b><div><small>统一入口</small><strong>Caddy / Nginx</strong><span>TLS 与请求限制</span></div><b>→</b><div><small>单个服务</small><strong>Go</strong><span>REST · WebSocket · 调度</span></div><b>↔</b><div><small>本地持久盘</small><strong>SQLite · WAL</strong><span>业务数据 · 事件 · 回执</span></div></div>
+<p>Windows 设备通过同一入口连接 HTTPS/WSS。Go HTTP 服务仅监听回环地址；数据库文件不可通过静态目录访问。使用当前受支持的 Go 稳定版本，实施时在 go.mod、CI 与构建镜像锁定具体版本；不在本文固定一个会过期的补丁版本。</p>
+<h3>3.2 模块边界与依赖选择</h3><div class="table-wrap"><table><thead><tr><th>模块</th><th>职责</th></tr></thead><tbody><tr><td>auth / permission</td><td>微信登录、待审核身份、教师会话、设备令牌、教室授权。</td></tr><tr><td>notice</td><td>字段校验、内容检测、幂等创建、撤回、重播、学生快照。</td></tr><tr><td>device / realtime</td><td>绑定码消费、设备注册、连接管理、事件分发与回执。</td></tr><tr><td>admin</td><td>名册预检/导入、教室维护、教师审批、设备吊销、静默设置。</td></tr><tr><td>storage / maintenance</td><td>SQL 迁移、短事务、持久事件扫描、清理、备份与健康检查。</td></tr></tbody></table></div>
+<p>路由与 HTTP 使用标准库 net/http，日志使用 log/slog；SQL 使用 database/sql 与纯 Go 的 modernc.org/sqlite；WebSocket 适配器使用 github.com/coder/websocket。依赖版本由 go.mod 锁定，并完成许可证、维护状态与漏洞检查；驱动细节不泄漏到业务接口。</p>
+<pre><code class="language-">cmd/server/          # HTTP 入口、配置加载、优雅退出
+cmd/admin/           # 初始化、备份、恢复验证命令
+internal/auth/       # 登录与权限
+internal/notice/     # 公告与播报业务
+internal/device/     # 设备绑定、回执
+internal/realtime/   # 房间订阅、事件发送
+internal/admin/      # 名册、教师、教室
+internal/storage/    # SQL 与事务，不向客户端暴露
+migrations/          # 带版本的 SQLite 迁移
+web-miniapp/         # 原生小程序
+apps/display/        # Electron + Vue 大屏
+ops/                 # systemd、反代、备份与恢复说明</code></pre>
+<h3>3.3 SQLite 使用边界</h3>
+<ul><li>单实例读写本机持久磁盘，启用 WAL、foreign_keys、busy_timeout；禁止将数据库放到 NFS/SMB 共享盘或容器临时层。</li><li>首版 database/sql 单连接执行 SQL，保证写入串行。所有事务短小；微信网络调用、TTS、HTTP 回包和 WebSocket 写入不能放在事务中。</li><li>使用外键、唯一约束与 CHECK 约束；消息创建、目标教室、事件写入在同一事务提交。批量导入分批提交，批次对用户可见；不阻塞公告写入超过阈值。</li><li>基线性能不达标时先分析慢 SQL 与事务时长；可改为单写连接 + 小型只读连接池，再复测。迁移前保持接口契约一致，但不承诺不同数据库的 SQL 可以原样复用。</li></ul>
+<div class="note"><strong>升级触发条件</strong> 需要多个服务实例/高可用、持续写入导致数据库锁等待，或目标负载下接口 P95 超出预算时，评估 PostgreSQL。迁移必须经过导出、转换、停写窗口、行数/关联校验和回滚演练；仅保留存储接口并不等于迁移已经实现。</div>
+<h3>3.4 运行与资源预算</h3>
+<p>建议从 2 vCPU / 2GB 内存、20GB 持久磁盘开始验证。目标：200 台在线设备、每分钟 30 条公告且每条最多 20 个教室时，Go 服务 RSS ≤ 256MB、CPU 均值 ≤ 1 核；这些是验收预算，不是性能保证。SQLite 数据、日志、备份分别设置容量阈值。默认不引入 Redis、独立队列或容器编排。</p>
+<p>配置采用环境变量 + 受权限保护的配置文件；AppSecret 与签名密钥不可入仓库。优雅退出先停止接收新写入，再关闭设备连接并等待正在执行的短事务。systemd 设置崩溃重启、低权限用户与可写目录白名单；公开 healthz 仅返回存活，readyz 检查迁移完成与数据库可用。</p></section><section id="s4" class="chapter"><h2><span>04</span>领域模型与数据库</h2>
+<h3>4.1 关系与数据约定</h3>
+<p>学校 → 教室 / 班级 / 教师；班级 → 学生且绑定一个教室；教师通过 teacher_rooms 获得教室权限；教室 → 多台设备；公告通过 message_rooms 投递多间教室。message_devices 固定记录发布时目标设备，用于稳定的投递统计。</p>
+<ul><li>SQLite 主键为 INTEGER，所有 API ID 和 seq 均输出<strong>十进制字符串</strong>，避免 JavaScript 64 位整数精度丢失；毫秒时间仍在安全整数范围内。</li><li>数据库时间统一 UTC Unix 毫秒；API 使用带时区 ISO 8601。request_hash 是规范化请求的 SHA-256；鉴权和内容检测在事务外完成，事务内再次检查权限与对象有效性。</li><li>targets_json 保存发布时学生 id、姓名、班级、学号尾号的快照，仅包含本目标教室学生；学生后续更名不修改历史公告。禁止将其他教室的名单推给当前设备。</li><li>跨表 school_id 一致性在业务事务中验证；外键本身不能代替校级授权。学生停用后不出现在新选择列表，历史快照按保留策略清理。</li><li><code>payload_json</code> 保存每条消息自身的 <code>displayPosition</code>；旧消息缺少该字段时按 <code>top_right</code> 处理。active 且未到期的公告可编辑，原目标教室集合不可更改；成功编辑增加 revision 并写入 <code>message.upsert</code>。记录页删除按撤回处理，保留消息与投递回执。</li></ul>
+<h3>4.2 首版建表基线</h3>
+<p>以下 DDL 可作为 SQLite 初始迁移基线；应用层仍需执行长度、枚举组合、权限和跨表校验。migration 版本与初始化管理员状态由迁移/初始化工具维护。</p>
+<details><summary>展开完整 SQL（含权限、设备、事件与回执）</summary><pre><code class="language-sql">PRAGMA foreign_keys = ON;
+PRAGMA journal_mode = WAL;
+PRAGMA busy_timeout = 5000;
+
+CREATE TABLE schools (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ name TEXT NOT NULL,
+ timezone TEXT NOT NULL DEFAULT &#x27;Asia/Shanghai&#x27;,
+ quiet_hours_json TEXT NOT NULL DEFAULT &#x27;[]&#x27; CHECK(json_valid(quiet_hours_json)),
+ config_revision INTEGER NOT NULL DEFAULT 1,
+ created_at INTEGER NOT NULL
+);
+CREATE TABLE rooms (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ school_id INTEGER NOT NULL REFERENCES schools(id),
+ name TEXT NOT NULL,
+ status TEXT NOT NULL DEFAULT &#x27;active&#x27; CHECK(status IN (&#x27;active&#x27;,&#x27;disabled&#x27;)),
+ UNIQUE(school_id, name)
+);
+CREATE TABLE classes (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ school_id INTEGER NOT NULL REFERENCES schools(id),
+ room_id INTEGER NOT NULL REFERENCES rooms(id),
+ name TEXT NOT NULL,
+ UNIQUE(school_id, name)
+);
+CREATE TABLE students (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ class_id INTEGER NOT NULL REFERENCES classes(id),
+ student_no TEXT NOT NULL,
+ name TEXT NOT NULL,
+ active INTEGER NOT NULL DEFAULT 1 CHECK(active IN (0,1)),
+ UNIQUE(class_id, student_no)
+);
+CREATE TABLE teachers (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ school_id INTEGER NOT NULL REFERENCES schools(id),
+ openid TEXT NOT NULL UNIQUE,
+ name TEXT NOT NULL,
+ role TEXT NOT NULL CHECK(role IN (&#x27;teacher&#x27;,&#x27;admin&#x27;)),
+ status TEXT NOT NULL CHECK(status IN (&#x27;pending&#x27;,&#x27;active&#x27;,&#x27;disabled&#x27;)),
+ created_at INTEGER NOT NULL
+);
+CREATE TABLE teacher_rooms (
+ teacher_id INTEGER NOT NULL REFERENCES teachers(id),
+ room_id INTEGER NOT NULL REFERENCES rooms(id),
+ PRIMARY KEY(teacher_id,room_id)
+);
+CREATE TABLE teacher_sessions (
+ token_hash TEXT PRIMARY KEY,
+ teacher_id INTEGER NOT NULL REFERENCES teachers(id),
+ expires_at INTEGER NOT NULL,
+ revoked_at INTEGER
+);
+CREATE TABLE bind_codes (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ room_id INTEGER NOT NULL REFERENCES rooms(id),
+ code_hash TEXT NOT NULL UNIQUE,
+ expires_at INTEGER NOT NULL,
+ consumed_at INTEGER,
+ created_by INTEGER NOT NULL REFERENCES teachers(id)
+);
+CREATE TABLE devices (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ room_id INTEGER NOT NULL REFERENCES rooms(id),
+ installation_id TEXT NOT NULL UNIQUE,
+ label TEXT NOT NULL,
+ token_hash TEXT NOT NULL UNIQUE,
+ token_expires_at INTEGER NOT NULL,
+ revoked_at INTEGER,
+ last_seen_at INTEGER,
+ app_version TEXT,
+ tts_status TEXT NOT NULL DEFAULT &#x27;unknown&#x27;
+);
+CREATE INDEX idx_devices_room ON devices(room_id);
+CREATE TABLE messages (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ school_id INTEGER NOT NULL REFERENCES schools(id),
+ teacher_id INTEGER NOT NULL REFERENCES teachers(id),
+ type TEXT NOT NULL CHECK(type IN (&#x27;call&#x27;,&#x27;batch&#x27;,&#x27;notice&#x27;)),
+ title TEXT NOT NULL,
+ body TEXT NOT NULL DEFAULT &#x27;&#x27;,
+ speech_text TEXT NOT NULL DEFAULT &#x27;&#x27;,
+ priority INTEGER NOT NULL DEFAULT 0 CHECK(priority IN (0,1)),
+ start_at INTEGER NOT NULL,
+ expire_at INTEGER NOT NULL,
+ broadcast_times INTEGER NOT NULL CHECK(broadcast_times BETWEEN 0 AND 2),
+ generation INTEGER NOT NULL DEFAULT 0,
+ status TEXT NOT NULL DEFAULT &#x27;active&#x27; CHECK(status IN (&#x27;active&#x27;,&#x27;revoked&#x27;)),
+ revision INTEGER NOT NULL DEFAULT 1,
+ client_token TEXT NOT NULL,
+ request_hash TEXT NOT NULL,
+ created_at INTEGER NOT NULL,
+ CHECK(expire_at &gt; start_at),
+ CHECK(type != &#x27;notice&#x27; OR broadcast_times = 0),
+ UNIQUE(teacher_id, client_token)
+);
+CREATE INDEX idx_messages_active ON messages(status,expire_at);
+CREATE INDEX idx_messages_teacher ON messages(teacher_id,created_at,id);
+CREATE TABLE message_rooms (
+ message_id INTEGER NOT NULL REFERENCES messages(id),
+ room_id INTEGER NOT NULL REFERENCES rooms(id),
+ targets_json TEXT NOT NULL DEFAULT &#x27;[]&#x27; CHECK(json_valid(targets_json)),
+ PRIMARY KEY(message_id,room_id)
+);
+CREATE INDEX idx_message_rooms_room ON message_rooms(room_id,message_id);
+CREATE TABLE message_devices (
+ message_id INTEGER NOT NULL REFERENCES messages(id),
+ device_id INTEGER NOT NULL REFERENCES devices(id),
+ PRIMARY KEY(message_id,device_id)
+);
+CREATE TABLE broadcast_jobs (
+ message_id INTEGER NOT NULL REFERENCES messages(id),
+ generation INTEGER NOT NULL,
+ times INTEGER NOT NULL CHECK(times BETWEEN 1 AND 2),
+ not_before INTEGER NOT NULL,
+ deadline_at INTEGER NOT NULL,
+ created_at INTEGER NOT NULL,
+ CHECK(deadline_at &gt; not_before),
+ PRIMARY KEY(message_id,generation)
+);
+CREATE TABLE operation_keys (
+ teacher_id INTEGER NOT NULL REFERENCES teachers(id),
+ client_token TEXT NOT NULL,
+ request_hash TEXT NOT NULL,
+ response_json TEXT NOT NULL CHECK(json_valid(response_json)),
+ created_at INTEGER NOT NULL,
+ PRIMARY KEY(teacher_id,client_token)
+);
+CREATE TABLE delivery_receipts (
+ message_id INTEGER NOT NULL REFERENCES messages(id),
+ device_id INTEGER NOT NULL REFERENCES devices(id),
+ revision INTEGER NOT NULL,
+ state TEXT NOT NULL CHECK(state IN
+ (&#x27;received&#x27;,&#x27;displayed&#x27;,&#x27;suppressed&#x27;,&#x27;revoked&#x27;,&#x27;expired&#x27;)),
+ received_at INTEGER NOT NULL,
+ PRIMARY KEY(message_id,device_id,revision,state)
+);
+CREATE TABLE broadcast_receipts (
+ message_id INTEGER NOT NULL REFERENCES messages(id),
+ device_id INTEGER NOT NULL REFERENCES devices(id),
+ generation INTEGER NOT NULL,
+ round INTEGER NOT NULL CHECK(round BETWEEN 1 AND 2),
+ status TEXT NOT NULL CHECK(status IN (&#x27;played&#x27;,&#x27;skipped&#x27;,&#x27;failed&#x27;)),
+ reason TEXT,
+ received_at INTEGER NOT NULL,
+ PRIMARY KEY(message_id,device_id,generation,round)
+);
+CREATE TABLE events (
+ seq INTEGER PRIMARY KEY AUTOINCREMENT,
+ room_id INTEGER NOT NULL REFERENCES rooms(id),
+ event_type TEXT NOT NULL,
+ payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),
+ created_at INTEGER NOT NULL
+);
+CREATE INDEX idx_events_room_seq ON events(room_id,seq);
+CREATE TABLE audit_logs (
+ id INTEGER PRIMARY KEY AUTOINCREMENT,
+ actor_type TEXT NOT NULL,
+ actor_id TEXT NOT NULL,
+ action TEXT NOT NULL,
+ target_id TEXT,
+ detail_json TEXT NOT NULL DEFAULT &#x27;{}&#x27;,
+ created_at INTEGER NOT NULL
+);</code></pre></details>
+<h3>4.3 状态与清理规则</h3><div class="table-wrap"><table><thead><tr><th>对象</th><th>状态规则</th></tr></thead><tbody><tr><td>公告</td><td>数据库 active / revoked；pending、showing、expired 由服务器校准时间和 startAt/expireAt 推导。</td></tr><tr><td>展示</td><td>received 表示设备已持久化；displayed 必须在提醒浮窗实际进入可见区域后上报；不等价于学生已阅读。</td></tr><tr><td>绑定码</td><td>10 分钟有效，仅可消费一次；不放 rooms 表常驻，数据库仅存 HMAC 摘要。</td></tr><tr><td>设备统计</td><td>发布时固定设备集合是统计分母；后绑定设备可同步公告但单独列出，不改变“原目标已上屏 X/Y”。发布时没有设备需提示并要求管理员先绑定。</td></tr><tr><td>教师会话</td><td>默认 7 天有效，可吊销；每次请求验证账号状态。token 仅保存 SHA-256 摘要。</td></tr><tr><td>设备令牌</td><td>首版默认 90 天有效，提前 14 天提醒管理员，到期重新绑定。自动无感轮换需凭据历史表和原子保存协议，列为后续增强。</td></tr><tr><td>保留策略</td><td>公告和学生快照默认在过期/撤回 30 天后清理；事件 7 天，回执 30 天；审计 180 天且不存公告全文。由学校确认后配置。</td></tr></tbody></table></div><div class="note"><strong>首版令牌决策</strong> 为保持本版 DDL 与实现一致，首版采用 90 天令牌 + 管理员到期重新绑定；提前 14 天在设备页提醒。自动无感轮换列为后续增强，不在首版声称已实现。</div>
+<p>用户端“删除”不执行物理删除，而是撤回并保留审计、消息和投递回执。受保留策略控制的隐私清理属于另一条运维流程：清理任务才删除公告关联的事件有效载荷、回执、播报任务和投递关系；备份保留周期也必须覆盖同一策略。数据库只由服务访问，文件权限限定服务用户。</p></section><section id="s5" class="chapter"><h2><span>05</span>REST 接口契约</h2>
+<h3>5.1 通用约定</h3>
+<p>API Base 为 <code>http://127.0.0.1:8080/api/v1</code>；健康检查为 <code>http://127.0.0.1:8080/healthz</code>，位于前缀之外。请求使用 UTF-8 JSON，JSON 上限 64 KiB；XLSX multipart 上传单独限制 5 MiB。Authorization 使用 Bearer token，教师与设备令牌使用不同前缀和存储。</p>
+<p>成功响应为 <code>{code:0,message:"ok",data,requestId}</code>；失败返回非 2xx HTTP 状态与 <code>{code,message,errors?,requestId}</code>。标识使用字符串，时间使用 ISO 8601，同步序号使用十进制字符串比较。</p>
+<div class="table-wrap"><table><thead><tr><th>方法 / 路径</th><th>作用 / 关键条件</th></tr></thead><tbody>
+<tr><td>POST /auth/demo-login</td><td>仅 demo 模式启用；返回教师会话和预置管理员。</td></tr>
+<tr><td>POST /auth/wx-login；POST /auth/logout；GET /me</td><td>真实微信 code 换会话；吊销会话；当前身份、状态、学校、教室权限与模式。</td></tr>
+<tr><td>GET /rooms；GET /classes?roomId=；GET /students?classId=&amp;q=&amp;cursor=</td><td>只返回权限范围内数据；学生分页上限 100。</td></tr>
+<tr><td>GET /rooms/:id/display-settings；PUT /rooms/:id/display-settings</td><td>读取/修改同教室共享的置顶与顺序；兼容返回/接受教室级 <code>displayPosition</code>，供旧消息和旧客户端使用。</td></tr>
+<tr><td>POST /messages</td><td>创建 call/batch/notice；校验目标、学生、地点、时间和播报次数。</td></tr>
+<tr><td>POST /messages/:id/update；DELETE /messages/:id；POST /messages/:id/revoke；POST /messages/:id/rebroadcast</td><td>编辑锁定原目标教室；记录页删除即幂等撤回；使用新 generation 重播。<code>GET /messages/:id/delivery</code> 查看逐设备回执。</td></tr>
+<tr><td>POST /devices/bind；GET /device/snapshot；POST /device/heartbeat；POST /device/receipts</td><td>绑定、快照、心跳与批量回执；设备只能访问绑定教室。</td></tr>
+<tr><td>POST /device/ws-ticket；WS /ws/device?ticket=</td><td>一次性短期连接票据；ready 后进入持久事件同步。</td></tr>
+</tbody></table></div>
+<p>每条消息在创建、复制再发和编辑时单独保存 <code>displayPosition</code>，当前 UI 在发布/编辑页选择“右上角浮窗”或“居中窗口”；展示排序页只管理置顶和顺序。教室级 <code>displayPosition</code> 是旧消息和旧客户端兼容字段，不应作为新消息的统一位置。</p>
+<p>展示设置中置顶最多 50 条，必须唯一、有效、未过期且属于同一教室。<code>pinnedMessageIds</code> 的顺序决定置顶顺序；未置顶公告按 <code>createdAt DESC, id DESC</code> 最新优先。客户端任意提交的 <code>messageOrder</code> 不覆盖服务端顺序。每次修改增加 <code>revision</code>，并在同一事务产生 <code>room.display</code>。</p>
+<h3>5.2 创建公告请求</h3>
+<pre><code class="language-json">{
+  &quot;clientToken&quot;: &quot;4fce5625-852c-43ca-a26e-a416a47c83c2&quot;,
+  &quot;type&quot;: &quot;call&quot;,
+  &quot;roomIds&quot;: [&quot;12&quot;],
+  &quot;studentIds&quot;: [&quot;301&quot;],
+  &quot;destination&quot;: &quot;3 楼教师办公室&quot;,
+  &quot;body&quot;: &quot;请带上班牌&quot;,
+  &quot;displayPosition&quot;: &quot;top_right&quot;,
+  &quot;startAt&quot;: &quot;2026-10-22T09:41:00+08:00&quot;,
+  &quot;expireAt&quot;: &quot;2026-10-22T10:21:00+08:00&quot;,
+  &quot;broadcastTimes&quot;: 0
+}</code></pre>
+<p>call/batch 必须提供一个教室和 <code>destination</code>；call 限 1–3 名学生，batch 限 1–60 名学生。notice 使用标题与正文，不传学生，最多 20 个教室。<code>displayPosition</code> 可省略，省略或旧消息缺少时按 <code>top_right</code> 处理，显式值只能为 <code>top_right</code> 或 <code>center</code>。小程序语音默认 <code>broadcastTimes: 0</code>；允许值为 0、1、2。标题最多 60 字、正文 300 字、地点 40 字，定时开始与有效期均不超过 7 天。</p>
+<p>呼叫与作业标题由服务端生成：<code>呼叫 · 到 &lt;destination&gt;</code>、<code>批量作业 · &lt;count&gt;人 · &lt;destination&gt;</code>。标题不含学生姓名；姓名保存在 <code>speechText</code> 和 <code>targets</code> 快照中。普通通知使用教师标题。无设备教室会被拒绝；首次创建返回 201，幂等命中返回 200，同一 token 配不同内容返回 409。</p>
+<h3>5.3 设备统一 Message 对象</h3>
+<pre><code class="language-json">{
+  &quot;id&quot;: &quot;1024&quot;,
+  &quot;revision&quot;: 1,
+  &quot;type&quot;: &quot;call&quot;,
+  &quot;title&quot;: &quot;呼叫 · 到 3 楼教师办公室&quot;,
+  &quot;body&quot;: &quot;请带上班牌&quot;,
+  &quot;destination&quot;: &quot;3 楼教师办公室&quot;,
+  &quot;displayPosition&quot;: &quot;top_right&quot;,
+  &quot;targets&quot;: [{&quot;studentId&quot;:&quot;301&quot;,&quot;name&quot;:&quot;李明&quot;,&quot;className&quot;:&quot;高三（2）班&quot;,&quot;studentNoSuffix&quot;:&quot;0321&quot;}],
+  &quot;speechText&quot;: &quot;请李明同学到 3 楼教师办公室。请带上班牌。&quot;,
+  &quot;priority&quot;: 1,
+  &quot;roomIds&quot;: [&quot;12&quot;],
+  &quot;startAt&quot;: &quot;2026-10-22T09:41:00+08:00&quot;,
+  &quot;expireAt&quot;: &quot;2026-10-22T10:21:00+08:00&quot;,
+  &quot;createdAt&quot;: &quot;2026-10-22T09:41:02+08:00&quot;,
+  &quot;status&quot;: &quot;active&quot;,
+  &quot;broadcast&quot;: null
+}</code></pre>
+<p>snapshot、message.upsert 与 message.replay 使用同一 Message schema；设备优先按消息自身 <code>displayPosition</code> 定位，缺失时回退 <code>top_right</code>。普通通知的 <code>broadcast</code> 为 null。是否排队播报由当前时间、generation、静默规则和本地播放账本共同决定。</p>
+<h3>5.4 管理与名册接口</h3>
+<div class="table-wrap"><table><thead><tr><th>接口</th><th>要求</th></tr></thead><tbody>
+<tr><td>POST /admin/teachers/:id/update；PUT /admin/teachers/:id/rooms</td><td>小程序使用 POST 更新别名；PATCH 仅供其他客户端兼容。禁止停用最后一个管理员。</td></tr>
+<tr><td>POST /admin/classes；POST /admin/classes/:id/update；DELETE /admin/classes/:id</td><td>创建、编辑或移动、删除班级。移动要求 <code>confirmImpact:true</code>；不存在返回 404，有学生返回 409 <code>CLASS_IN_USE</code>。</td></tr>
+<tr><td>POST /admin/rooms/:id/bind-codes；GET /admin/devices；POST /admin/devices/:id/revoke</td><td>生成 6 位、10 分钟有效、单次绑定码；查看与吊销设备。</td></tr>
+<tr><td>POST /admin/rosters/preview；POST /admin/rosters/xlsx；POST /admin/rosters/commit</td><td>JSON 预检、小程序 XLSX multipart 预检、确认提交。XLSX 字段为 <code>classId,file</code>。</td></tr>
+<tr><td>GET/PUT /admin/settings；GET /admin/messages；POST /admin/messages/:id/revoke</td><td>学校静默设置与管理员公告审计；设置修改产生 <code>room.config</code>。</td></tr>
+</tbody></table></div>
+<p>XLSX 仅接受 <code>.xlsx</code>，最大 5 MiB、最多 1000 行非空数据。默认读取首个工作表前两列“学号、姓名”，也识别常见中英文表头。学号按文本保留前导零；公式不执行。预检有错误时不能提交，预览按管理员和班级隔离并在 24 小时后过期。</p>
+<h3>5.5 错误与访问控制</h3>
+<div class="table-wrap"><table><thead><tr><th>HTTP / code</th><th>前端处理</th></tr></thead><tbody><tr><td>400 / VALIDATION_ERROR</td><td>字段错误对应表单；保留已填数据。</td></tr><tr><td>401 / AUTH_EXPIRED</td><td>重新登录；设备提示重新绑定。</td></tr><tr><td>403 / FORBIDDEN</td><td>提示无权限并清理相应缓存。</td></tr><tr><td>404 / NOT_FOUND</td><td>对象不存在或不可访问；刷新列表。</td></tr><tr><td>409 / IDEMPOTENCY_CONFLICT；409 / CLASS_IN_USE</td><td>内容变化时生成新 token；班级有学生时先处理学生。</td></tr><tr><td>413 / FILE_TOO_LARGE</td><td>XLSX 超过 5 MiB 时重新选择文件。</td></tr><tr><td>422 / CONTENT_REJECTED；429 / RATE_LIMITED；503 / TEMPORARILY_UNAVAILABLE</td><td>显示可理解的修改提示；读取 Retry-After；保留草稿和原 token 安全重试。</td></tr></tbody></table></div></section><section id="s6" class="chapter"><h2><span>06</span>实时同步与投递可靠性</h2>
+<h3>6.1 连接契约</h3>
+<p>连接 /ws/device?ticket=&lt;一次性票据&gt;。票据先通过 HTTPS Bearer token 换取，在连接成功时消费；代理日志必须脱敏查询参数。握手后只订阅已绑定教室，不信任客户端指定 roomId。一个 installationId 只允许一条活跃连接，新连接替换旧连接。</p>
+<p>应用层 ping 每 30 秒一次，pong 带 serverTime；90 秒无有效通信则重连。退避 1、2、4、8、16、30 秒并加随机抖动。每连接限制发送队列 256 条/2MiB、单条 64KiB；慢客户端超过上限断开并重拉快照，不能拖住整个广播器。</p>
+<h3>6.2 事件包</h3><pre><code class="language-json">{
+  &quot;syncEpoch&quot;: &quot;e217d76b-2b5a-43e0-b60d-1a12d2c77070&quot;,
+  &quot;protocolVersion&quot;: 1,
+  &quot;seq&quot;: &quot;2801&quot;,
+  &quot;event&quot;: &quot;message.upsert&quot;,
+  &quot;serverTime&quot;: &quot;2026-10-22T09:41:02+08:00&quot;,
+  &quot;data&quot;: { &quot;id&quot;: &quot;1024&quot;, &quot;revision&quot;: 1 }
+}</code></pre>
+<p>上例 data 仅展示标识位置，实际 message.upsert 必须携带第 5.3 节的完整 Message 对象，不能发送字段残片。</p>
+<div class="table-wrap"><table><thead><tr><th>事件</th><th>载荷与处理</th></tr></thead><tbody><tr><td>message.upsert</td><td>完整对象；首次创建/更新播放 generation 时整体替换，按 id+revision 去重。</td></tr><tr><td>message.revoked</td><td>id、revision；移除展示、停止当前播报、取消待播任务、持久化撤回状态并上报回执。</td></tr><tr><td>message.replay</td><td>完整 Message 对象及新的 broadcast generation；同步消息 revision 并停止同公告旧 generation 的待播轮次。</td></tr><tr><td>room.config</td><td>最新房间配置和 configRevision（学校配置每次变更递增，持久化在 schools 表）；更新静默规则。</td></tr><tr><td>force.resync</td><td>立即启动同步流程；不得直接丢弃仍有效的本地画面。</td></tr></tbody></table></div>
+<p>ready、事件、快照、心跳和回执均携带 syncEpoch 与 protocolVersion；服务器拒绝旧 epoch 回执，客户端遇到 epoch 变化按第 11.2 节重新同步。seq 由 events 表单调递增，按十进制字符串传输。客户端用 BigInt 或十进制字符串比较，不转成普通 Number。跨教室事件导致单个设备看到的 seq 不连续是正常现象，不用“差值不为 1”判断丢失。ts/serverTime 只用于校时，不再作为事件新旧依据。</p>
+<h3>6.3 快照与实时事件的无竞态切换</h3>
+<ol><li>先建立 WebSocket，服务端确认订阅成功后发送 ready；客户端此时缓冲所有业务事件，暂不应用。</li><li>收到 ready 后请求快照。服务端在同一个只读事务里读取有效/未来公告、最新播报任务、房间配置和 events 自增序列的持久高水位（即使事件被清理也不回退），返回 watermark、serverTime。</li><li>客户端原子替换本地消息集合与配置；清除快照中不存在、已撤回或过期消息的待播任务；替换成功后恢复展示。</li><li>丢弃缓冲区 seq ≤ watermark 的事件，按 seq 递增应用其余事件；每次应用同时持久化 lastAppliedSeq。</li><li>再切为实时消费。缓冲溢出、同步过程中断线、快照超时超过 10 秒则重新建立同步，不继续使用半同步状态。</li></ol>
+<p>不提供客户端历史事件补拉接口。重连始终使用上述快照流程；events 是服务端持久发送队列与审计线索。服务端订阅注册和事件扫描的游标更新需要由同一个 dispatcher 协调，避免 ready 前后遗漏事件；按 seq 顺序读取已提交事件，允许重复投递。</p>
+<h3>6.4 提交成功之后不能仅靠内存广播</h3>
+<p>公告变更与 events 必须同事务提交。进程内 dispatcher 扫描已提交事件，低延迟通知只作为唤醒优化；即使服务在“数据库提交后、内存广播前”崩溃，重启后设备断线重连也能恢复真相。dispatcher 崩溃必须触发进程重启或告警，不允许静默停发。</p>
+<p>设备在线时每 60 秒调用 heartbeat，服务端比较本教室最新事件 seq 与设备 lastAppliedSeq；若落后返回 needResync=true。无 WebSocket 超过 60 秒，改为每 60 秒快照轮询；HTTP 也失败则继续离线策略。轮询只同步状态，不重复生成播报轮次。</p>
+<h3>6.5 投递状态的准确语义</h3>
+<p>服务器持久化 → 设备 received → 卡片真正可见 displayed → 语音 played，各环节分别计时。详情页以发布时 message_devices 为分母，展示“原目标 2/3 台已上屏”，并逐项列出设备名；离线、未确认、静默与语音失败不得混成“失败”。</p>
+<p>设备先将回执写入本地待发送表，再批量 HTTPS 上报；收到服务端成功后删除本地待发送项。重复回执按复合主键幂等；上报时还需验证消息属于该设备当前教室。时间统计以服务端收到时间为准，客户端时间只供诊断。</p>
+<div class="warn"><strong>离线撤回的边界</strong> 服务器撤回成功不代表离线设备已移除。离线设备无法立即知道撤回，最迟在重连/轮询或本地到期后移除。为降低旧内容风险，首版离线 10 分钟后隐藏含学生姓名的 call/batch，停止一切新播报；notice 可展示至过期。教师端需显示仍待确认的设备。</div></section><section id="s7" class="chapter"><h2><span>07</span>Windows 10 / 11 大屏</h2>
+<div class="note"><strong>当前原则：电脑由老师和课件使用。</strong>已绑定设备完全在系统托盘后台待机，不显示常驻公告墙、公告卡或时钟，也不切换窗口。只有收到新消息或定时消息到点生效时，才按消息自身选择的右上角或屏幕中央显示约 15 秒提醒，随后隐藏。居中窗口约 760×480、正文大字；右上角浮窗约 460×300。启动、刷新、重连和快照恢复都不补弹历史。公告有效期决定能否接收或显示，不等于提醒持续时长。</div>
+<h3>7.0 默认运行与提醒策略</h3>
+<ul><li><strong>完全托盘待机：</strong>首次运行可打开绑定页；绑定成功后自动收回托盘。已绑定后启动、刷新和断线重连都不显示主窗口，不出现常驻公告墙、公告卡或时钟。关闭设置窗口回到托盘，不阻止系统关机，也不拦截 Alt+F4 或任务管理器。</li><li><strong>两类短时提醒：</strong>按消息自身的 <code>displayPosition</code> 选择展示方式。居中窗口约 760×480，位于当前工作区中央并使用大字正文；右上角浮窗约 460×300，保持短时可读。Electron 使用 <code>showInactive()</code>、<code>focusable:false</code>、跳过任务栏和默认鼠标穿透；不得调用 focus、全屏化或把课件最小化。</li><li><strong>短时显示：</strong>每条提醒约 15 秒后自动消失，随后回到完全托盘待机。提醒直接呈现公告正文和必要名单，不截成必须另开公告墙或托盘全文页才能阅读的摘要。提醒隐藏不等于公告撤回或提前过期。</li><li><strong>并发与暂停：</strong>并发消息按队列依次短时提醒，单条约 15 秒；结束后不留下公告卡、汇总页或时钟。暂停提醒时不弹窗、不播报，恢复不补弹暂停期间的旧消息，只处理后续新提醒。</li><li><strong>不重复干扰：</strong>以 syncEpoch/messageId/revision 或提醒任务 generation 持久去重。启动、页面刷新、断线重连和快照恢复只同步状态，不补弹历史；只有新消息、到点定时消息或明确重播的新 generation 可提醒一次。</li><li><strong>声音默认关闭：</strong>本地管理员明确开启后，且消息允许、时间有效、非学校静默时段时才可播放；不修改其他应用音量、不暂停课件、不改变默认音频设备。设备静音时写 skipped(reason=device_muted)。</li><li><strong>托盘菜单：</strong>提供暂停/恢复提醒、设备设置和退出。设置只在老师主动操作时显示并可获得焦点；公告提醒始终保持不可聚焦。当前版本不提供常驻公告墙或“托盘查看全部有效公告”的入口。</li><li><strong>展示回执：</strong>只有提醒浮窗实际进入可见区域才写 displayed；收到但暂停、排队中或未显示时只写 received。提醒隐藏不是撤回或过期。</li></ul>
+<p>普通无边框全屏课件应验证提醒不抢焦点；独占全屏、受保护桌面、锁屏等场景不承诺能够覆盖，也不强行切换。此时继续后台接收，避免延迟后补弹失去时效的提醒。浏览器截图只证明网页渲染、显示/隐藏和刷新不补弹等页面行为，不能证明 Windows 原生尺寸、完全托盘待机、焦点或鼠标穿透；Win10/11 实机仍需验收。</p>
+<h3>7.1 支持矩阵与安装前检查</h3><div class="table-wrap"><table><thead><tr><th>项目</th><th>首版约束 / 验证</th></tr></thead><tbody><tr><td>操作系统</td><td>Windows 10 / Windows 11 x64，记录实际版本、版本号和构建号；不承诺 Win7、32 位或 Windows ARM 兼容。</td></tr><tr><td>硬件基线</td><td>双核 CPU、4GB 内存、至少 1GB 可用磁盘；必须使用学校真实设备验证，而非只在开发机验收。</td></tr><tr><td>显示</td><td>1920×1080 主设计，兼容 1366×768、1280×720、3840×2160；居中提醒约 760×480，右上角浮窗约 460×300。Windows 缩放 100%、125%、150% 均需实机检查。</td></tr><tr><td>声音</td><td>安装时检测中文 voice、默认输出设备、音量和静音，提供“测试播报”；缺少中文 voice 时提示管理员安装，不静默切换为不合适语言。</td></tr><tr><td>运行账户</td><td>推荐学校管理的专用标准用户；安装和系统配置可需管理员权限，应用正常运行不要求管理员权限。</td></tr><tr><td>兼容性锁定</td><td>Electron 与 sql.js 版本由 package-lock 固定；Win10/Win11 的窗口、音频、托盘和安装兼容性仍需物理机验收。系统安全支持状态由学校运维单独确认。</td></tr></tbody></table></div>
+<h3>7.2 双尺寸提醒视觉规范</h3>
+<div class="table-wrap"><table><thead><tr><th>展示方式</th><th>位置与尺寸</th><th>内容与边界</th></tr></thead><tbody><tr><td>居中窗口</td><td>当前工作区居中，约 760×480</td><td>正文使用大字，优先承载标题、正文、地点和较长名单；不可聚焦、不可点击操作。</td></tr><tr><td>右上角浮窗</td><td>右上角，约 460×300，距工作区边缘保留安全间距</td><td>紧凑显示标题和正文，保持短时可读；仍直接展示消息内容，不要求另开界面查看全文。</td></tr><tr><td>统一行为</td><td>由逐消息 <code>displayPosition</code> 选择</td><td>约 15 秒自动消失；默认静音、鼠标穿透、跳过任务栏，不抢课件焦点。旧消息缺少字段时按 <code>top_right</code> 兼容处理。</td></tr></tbody></table></div>
+<div class="note"><strong>非常驻界面</strong>已绑定设备没有常驻公告墙、公告卡、页码或时钟。两类提醒消失后只保留托盘进程；启动、刷新和重连不会重新显示已有公告。</div>
+<h3>7.3 提醒排版与可读性</h3>
+<ul><li>居中窗口以大字正文为视觉主体，标题、正文、地点、学生名单和必要元信息在约 760×480 内换行、缩放或紧凑排版，不得溢出或只截成摘要。</li><li>右上角浮窗约 460×300，使用清晰的标题和正文层级；内容较长时仍保持纯文本可读，不通过后续自动页面替换内容。</li><li>公告、姓名和地点按纯文本渲染。最多 60 人的作业名单和最长正文必须在单次提醒窗口内完成可读性验收；如果约 15 秒内无法读清，应缩短文案或调整排版，不能依赖公告墙、自动轮换或托盘全文页兜底。</li><li>每条提醒由主进程管理约 15 秒关闭计时，即使渲染器异常也回到托盘待机。提醒之间不自动轮换公告卡、不显示页码、不常驻学校名或时钟，也不提供“查看全部有效公告”的桌面入口。</li><li>提醒不覆盖时应用没有可见桌面窗口。浏览器截图只证明网页样式和交互行为；Win10/11 的原生窗口尺寸、显示缩放、托盘、焦点和鼠标穿透必须另做物理机验收。</li></ul>
+<h3>7.4 桌面架构与安全边界</h3>
+<p>主进程负责设备凭据、网络同步、本地 SQLite、回执队列、TTS 与更新；Vue 渲染进程只负责可见内容与交互。启用 contextIsolation、sandbox，关闭 nodeIntegration；preload 仅暴露带 schema 校验的有限 IPC。只加载打包资源，设置 CSP，禁止任意导航和新窗口，公告文本以纯文本渲染。</p>
+<p>设备凭据使用 Windows 当前用户保护的安全存储；缓存位于当前运行账户的应用数据目录。更换账户/还原系统可能丢失凭据，应重新绑定；管理员安装与标准用户运行必须验证目录权限。涉及本地数据库的事务在主进程/worker 串行执行，不能阻塞渲染。</p>
+<h3>7.5 托盘启动与维护</h3>
+<p>Windows 标准用户登录后自启；绑定成功后完全后台托盘待机，不显示常驻公告墙、公告卡或时钟。不配置独占 kiosk、不强制屏蔽快捷键、不默认禁止休眠。退出可确认但不得困住用户；学校如需强制常驻应另行约定系统策略，不属于本版默认行为。</p>
+<p>绑定与设置窗口只能在首次启动或托盘主动操作时显示；新增公告只能控制不可聚焦的 overlay 窗口，不能复用设置窗调用 show。提醒关闭计时由主进程管理，即使渲染器异常也应及时隐藏。设备维护 PIN 只保护敏感设置，不阻止老师暂停提醒或退出应用。</p>
+<p>设置包含默认显示器、设备语音开关、测试语音和开机登录自启；提醒约 15 秒后自动关闭，设置不提供公告墙或常驻显示开关。消息展示位置由发布/编辑流程逐条选择，不在设备设置或展示排序页统一修改。解绑需确认。配置持久保存，默认仅提醒、静音、不抢焦点。显示器拔插后按现有工作区重新定位，不能把窗口移到不存在的显示器。</p>
+<h3>7.6 缓存与时间</h3>
+<p>本地 SQLite 保存当前/未来有效公告、快照水位、配置、播报账本与待发送回执。启动先加载经过有效期校验的缓存并后台同步，但保持完全托盘待机，不显示主窗口、公告卡或时钟，也不因启动、刷新或重连重新弹出历史提醒。过期/撤回时立即移除可见内容并清除待播任务；历史学生名单在本地不做 7 天无差别保留。</p>
+<p>每次快照/心跳利用请求往返中点估计服务器偏移，丢弃高延迟异常样本。进程内用单调时钟推进已校准时间，避免用户改系统时钟导致公告复活；系统休眠恢复后暂停新播报并重新校时。离线重启若无法可靠确认时间，保持托盘待机并记录“正在校时/网络异常”状态，不补弹历史、不播报，也不展示可能已经过期的姓名内容。</p>
+<h3>7.7 安装与更新</h3>
+<p>交付签名的 Windows 安装包、卸载程序与版本信息；更新包验证签名及哈希，通过 HTTPS 下载到独立版本目录。仅在管理员配置的维护窗口、没有正在播放语音时切换。新版本启动与数据库打开自检失败则回到上一已验证版本。</p>
+<p>缓存 schema 升级采用兼容新增字段优先；破坏性迁移前备份并明确恢复策略，不能只回滚 exe 却保留不兼容数据库。服务器数据库与设备缓存升级分别演练。首版小范围灰度一间教室，再逐步扩大。</p></section><section id="s8" class="chapter"><h2><span>08</span>播报、重播与静默时段</h2>
+<h3>8.1 Windows TTS</h3>
+<p>实现独立的 .NET Windows 语音适配器，通过受控命名管道接收结构化 JSON，使用系统语音能力执行播放与停止；禁止拼接 shell 命令。适配器崩溃可单独重启，大屏仍展示公告。选择并保存通过实机测试的中文 voice；无声卡、音频设备失效、语音失败有独立状态。</p>
+<p>call 由模板生成“请 {姓名} 同学到 {地点}。{补充说明}”；batch 生成“请屏幕名单中的 {N} 位同学，{事项}”，完整姓名在收到提醒时的窗口正文中呈现；notice 始终不进播报队列。禁止直接朗读未校验的 HTML、URL 或内部字段。</p>
+<h3>8.2 去重和重播批次</h3>
+<p>本地去重键为 <code>(messageId, generation, round)</code>，设备 ID 由本地安装隔离；服务端回执键再加 deviceId。首发 generation=0；每次合法手动重播，在事务中将 generation 加 1、revision 加 1，并生成新的 broadcast_job 和 message.replay。重试同一 clientToken 返回相同 generation。</p>
+<p>设备语音默认关闭；只有初始 <code>broadcastTimes</code> 为 1 或 2 时才创建首发播报任务，且每个 generation 最多播放 2 遍。调用重播时 times 为 1 或 2；仅限已经生效且未过期、未撤回的 call/batch。未生效公告不可手动提前播报。人工重播不绕过静默设置。</p>
+<pre><code class="language-sql">CREATE TABLE local_broadcast (
+ sync_epoch TEXT NOT NULL,
+ message_id TEXT NOT NULL,
+ generation INTEGER NOT NULL,
+ round INTEGER NOT NULL,
+ state TEXT NOT NULL CHECK(state IN
+   (&#x27;queued&#x27;,&#x27;playing&#x27;,&#x27;played&#x27;,&#x27;skipped&#x27;,&#x27;failed&#x27;)),
+ reason TEXT,
+ updated_at INTEGER NOT NULL,
+ PRIMARY KEY(sync_epoch,message_id,generation,round)
+);</code></pre>
+<h3>8.3 队列规则</h3>
+<ol><li>只有当前有效、未撤回且 notBefore ≤ now &lt; deadlineAt 的任务才入队。每次播放前再次检查设备本地语音开关、暂停提醒、消息状态、学校静默和任务截止时间。</li><li>单消费者串行播放，同公告两遍间隔 3 秒；不得叠音。所有后台任务均以 syncEpoch 分区；无有效校时或当前已判定离线时，不启动新的播报轮次。call 优先于 batch，同类型按入队时间先到先播。</li><li>新 call 可打断正在播放的 batch；未完成轮次回到队尾，恢复后从该轮开头重播。call 不互相打断，避免连续呼叫相互饿死。</li><li>撤回、到期或新 generation 替换旧任务时立即停止对应声音并清空旧队列；快照替换也执行同样的清理。</li><li>初始任务 deadlineAt=min(expireAt,startAt+5 分钟)；手动重播为 min(expireAt,服务器当前时间+2 分钟)。每个截止时间明确下发，离线很久后不补播过时呼叫。</li><li>静默时段内当前轮停止并标记 skipped(reason=quiet_hours)，同批后续轮次也跳过；静默结束不补播。管理员可配置按星期与时段重复的规则，跨午夜拆为两段。</li></ol>
+<div class="note"><strong>崩溃时的实际保证</strong> 物理声音播放与数据库提交无法组成同一事务，本系统不承诺“恰好播放一次”。重启后若账本停在 playing，为避免重复喊人，按 skipped(reason=crash_uncertain) 处理并回执；教师可手动发起新 generation。正常中断恢复与进程崩溃分别处理。</div>
+<h3>8.4 语音故障与回执</h3>
+<p>同一轮语音引擎启动失败只做一次受限重试；仍失败则终态 failed，记录 reason 并提示管理员。只在 TTS 完成回调后标记 played。已播放、已跳过和最终失败均为终态，重复回执不覆盖为其他状态；短暂队列中断不提前写终态回执。</p>
+<p>重连只恢复最新 generation 且仍在截止时间内的未终态轮次。需要“恢复后仍重播”的场景由教师显式操作，不依赖重复推送触发。教师端展示每台设备的实际 played/skipped/failed，不能只展示计划次数。</p></section><section id="s9" class="chapter"><h2><span>09</span>安全、隐私与内容检测</h2>
+<h3>9.1 鉴权和设备绑定</h3>
+<ul><li>教师会话和设备令牌均使用密码学安全随机值，数据库保存摘要，日志不记录明文。每次请求校验停用、吊销、到期和目标权限。</li><li>绑定码为 6 位数字、10 分钟有效、一次消费；使用带服务端密钥的 HMAC 摘要存储，生成时检查有效码冲突。按来源 IP 和 installationId 限流，单来源 5 次/分钟，持续失败退避并告警；不向未认证方暴露教室名。</li><li>同事务校验未消费且未过期并设置 consumed_at；绑定响应丢失时不允许仅靠 installationId 取回凭据，由管理员重新发码。installationId 是随机安装标识，不宣称不可伪造的硬件身份。</li><li>设备解绑/吊销后立即关闭在线连接；离线设备依第 6.5 节隐藏个人内容，重新联网时清空失效授权缓存。</li><li>撤回、重播和回执都校验消息归属；客户端传入 teacherId/deviceId 不作为权限依据。</li></ul>
+<h3>9.2 微信服务端能力</h3>
+<p>wx.login 的 code 仅传到服务端换取身份；AppSecret、access_token 不进入小程序。access_token 刷新采用单飞合并并按服务端实际返回的过期时间提前刷新；遇到明确 token 失效时刷新后仅重试一次，避免每个请求同时刷新。</p>
+<p>发布前对最终标题、正文、学生姓名展示和播报文本执行微信内容检测。请求超时、无法判定或服务错误时不发布，保留草稿提示稍后重试。不要把“接口请求成功”误当成内容通过；需要按官方实际返回的审核结论判定。内容摘要和 requestId 可用于排查，日志不记录学生名单全文。</p>
+<h3>9.3 数据最小化</h3>
+<p>学生资料仅使用班级、学号、姓名；手机号不是教师登录必需字段，首版不采集。界面避免对外分享含学生姓名的截图；大屏是公共空间，默认离线超时隐藏个人信息。导入临时文件与预检数据最多保留 24 小时，导入完成后立即删除原始文件。</p>
+<p>备份包含学生资料，必须限制访问并加密；学校确定保留周期、账号退出后的处理方式和可联系的管理员。名册一经展示即属于终端可访问数据，设备必须处于学校控制下；本地凭据加密并不等于公告缓存自动加密。日志导出默认脱敏，禁止混入设备 token、微信会话密钥和完整名册。</p>
+<h3>9.4 上线核验事项</h3>
+<p>小程序主体、服务类目与资质、备案、合法服务器域名、隐私声明及内容安全接入，必须由学校在微信官方控制台按实际功能核验。v1.0 中固定备案天数和主体一致性的绝对说法，改为上线前核验事项；本文不将平台审核周期当作可承诺工期，也不替代平台审核结论。</p>
+<p>系统不能替代学校应急广播或需要保证即时送达的安全通知渠道。本文定位仍是日常教室公告。</p></section><section id="s10" class="chapter"><h2><span>10</span>关键流程与边界场景</h2>
+<h3>10.1 发布</h3>
+<div class="process"><span>输入与本地校验</span><b>→</b><span>身份与内容检测</span><b>→</b><span>事务写入 + 事件</span><b>→</b><span>设备接收与展示</span><b>→</b><span>回执更新详情</span></div>
+<p>一次请求是否成功由数据库提交决定；客户端超时保留 clientToken 重试。未保存成功绝不能推给设备。内容检测后若学生/权限已改变，应重新验证并拒绝已失效的请求。事务提交后网络推送失败不撤销公告，靠持久事件、心跳与快照收敛。</p>
+<h3>10.2 定时生效与到期</h3>
+<p>未来公告进入快照和本地缓存但不展示/播放；设备每秒使用校准时间检查。到 startAt 后展示，到 expireAt 后停止显示和语音，撤销队列任务并提交 expired 回执。若设备恢复时已经超过播报截止时间，只展示仍有效的公告，不补播。</p>
+<h3>10.3 编辑、删除与撤回</h3>
+<p>active 且未到期的公告可编辑。编辑页显示“目标教室（已锁定）”，可修改类型、内容、学生、地点、时间、播报设置和展示位置；服务端拒绝与原始 <code>roomIds</code> 不一致的请求。成功编辑增加 revision，并在同一事务写入 <code>message.upsert</code> 与 <code>message.update</code> 审计；已撤回或已到期公告不能编辑。</p>
+<p>记录卡“删除”调用 <code>DELETE /messages/:id</code>，实际执行幂等撤回：服务器修改 status/revision，从所有目标教室移除置顶，写入 <code>message.revoked</code> 和 <code>message.revoke</code> 审计，同时保留消息与投递回执。界面先显示“已撤回，正在等待设备确认”；设备收到后停止该公告语音，清空队列和画面，写入回执。重复删除或撤回返回相同状态，不重复产生业务变更。</p>
+<h3>10.4 发布后权限变化</h3>
+<p>教师失去任一目标教室权限后，禁止再次向该教室发布、编辑或重播，也不能自行删除该公告。原有公告仍按原有效期展示；学校管理员可主动撤回。教师的历史记录可以查看自己的公告摘要，但不因此获得最新学生名册或设备凭据。</p>
+<h3>10.5 典型边界决策</h3><div class="table-wrap"><table><thead><tr><th>场景</th><th>确定行为</th></tr></thead><tbody><tr><td>通知对象的某教室无设备</td><td>提交前提示并阻止向无设备教室发布；其他教室可由教师移除该目标后继续。</td></tr><tr><td>设备绑定期间已有公告</td><td>同步当前有效状态并记录为“新增设备”，不改变原投递分母；启动、刷新、绑定或重连不补弹这些历史公告。之后的新消息或到点定时消息照常提醒。</td></tr><tr><td>同名学生</td><td>学号作为导入唯一标识，UI 显示班级与尾号，不合并。</td></tr><tr><td>班级换教室</td><td>管理员操作前提示活动公告不自动迁移；必要时撤回并重新发布，新公告按最新归属校验。</td></tr><tr><td>机器时钟偏差很大</td><td>以服务器校准时间计算；未校准时不展示不确定有效性的学生信息、不播报。</td></tr><tr><td>收到重复事件</td><td>按 seq、message revision、本地播放复合键多层去重；重复回执幂等。</td></tr><tr><td>快照时收到撤回</td><td>按水位流程缓冲和应用，不能让旧快照复活已撤回公告。</td></tr><tr><td>静默中手动重播</td><td>接口可返回明确 QUIET_HOURS 错误并说明下一个可播时间；不创建无意义的新任务。若规则在提交后变化，设备仍按最新静默设置跳过。</td></tr><tr><td>播报中断网</td><td>当前一轮可完成；网络判定离线后不启动新轮次，待同步后按截止时间决定是否继续。</td></tr></tbody></table></div></section><section id="s11" class="chapter"><h2><span>11</span>部署、备份与运维</h2>
+<h3>11.1 三端自动构建与交付配置</h3>
+<p>v1.5 已把三端交付路径写入仓库配置。下表描述配置基线与目标流程，不代表 GitHub 远程构建、产物下载、Windows 安装或 VPS 上线已经完成。</p>
+<div class="table-wrap"><table><thead><tr><th>交付面</th><th>已配置内容</th><th>当前边界</th></tr></thead><tbody><tr><td>Go 服务端镜像</td><td><code>server/Dockerfile</code> 使用多阶段构建，运行容器采用非 root 用户并提供 <code>/healthz</code>；<code>Server image</code> 工作流校验 Compose、构建 API 镜像、启动容器做健康检查、推送 <code>ghcr.io/alumos/tipsforclass-api</code>，并导出带 SHA-256 的 Linux amd64 离线镜像包。</td><td>仅记录工作流定义；未据此声称远程镜像构建、GHCR 推送或离线包下载已完成。</td></tr><tr><td>国内 VPS 部署</td><td><code>compose.yaml</code> 提供 API 与可选 <code>proxy</code> profile：SQLite 持久卷、仅本机暴露 API 端口、健康依赖和 Caddy HTTPS。<code>deploy/Caddyfile</code> 将 <code>/api/*</code>、<code>/ws/*</code>、<code>/healthz</code>、<code>/readyz</code> 反代到 API。国内 VPS 可拉取 GHCR 镜像，也可 <code>docker load</code> 离线镜像包后以 <code>--no-build</code> 启动。</td><td>真实域名、DNS、ICP 备案、防火墙、证书签发、GHCR 拉取或离线包实装仍需目标 VPS 验收。</td></tr><tr><td>项目检查</td><td>GitHub Actions <code>Project checks</code>（CI）工作流在 Ubuntu 上执行 <code>./scripts/check.sh</code> 与 <code>node scripts/smoke.mjs</code>，覆盖 Go、小程序结构、大屏构建及真实 HTTP/WebSocket 协议路径的检查入口。</td><td>配置存在不等于远程 CI 已运行或通过；以对应 Actions 运行日志为准。</td></tr><tr><td>Windows 安装包</td><td><code>Windows installer</code> 工作流在 <code>windows-2022</code> 编译中文 TTS 适配器、测试 Electron、生成 x64 NSIS 安装包，并写入 <code>SHA256SUMS.txt</code>；推送 <code>v*</code> 标签生成 Release 的条件已配置。</td><td>Windows 物理机安装、签名证书、卸载、更新回滚和真实课堂行为均未由配置本身证明。</td></tr></tbody></table></div>
+<div class="warn"><strong>配置边界</strong>三端工作流、Compose/Caddy、NSIS 与 <code>v*</code> Release 触发条件都是仓库中的可复核配置。没有远程运行日志、下载产物、Release 记录或目标设备验收记录时，不能写成已远程构建、已发布或已验收。</div>
+<h3>11.2 服务器交付物</h3>
+<ul><li>Go 二进制、Dockerfile、配置示例、SQL 迁移、systemd unit、Caddy/Nginx 配置、初始化命令。</li><li><code>compose.yaml</code>、Caddy HTTPS/WSS 反向代理、固定数据卷、健康检查与离线镜像导入步骤。</li><li>域名与 HTTPS/WSS 配置、微信服务器域名设置说明、最小端口清单。</li><li>SQLite 在线备份/恢复命令、检查清单、服务升级和回滚说明。</li><li>保留原生二进制运行方式；容器部署使用同一持久目录，不把 SQLite 放入临时容器文件系统。</li></ul>
+<h3>11.3 备份与恢复</h3>
+<p>每小时执行一次一致性在线备份，保留最近 24 份小时备份和 7 份每日备份；至少一份加密复制到不同主机或受控存储。不能直接只复制正在使用的 .db 文件并忽略 WAL。通过驱动支持的 SQLite backup API 或经验证的 VACUUM INTO 方案生成快照，产物完成后计算校验和。</p>
+<p>恢复目标 RPO ≤ 1 小时、RTO ≤ 30 分钟，前提是备份任务按计划成功并可访问。每周自动恢复到隔离目录运行 integrity_check，每次上线演练业务关联和登录/快照恢复。备份失败、磁盘剩余不足 20%、持续数据库 busy 均需告警。</p>
+<p><strong>恢复后序号回退：</strong>数据库回档可能让事件 seq 小于设备本地水位。恢复脚本生成新的外部 syncEpoch（存储在受控配置中），服务 ready、快照和心跳均返回该值；epoch 变化时客户端清空事件水位后全量同步，不能丢弃新库事件。消息缓存、播放账本和回执均以 syncEpoch 分区；epoch 变化后停止旧播放，丢弃旧 epoch 的待发送回执并保留脱敏诊断。首次新 epoch 快照中的历史播报任务全部标记 skipped(reason=restore_uncertain)，只同步有效状态且不自动弹窗，避免重放；之后新的公告或手动重播照常处理。管理端须提示回档期间新增公告可能丢失，必要时人工重新发布。</p>
+<h3>11.4 监控与日志</h3>
+<p>记录 requestId、接口耗时、错误码、设备在线数、dispatcher 最近发送 seq/时间、数据库锁等待、回执延迟、TTS 失败次数、磁盘与备份年龄。healthz 不包含敏感信息，metrics 仅在本机或授权运维网络可见；首版可使用结构化日志与简单告警，不要求搭建大型监控平台。</p>
+<p>设备 3 分钟无心跳标记离线，持续 10 分钟出现在管理页异常列表。通知渠道由学校配置；未接入外部通知时不得宣称会自动发微信告警。</p>
+<h3>11.5 升级策略</h3>
+<p>服务器升级前做备份和迁移预检查；停止写入后执行迁移并启动新版本，自检后恢复入口。数据库不兼容回滚需恢复备份并明确丢失窗口，不能简单替换程序。设备协议含 protocolVersion，首版定义为 1；不兼容版本返回明确升级指引，兼容新增字段可忽略。</p>
+<p>容器升级优先固定镜像标签或离线包校验值，并保留上一版镜像；Compose/Caddy 配置变更先在测试环境验证。GitHub Actions 的远程运行结果、Release 资产和目标 VPS 的证书续期仍需按部署记录单独验收。</p></section><section id="s12" class="chapter"><h2><span>12</span>验收标准与测试用例</h2>
+<p>验收结果按环境分层记录。Mac 自动化通过不自动证明微信或 Windows 原生行为已经通过；三端自动构建配置存在也不等于 GitHub 远程流水线已运行通过。</p>
+<div class="table-wrap"><table><thead><tr><th>层级</th><th>当前状态</th><th>覆盖内容</th></tr></thead><tbody><tr><td>1. Mac 自动化与浏览器</td><td><strong>已通过</strong></td><td>Go 测试与 vet；小程序逻辑、模板结构、页面配置和事件处理器检查；大屏测试及 Vue/Electron 构建；真实 HTTP/WebSocket 核心场景；Chrome 1440×1000 下后台待机与两种提醒位置的网页渲染、约 15 秒隐藏与刷新不补弹历史；居中正文约 30px，右上角正文约 22px。</td></tr><tr><td>2. 三端自动构建配置</td><td><strong>已配置 / 待远程验证</strong></td><td><code>Project checks</code>、<code>Server image</code>、<code>Windows installer</code>；Go 服务端 Docker 镜像、GHCR/离线包、Compose + Caddy、Windows x64 NSIS + SHA-256 及 <code>v*</code> Release 触发条件。当前仅把仓库配置视为基线，不据此宣称远程运行已发生或通过。</td></tr><tr><td>3. 微信开发者工具与真机</td><td><strong>待验证</strong></td><td>正式编译、真实登录、内容安全、域名、iOS/Android UI、软键盘、弱网、ICP 备案与平台提审。</td></tr><tr><td>4. Win10/11 物理机</td><td><strong>待验证</strong></td><td>完全托盘待机、约 760×480/460×300 原生提醒尺寸、焦点、鼠标穿透、多显示器、TTS、NSIS 安装/卸载、签名、SHA-256 校验、更新和长期运行。</td></tr></tbody></table></div>
+<div class="note"><strong>证据边界</strong>Mac 浏览器截图只能证明网页渲染、可见/隐藏和刷新不补弹等页面行为；Win10/11 原生窗口、完全托盘待机、不抢课件焦点与鼠标穿透仍须物理机验收。工作流文件、Compose/Caddy 配置、NSIS 配置与标签触发条件只能证明仓库已定义相应流程，不能替代 Actions 运行日志、可核验产物或目标环境记录。</div>
+<h3>12.1 自动构建与交付验收</h3>
+<ul class="checks"><li><strong>项目检查：</strong>以 <code>Project checks</code> 的远程运行日志和退出状态为准；本稿只记录工作流配置。</li><li><strong>服务端镜像：</strong>分别验证 GHCR 拉取与离线镜像包导入，二者都应能启动 API、通过 <code>/healthz</code>，并由 Caddy 提供 HTTPS/WSS；真实 VPS 还需验证 DNS、ICP 备案、证书续期和持久卷恢复。</li><li><strong>Windows 安装包：</strong>核对 NSIS 安装包与 <code>SHA256SUMS.txt</code>，再在 Win10/11 x64 物理机完成安装、自启、卸载、升级与回滚。签名证书和正式分发渠道是独立验收项。</li><li><strong>版本 Release：</strong>推送 <code>v*</code> 标签生成 Release 的触发条件已配置；只有实际产生并可下载核验的安装包与校验和，才算发布验证完成。当前文档不声称该推送或 Release 已发生。</li></ul>
+<h3>12.2 必测故障路径</h3>
+<ul class="checks"><li>并发提交相同 clientToken 只产生一条公告；同 token 改内容返回 409。</li><li>伪造 roomIds/studentIds、跨教师撤回/重播、设备读取其他教室均被拒绝。</li><li>绑定码并发消费只有一个成功；过期和响应丢失后可重新生成恢复。</li><li>数据库提交后立刻杀进程，重启后公告仍能由快照恢复。</li><li>快照读取前、中、后发生新公告、撤回和重播，最终状态一致。</li><li>重复事件和重复回执不重复播报；手动重播的新 generation 正常播放。</li><li>断网、HTTP 可用但 WS 不通、休眠唤醒、时间跳变和缓存损坏均有恢复路径。</li><li>60 人名单和最长正文在约 760×480 居中提醒或约 460×300 右上角浮窗内不溢出、不依赖公告墙或自动轮换；约 15 秒内关键内容可读。</li><li>静默跨午夜、任务过期、撤回时正播音、中文语音缺失和声卡切换分别验证。</li><li>Win10/11 安装、托盘自启、完全后台待机、标准用户、显示器拔插、更新失败和数据库升级回滚。</li><li>在 PPT/WPS/浏览器课件/视频播放时验证前台窗口句柄不变、键盘不中断、浮层区域鼠标穿透、两类提醒尺寸、约 15 秒隐藏和默认静音。</li><li>启动、刷新、绑定和重连不显示常驻公告墙、公告卡或时钟，也不补弹历史公告；暂停期间只接收，恢复不补弹。</li><li>Compose 配置可解析，GHCR 与离线镜像两种交付路径均可启动；Caddy 能完成 HTTPS/WSS 反代、证书续期和 API 健康检查。</li><li>NSIS 安装包的 SHA-256 与发布清单一致，安装、升级、卸载和失败回滚在物理机可复现。</li><li>备份可恢复；恢复后的 syncEpoch 强制重新同步。</li></ul>
+<h3>12.3 自动化测试重点</h3>
+<p>Go 测试覆盖权限、时间窗口、幂等、播报 generation、静默、逐消息展示位置、编辑目标教室锁定、删除即撤回、共享置顶与顺序以及 XLSX；SQLite 集成覆盖事务、绑定码、快照水位和重复回执。协议联调使用真实 HTTP/WebSocket 与临时数据库；小程序检查页面结构、事件处理器和模板表达式。复现命令与覆盖类别见 <code>docs/verification.md</code>。</p></section><section id="s13" class="chapter"><h2><span>13</span>里程碑与待确认事项</h2>
+<h3>13.1 分阶段交付</h3>
+<div class="table-wrap"><table><thead><tr><th>阶段</th><th>产出</th><th>通过条件</th></tr></thead><tbody><tr><td>M0 · 本地实现完成</td><td>Go 服务端、微信原生小程序、Vue/Electron 公告助手；三类公告、逐条展示位置、编辑与删除、共享置顶/顺序、班级管理、XLSX 名册与默认静音</td><td>代码可构建，核心创建、展示、回执、撤回和名册导入流程可在本地联通。</td></tr><tr><td>M1 · Mac 自动化通过</td><td>Go 测试与检查、小程序逻辑与模板检查、大屏测试与构建、HTTP/WebSocket smoke 与 Mac Chrome 页面行为验证</td><td>仓库检查通过，协议、页面结构、两类提醒的网页渲染、约 15 秒隐藏、刷新不补弹历史和共享排序结果可复现。</td></tr><tr><td>M2 · 三端自动构建配置完成</td><td>GitHub Actions <code>Project checks</code>（CI）、<code>Server image</code>、<code>Windows installer</code>；Go Docker 镜像、Compose + Caddy、GHCR/离线镜像、Windows x64 NSIS + SHA-256 与 <code>v*</code> Release 触发条件</td><td>仓库配置可解析且与文档一致；远程运行、产物下载、Release 和安装结果另以实际记录验收。</td></tr><tr><td>M3 · 微信环境待验证</td><td>微信开发者工具正式编译、真实登录与状态、原生 API、内容安全和 iOS/Android 适配</td><td>目标手机完成登录、发布、记录查询、撤回及权限异常验证；ICP 备案、域名与隐私配置符合平台要求。</td></tr><tr><td>M4 · Windows 物理机待验证</td><td>安装与自启、完全托盘待机、两类原生提醒尺寸、非激活显示、鼠标穿透、中文 TTS、多显示器与离线恢复</td><td>Win10/11 目标设备完成托盘待机、760×480/460×300 原生窗口、课堂前台窗口焦点、穿透、音频、NSIS 安装更新及 SHA-256 校验验收。</td></tr><tr><td>M5 · 学校试点加固</td><td>真实名册、身份审批、域名与备案、备份恢复、容量与 72 小时稳定性</td><td>完成试运行、问题收敛、升级回滚演练与学校签收。</td></tr></tbody></table></div>
+<p>当前状态为“三端自动构建已配置、真实目标环境待验收”：本地实现与 Mac 自动化已完成，仓库已定义项目检查、服务端镜像和 Windows 安装包流程；微信开发者工具/真机、Windows 物理机、ICP 备案、签名证书、小程序审核以及远程流水线结果仍需实际验收。本文不把配置写成已完成发布。</p>
+<h3>13.2 建议直接采用的默认方案</h3>
+<ul><li>Go + SQLite 单实例；生产 VPS 使用 <code>compose.yaml</code> 与 Caddy HTTPS，国内网络可优先选择离线镜像包，网络条件允许时拉取 GHCR 镜像；暂不引入 PostgreSQL/Redis。</li><li>小程序采用浅色卡片、深绿主色、三个底部入口；呼叫学生与作业布置限单教室，普通通知最多 20 个教室。</li><li>Windows 使用老师现有账户登录后托盘自启；绑定后完全后台待机，仅新消息或到点定时消息显示约 760×480 或约 460×300 的短时提醒。默认静音、鼠标穿透、不抢焦点，取消首版默认 kiosk 系统锁定。</li><li>Windows x64 采用 NSIS 安装包并随附 SHA-256；配置代码签名证书后再进行正式分发，<code>v*</code> 标签用于生成版本 Release。</li><li>静默时段提供配置，首次部署由管理员确认后启用；默认不凭空设置学校作息。</li><li>当前消息支持原地编辑，原目标教室保持锁定；编辑增加 revision 并同步新内容。记录页删除即撤回，保留消息、投递回执和审计；旧语音回执按 generation 与新 revision 分开记录。</li></ul>
+<h3>13.3 启动前需学校提供的信息</h3><div class="table-wrap"><table><thead><tr><th>需要确认</th><th>影响</th></tr></thead><tbody><tr><td>Win10/11 版本、构建号、是否还原卡、权限、屏幕与音响</td><td>确定 Electron/TTS 兼容矩阵、自启方式与系统管控方案。</td></tr><tr><td>教室、设备与教师数量；是否存在走班</td><td>验证 SQLite 容量假设及班级—教室模型是否满足实际情况。</td></tr><tr><td>学校名称/标志/品牌色；是否采用本文深绿方案</td><td>确定小程序品牌皮肤与大屏抬头，不影响核心接口。</td></tr><tr><td>微信小程序主体、管理员、域名、ICP 备案与服务器</td><td>决定登录联调与提审路径；需在试点发布前确认。</td></tr><tr><td>Windows 代码签名证书、发布渠道和更新策略</td><td>决定 NSIS 安装包签名、分发、升级与失败回滚方式。</td></tr><tr><td>学生名册样例、稳定学号、实际作息</td><td>确定导入模板、同名识别与静默规则。</td></tr><tr><td>数据保留周期、备份位置、维护联系人</td><td>确定清理策略、恢复流程和异常处理责任。</td></tr></tbody></table></div></section><section id="s14" class="chapter"><h2><span>14</span>参考入口与版本记录</h2>
+<p>以下为复核当前实现与目标环境要求时使用的官方入口。本文没有把平台审核、系统支持或许可要求写成永久不变的保证；性能数字仍属于验收目标。</p>
+<ul class="references"><li><a href="https://go.dev/doc/" target="_blank" rel="noopener noreferrer">Go 官方文档</a>：net/http、database/sql、构建与版本支持。</li><li><a href="https://www.sqlite.org/whentouse.html" target="_blank" rel="noopener noreferrer">SQLite 使用场景</a>、<a href="https://www.sqlite.org/wal.html" target="_blank" rel="noopener noreferrer">WAL</a>、<a href="https://www.sqlite.org/backup.html" target="_blank" rel="noopener noreferrer">在线备份</a>：确认单实例与备份边界。</li><li><a href="https://developers.weixin.qq.com/miniprogram/dev/framework/" target="_blank" rel="noopener noreferrer">微信小程序官方开发文档</a>：原生框架、登录、服务器域名、隐私及内容安全最新要求。</li><li><a href="https://www.electronjs.org/docs/latest/tutorial/security" target="_blank" rel="noopener noreferrer">Electron 安全指南</a>：进程隔离、IPC 和加载边界。</li><li><a href="https://learn.microsoft.com/en-us/windows/configuration/assigned-access/overview" target="_blank" rel="noopener noreferrer">Windows Assigned Access</a>、<a href="https://learn.microsoft.com/en-us/windows/configuration/shell-launcher/" target="_blank" rel="noopener noreferrer">Shell Launcher</a>：按具体 Windows 版本核对系统能力。</li></ul>
+<div class="table-wrap"><table><thead><tr><th>版本</th><th>日期</th><th>修改</th></tr></thead><tbody><tr><td>v1.5</td><td>2026-10-22</td><td>同步三端自动构建与交付配置：Go 服务端 Docker 镜像；<code>compose.yaml</code> + Caddy HTTPS；国内 VPS 可拉取 GHCR 或导入离线镜像；GitHub Actions <code>Project checks</code>（CI）、<code>Server image</code>、<code>Windows installer</code>；Windows x64 NSIS 安装包与 SHA-256；推送 <code>v*</code> 标签生成 Release 的条件。明确配置不等于远程构建、Windows 实机、微信审核、ICP 备案或签名证书已经完成。</td></tr><tr><td>v1.4</td><td>2026-10-22</td><td>修订 Windows 桌面默认行为：已绑定后完全托盘待机，移除常驻公告墙、公告卡、时钟、自动轮换与托盘全文入口；仅在新消息或定时生效时显示约 760×480 居中大字窗口或约 460×300 右上角浮窗，约 15 秒关闭，启动、刷新与重连不补弹历史。同步记录逐消息展示位置、记录编辑/删除及 Win10/11 物理机验收边界。</td></tr><tr><td>v1.3</td><td>2026-10-22</td><td>同步已实现代码与验收结果：原生小程序、三类公告和默认静音、服务端无姓名标题、共享展示设置、班级/XLSX 路由、Mac 自动化计数及微信/Windows 待验证边界。</td></tr><tr><td>v1.2</td><td>2026-10-22</td><td>历史记录：新增托盘后台与非激活短时浮层，取消默认全屏/kiosk/休眠干预，默认关闭设备语音。</td></tr><tr><td>v1.1</td><td>2026-10-22</td><td>历史记录：Go + SQLite 轻量服务、Win10/11 支持边界、小程序 UI、权限与管理接口、回执、同步和播报批次。</td></tr><tr><td>v1.0</td><td>2026-10-21</td><td>原始评审稿，已保存在 docs/archive/classroom-notice-dev-spec-v1.0.html。</td></tr></tbody></table></div>
+<p>v1.5 当前状态以本文、实现状态和验证记录为准。三端工作流与部署/安装配置已写入仓库，但本稿没有据此声称 GitHub 远程构建、标签 Release、Windows 实机安装或微信审核已经完成。Mac 自动化与浏览器页面行为已验证；完全托盘待机、原生提醒尺寸、焦点与鼠标穿透仍以 Win10/11 目标设备结果为准。</p></section>
+<footer class="endnote">教室公告双端系统 · v1.5 · 2026-10-22<br>三端自动构建已配置、真实目标环境待验收；远程流水线、微信审核与 Win10/11 物理机结果尚未据此宣称完成。示意数据均为虚构。</footer>
+</main></div>
+<script>
+const picker=document.getElementById('chapter-picker');
+picker.addEventListener('change',()=>document.getElementById(picker.value)?.scrollIntoView({behavior:'smooth'}));
+document.getElementById('print-button').addEventListener('click',()=>window.print());
+const links=[...document.querySelectorAll('.sidebar nav a')];
+if('IntersectionObserver' in window){
+ const observer=new IntersectionObserver(entries=>{
+  const candidate=entries.filter(e=>e.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];
+  if(candidate){const id=candidate.target.id;links.forEach(a=>a.classList.toggle('active',a.hash==='#'+id));picker.value=id;}
+ },{rootMargin:'-10% 0px -65% 0px',threshold:0});
+ document.querySelectorAll('.chapter').forEach(s=>observer.observe(s));
+}
+let previouslyOpen=[];
+window.addEventListener('beforeprint',()=>{previouslyOpen=[...document.querySelectorAll('details')].map(d=>d.open);document.querySelectorAll('details').forEach(d=>d.open=true)});
+window.addEventListener('afterprint',()=>document.querySelectorAll('details').forEach((d,i)=>d.open=previouslyOpen[i]??false));
+</script>
+</body></html>

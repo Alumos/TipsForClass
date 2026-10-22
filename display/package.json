@@ -1,0 +1,58 @@
+{
+  "name": "classroom-display",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "dist-electron/electron/main.js",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vue-tsc --noEmit && vite build && tsc -p tsconfig.electron.json",
+    "test": "vitest run",
+    "electron:dev": "npm run build && electron .",
+    "electron": "electron .",
+    "package:win": "npm run build && electron-builder --win nsis --x64"
+  },
+  "dependencies": {
+    "sql.js": "^1.13.0",
+    "vue": "^3.5.24"
+  },
+  "devDependencies": {
+    "@types/node": "^24.0.0",
+    "@types/sql.js": "^1.4.9",
+    "@vitejs/plugin-vue": "^6.0.10",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.15.3",
+    "typescript": "^5.9.3",
+    "vite": "^8.3.5",
+    "vitest": "^5.0.5",
+    "vue-tsc": "^3.1.0"
+  },
+  "build": {
+    "appId": "school.classroom.notice",
+    "productName": "教室公告大屏",
+    "files": [
+      "dist/**",
+      "dist-electron/**",
+      "node_modules/sql.js/**"
+    ],
+    "extraResources": [
+      {
+        "from": "windows-tts/bin/publish",
+        "to": "windows-tts",
+        "filter": [
+          "**/*"
+        ]
+      }
+    ],
+    "win": {
+      "target": "nsis"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "directories": {
+      "output": "release"
+    }
+  }
+}

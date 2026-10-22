@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html data-page-node-id="xrMoVLrCE6PHhFFYhSXv5o" lang="zh-CN">
+<head data-page-node-id="bQtWv35cCvCn0SeIL2cRyP">
+<script data-page-node-id="4nIqOYSKgiuYsor4wec2nt" src="/page/page_comm/inject.js"></script>
+<meta data-page-node-id="lKFqbC3phPLaPPeewRSJ29" charset="UTF-8">
+<meta data-page-node-id="Xx2w5thjHwQdyHRRc43qj2" content="width=device-width, initial-scale=1" name="viewport">
+<title data-page-node-id="qvue2hLFoAwqdA73dXh9eT" data-pnid-children="G0obAWP9DeJxT24fL5oG7k">教室公告双端系统 · 开发文档 v1.0</title>
+<style data-page-node-id="hzxfutWZKCQ8GieSowksmO" data-pnid-children="3cYvfuNGQbqzM827PAwV9h">
+:root{
+  --bg:#FAF9F6; --surface:#FFFFFF;
+  --ink:#1B1B19; --ink2:#4A4A45; --ink3:#8A8A82;
+  --line:#E7E4DB; --line2:#D6D2C6;
+  --accent:#0F6E56; --accent-soft:#E8F4EF; --accent-line:#B7DACE;
+  --red:#A93230; --red-soft:#FBEDEC; --amber:#8A5A12; --amber-soft:#FBF2E2;
+  --blue:#1F5C8B; --blue-soft:#E9F1F8;
+  --code:#F5F3EE;
+  --mono:ui-monospace,SFMono-Regular,"SF Mono",Consolas,"Liberation Mono",monospace;
+  --sans:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.78;-webkit-font-smoothing:antialiased}
+.layout{display:grid;grid-template-columns:238px minmax(0,1fr);max-width:1280px;margin:0 auto}
+
+/* ---------- sidebar ---------- */
+.side{position:sticky;top:0;height:100vh;padding:44px 18px 40px 28px;border-right:1px solid var(--line);overflow-y:auto}
+.side .brand{font-size:13.5px;font-weight:500;letter-spacing:.02em}
+.side .ver{font-size:12px;color:var(--ink3);margin:4px 0 24px}
+.side nav a{display:block;font-size:13px;color:var(--ink2);text-decoration:none;padding:5px 0 5px 12px;border-left:2px solid transparent}
+.side nav a:hover{color:var(--accent);border-left-color:var(--accent-line)}
+.side nav a.sub{padding-left:24px;font-size:12.5px;color:var(--ink3)}
+.side .foot{font-size:11.5px;color:var(--ink3);margin-top:28px;padding-top:16px;border-top:1px solid var(--line)}
+
+/* ---------- layout ---------- */
+main{padding:64px 68px 120px;max-width:940px}
+section,[id]{scroll-margin-top:32px}
+h1{font-size:44px;line-height:1.18;font-weight:500;letter-spacing:-.02em;margin:0 0 18px}
+h2{font-size:25px;font-weight:500;letter-spacing:-.01em;margin:76px 0 6px;padding-top:22px;border-top:1px solid var(--line)}
+h2 .num{color:var(--accent);font-size:13px;font-family:var(--mono);display:block;margin-bottom:8px;letter-spacing:.08em}
+h3{font-size:17px;font-weight:500;margin:38px 0 10px}
+h4{font-size:14.5px;font-weight:500;margin:24px 0 8px;color:var(--ink2)}
+p{margin:0 0 14px;color:var(--ink2)}
+strong{font-weight:500;color:var(--ink)}
+ul,ol{margin:0 0 16px;padding-left:22px;color:var(--ink2)}
+li{margin:5px 0}
+a{color:var(--accent)}
+.lead{font-size:17px;line-height:1.72;color:var(--ink2)}
+hr{border:0;border-top:1px solid var(--line);margin:44px 0}
+
+/* ---------- cover ---------- */
+.cover{padding-bottom:12px}
+.kicker{font-size:12px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;margin-bottom:20px}
+.sub{font-size:17px;color:var(--ink2);line-height:1.7;margin:0 0 30px;max-width:640px}
+.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden;margin-top:8px}
+.meta div{background:var(--surface);padding:14px 16px}
+.meta dt{font-size:11.5px;color:var(--ink3);margin-bottom:3px}
+.meta dd{margin:0;font-size:13.5px;font-weight:500}
+
+/* ---------- cards & callouts ---------- */
+.note{border-left:3px solid var(--accent-line);background:var(--accent-soft);padding:14px 18px;border-radius:0 8px 8px 0;margin:20px 0;font-size:14px;color:var(--ink2)}
+.note b{color:var(--accent);font-weight:500}
+.warn{border-left:3px solid #E3B4B1;background:var(--red-soft);padding:14px 18px;border-radius:0 8px 8px 0;margin:20px 0;font-size:14px;color:#6E2624}
+.warn b{color:var(--red);font-weight:500}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:20px 0}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 20px}
+.card h4{margin:0 0 8px;font-size:14px;color:var(--ink)}
+.card p{margin:0;font-size:13.5px;line-height:1.7}
+.card ul{margin:6px 0 0;font-size:13.5px;padding-left:18px}
+
+/* ---------- table ---------- */
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:13.5px}
+th{text-align:left;font-weight:500;font-size:12px;letter-spacing:.03em;color:var(--ink3);padding:9px 12px;border-bottom:1px solid var(--line2);background:transparent}
+td{padding:10px 12px;border-bottom:1px solid var(--line);color:var(--ink2);vertical-align:top}
+td:first-child{color:var(--ink)}
+tbody tr:hover td{background:#FCFBF8}
+.mono-cell{font-family:var(--mono);font-size:12.5px;color:var(--ink)}
+
+/* ---------- code ---------- */
+pre{background:var(--code);border:1px solid var(--line);border-radius:10px;padding:16px 18px;overflow-x:auto;margin:16px 0;font-size:12.5px;line-height:1.7}
+code{font-family:var(--mono);font-size:12.8px;background:var(--code);padding:1px 5px;border-radius:4px;color:#3A3A36}
+pre code{background:none;padding:0;font-size:12.5px}
+.tok-k{color:#0F6E56}
+.tok-s{color:#8A5A12}
+.tok-c{color:#9A9A92}
+
+/* ---------- pills ---------- */
+.pill{display:inline-block;font-size:11.5px;padding:2px 9px;border-radius:20px;font-weight:500;white-space:nowrap}
+.p-green{background:var(--accent-soft);color:var(--accent)}
+.p-red{background:var(--red-soft);color:var(--red)}
+.p-amber{background:var(--amber-soft);color:var(--amber)}
+.p-gray{background:#F1EFE8;color:#6A6A62}
+.p-blue{background:var(--blue-soft);color:var(--blue)}
+.method{font-family:var(--mono);font-size:11.5px;font-weight:500;padding:2px 7px;border-radius:4px;display:inline-block}
+.m-get{background:var(--blue-soft);color:var(--blue)}
+.m-post{background:var(--accent-soft);color:var(--accent)}
+.m-del{background:var(--red-soft);color:var(--red)}
+
+/* ---------- flow ---------- */
+.flow{display:flex;align-items:stretch;gap:0;margin:22px 0;flex-wrap:wrap}
+.flow .step{flex:1;min-width:120px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.flow .step .n{font-family:var(--mono);font-size:11px;color:var(--accent);margin-bottom:4px}
+.flow .step .t{font-size:13.5px;font-weight:500;margin-bottom:3px}
+.flow .step .d{font-size:12px;color:var(--ink3);line-height:1.55}
+.flow .arrow{display:flex;align-items:center;padding:0 8px;color:var(--line2);font-size:14px}
+
+/* ---------- screen mockup ---------- */
+.screen-wrap{position:relative;overflow:hidden;border:1px solid var(--line2);border-radius:12px;background:#fff;margin:22px 0 8px}
+.screen{width:1920px;height:1080px;transform-origin:top left;position:absolute;top:0;left:0;padding:56px 64px;display:flex;flex-direction:column;background:#FFFDF9;font-family:var(--sans)}
+.s-head{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:26px;border-bottom:2px solid #E7E4DB}
+.s-room{font-size:38px;font-weight:500;letter-spacing:-.01em}
+.s-sub{font-size:22px;color:#8A8A82;margin-top:6px}
+.s-dot{display:inline-block;width:12px;height:12px;border-radius:50%;background:#1D9E75;margin-right:10px;vertical-align:middle}
+.s-status{font-size:24px;color:#8A8A82}
+.s-list{flex:1;display:flex;flex-direction:column;gap:22px;padding-top:30px}
+.s-card{border:2px solid #E7E4DB;border-left-width:10px;border-radius:16px;padding:22px 30px;display:flex;justify-content:space-between;align-items:center;gap:24px;background:#fff}
+.s-card .ct{font-size:36px;line-height:1.3;font-weight:400}
+.s-card .cm{font-size:22px;color:#8A8A82;margin-top:8px}
+.s-badge{font-size:20px;padding:7px 20px;border-radius:100px;white-space:nowrap}
+.s-foot{display:flex;justify-content:space-between;font-size:22px;color:#8A8A82;padding-top:18px;border-top:2px solid #E7E4DB}
+.cap{font-size:12px;color:var(--ink3);margin:0 0 26px;text-align:center}
+
+/* ---------- phone ---------- */
+.phone-wrap{display:flex;gap:28px;align-items:flex-start;margin:22px 0}
+.phone{width:288px;flex:none;border:1px solid var(--line2);border-radius:26px;background:#fff;padding:16px 14px 18px;box-shadow:0 1px 0 var(--line)}
+.ph-head{display:flex;justify-content:space-between;align-items:center;padding:2px 6px 12px;border-bottom:1px solid var(--line)}
+.ph-title{font-size:13.5px;font-weight:500}
+.ph-body{padding-top:12px}
+.ph-label{font-size:11px;color:var(--ink3);margin:12px 0 6px}
+.chips{display:flex;gap:6px}
+.chip{font-size:11.5px;padding:5px 10px;border-radius:8px;border:1px solid var(--line2);color:var(--ink2)}
+.chip.on{background:var(--accent-soft);border-color:var(--accent-line);color:var(--accent)}
+.field{border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-size:12px;color:var(--ink3);background:#FCFBF8;min-height:56px;line-height:1.6}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 2px;border-bottom:1px solid var(--line);font-size:12.5px;color:var(--ink2)}
+.row .v{color:var(--ink)}
+.btn{margin-top:14px;background:var(--accent);color:#fff;text-align:center;border-radius:10px;padding:11px;font-size:13px;font-weight:500}
+.ph-note{font-size:12px;color:var(--ink3);line-height:1.8;padding-top:4px}
+.ph-note b{color:var(--ink2);font-weight:500;display:block;margin-bottom:6px;font-size:12.5px}
+
+/* ---------- timeline ---------- */
+.tl{border-left:1px solid var(--line2);margin:24px 0 0 6px;padding-left:26px}
+.tl-item{position:relative;padding-bottom:26px}
+.tl-item:before{content:"";position:absolute;left:-31px;top:7px;width:9px;height:9px;border-radius:50%;background:var(--accent);border:2px solid var(--bg)}
+.tl-item .ph{font-size:11.5px;font-family:var(--mono);color:var(--accent);letter-spacing:.04em}
+.tl-item .tt{font-size:14.5px;font-weight:500;margin:3px 0 4px}
+.tl-item .td{font-size:13px;color:var(--ink2);line-height:1.7}
+
+/* ---------- misc ---------- */
+.kv{display:grid;grid-template-columns:120px 1fr;gap:6px 16px;font-size:13.5px;margin:16px 0}
+.kv dt{color:var(--ink3)}
+.kv dd{margin:0;color:var(--ink2)}
+.check{list-style:none;padding-left:0}
+.check li{padding-left:24px;position:relative;font-size:13.5px}
+.check li:before{content:"";position:absolute;left:0;top:9px;width:12px;height:7px;border-left:1.8px solid var(--accent);border-bottom:1.8px solid var(--accent);transform:rotate(-45deg)}
+.endnote{margin-top:70px;padding-top:20px;border-top:1px solid var(--line);font-size:12.5px;color:var(--ink3)}
+
+@media (max-width:1080px){
+  .layout{grid-template-columns:1fr}
+  .side{display:none}
+  main{padding:40px 24px 80px}
+  .meta{grid-template-columns:1fr 1fr}
+  .grid2{grid-template-columns:1fr}
+  h1{font-size:32px}
+}
+@media print{
+  body{background:#fff} .side{display:none} .layout{grid-template-columns:1fr;max-width:none}
+  main{padding:0;max-width:none} h2{page-break-after:avoid} .card,.screen-wrap,pre,table{page-break-inside:avoid}
+}
+</style>
+</head>
+<body data-page-node-id="KutENeIIpxgIVu7rj55EcN">
+<div data-page-node-id="3LvOuGLBSudDINWpa3a8RI" class="layout">
+
+<aside data-page-node-id="rtI09ITc7PXOcoGO5VHVHz" class="side">
+  <div data-page-node-id="Puc0sGcRX4BKMQ9tEUgphp" class="brand"><!--pnid:C1dyVOr6hWTgtIzOcyKEhF-->教室公告双端系统</div>
+  <div data-page-node-id="Av2JKWdS6wA8LTsvDH4INa" class="ver"><!--pnid:ZXeOyELihdYc7RLnfk7wym-->开发文档 · v1.0</div>
+  <nav data-page-node-id="SMc7NhmE78H3RFqkyW7F6z">
+    <a data-page-node-id="kPVXwJoFWKKYirZLn3YEhs" href="#s0"><!--pnid:N4NAWepjkWsKfsRWTX9JEl-->文档说明</a>
+    <a data-page-node-id="69cdniaEYZGhWHVaLlENoK" href="#s1"><!--pnid:W6FxECmTwWQUDize0EKSx4-->1 产品概述</a>
+    <a data-page-node-id="sNXwTdVs5wEXpBAIiGpth2" href="#s2"><!--pnid:wQfuIryGnvxKQeCOzbKimD-->2 角色与场景</a>
+    <a data-page-node-id="VAlJvqLziRnMPUFDl2pMqs" href="#s3"><!--pnid:94KQlOBxlm5ZznarFn5fN6-->3 领域模型</a>
+    <a data-page-node-id="2nKnPTMb5CwP35M4XqyAak" href="#s4"><!--pnid:RMqo2oyHi0Bz7KZU5lbG8A-->4 系统架构</a>
+    <a data-page-node-id="74OcUeIhiuPnvMqiB74CPK" href="#s5"><!--pnid:MeTObfpKrunPZVvWzvROUu-->5 接口设计</a>
+    <a data-page-node-id="VAmNWQGBqlE5GjLQRkd5Ca" class="sub" href="#s5-1"><!--pnid:g3yVAgPHCs6eXhTM3fSEcI-->REST</a>
+    <a data-page-node-id="qLuenuHJe3FekBIoxXmxU1" class="sub" href="#s5-2"><!--pnid:s8HP66WVFEaltM6Z30UtyP-->WebSocket</a>
+    <a data-page-node-id="cpus9wMMu7G9XeaHs4QYZS" href="#s6"><!--pnid:tjdVIOpglIHd8A1v2HSX6S-->6 大屏客户端</a>
+    <a data-page-node-id="byJqpj4vKmUEky6a69uBAS" href="#s7"><!--pnid:rhaiYBXkEXPAdGMQWGyivm-->7 教师端小程序</a>
+    <a data-page-node-id="TcpqVfVGj0ctD1Og1BwbXy" href="#s8"><!--pnid:kWNXVFcq8bbAkgnowltfDN-->8 关键流程</a>
+    <a data-page-node-id="hvhZaRGFont6iytDCI3Mr4" href="#s9"><!--pnid:tRPyihYOe75PunAanaZ3hf-->9 非功能与合规</a>
+    <a data-page-node-id="aRcXENW6KKwMTJxaReOGYa" href="#s10"><!--pnid:7ZkJMFTXbx8cAX75TAoLpW-->10 里程碑</a>
+    <a data-page-node-id="E8lVWQyhVqFjl4FGw9LMrp" href="#s11"><!--pnid:a4ghT3uJ0A8W6v5RuMTsQ3-->11 风险清单</a>
+    <a data-page-node-id="rvh9sssBFeqyjXTwMXOuKn" href="#s12"><!--pnid:99a2iRLgczcu3229E7BNYx-->12 附录</a>
+  </nav>
+  <div data-page-node-id="lZXLWhds6CXKphmSqtV0gf" class="foot"><!--pnid:sDxEuzHcRfxJeLvQ1ypWfG-->2026-10-21<br data-page-node-id="QrviuR8mXWOqurZj9qDEjx"><!--pnid:Y4FAio8fA0oD6RpvGtRy3h-->内部评审稿</div>
+</aside>
+
+<main data-page-node-id="hUMptdh8R7Zpgo78em2OHM">
+
+<!--pnid:Ch98cNojoz6TZr87b9olyv--><!-- ============ COVER ============ -->
+<section data-page-node-id="CYchNRP8QHsdimZzMQKWrx" class="cover" id="top">
+  <div data-page-node-id="GUaUjO65ovRGgI3jq2xpw4" class="kicker"><!--pnid:HjURz8vyWMb83A3TDy2MQq-->Development Specification</div>
+  <h1 data-page-node-id="RQ1eJRdyvekDbdFXWmMFmA"><!--pnid:DHVJwgR0A5vSdHjUbfXkcR-->教室公告双端系统<br data-page-node-id="YEg6ntohwTgQwmdRd2UPHp"><!--pnid:PIYZfnLAlMc7Hmbyrp2P6t-->开发文档</h1>
+  <p data-page-node-id="iUWBABrDxucYeQRddZGbnL" class="sub"><!--pnid:B0SFE3PHPhmfiGUkcRL8cK-->教师用微信小程序发布信息，Windows 客户端把内容呈现到教室大屏。一份覆盖模型、接口、双端实现与上线合规的完整工程说明。</p>
+  <dl data-page-node-id="6cu3A0Z1Zx4Y1QgPBiqUCU" class="meta">
+    <div data-page-node-id="M5FZ0UJQEo5v7UP3qXWMCa"><dt data-page-node-id="bhDpzeLVBamUrkVjfo6DyL"><!--pnid:ji5IC14Bh4YytjwVKftpwX-->版本</dt><dd data-page-node-id="8Sf66qzBwTijKIyFpeYup0"><!--pnid:mn3Y3DtNlvLA9UX35dGaOx-->v1.0</dd></div>
+    <div data-page-node-id="dIKLXoaRJ6KPswABJQvWfd"><dt data-page-node-id="X9qaXdb3uZzgzidieGYnze"><!--pnid:UTFPLUp2PMGwXrqIVKz0xf-->日期</dt><dd data-page-node-id="n4KE2f6bTpd91mKRwwMMHf"><!--pnid:dsv4PvhxUFHM1g8giRueHP-->2026-10-21</dd></div>
+    <div data-page-node-id="7zYsNL0hwI7boOjRLi5NJj"><dt data-page-node-id="PUcWURmk6bW5KjX2ucp3Rt"><!--pnid:eHVciDiK8gjTai2PRkfdcO-->状态</dt><dd data-page-node-id="I9XsDRo1ziiC5JlGnH8AaP"><!--pnid:FlYhe2UVkPVdButJ1UESwo-->待评审</dd></div>
+    <div data-page-node-id="h5fv52EwZKOAGM2bsZ4d9f"><dt data-page-node-id="jZO6rICuqqlR5LxvaN75jU"><!--pnid:9SXXtgMNTsnHIKZYicTIpX-->端数</dt><dd data-page-node-id="MD904jQYCuCtoyryzTi1R2"><!--pnid:4xoLWpM2acJ56ySULD32mY-->3（小程序 / 大屏 / 服务端）</dd></div>
+  </dl>
+</section>
+
+<!--pnid:pXZ5MOc4R8T1vmUiNp56IT--><!-- ============ 0 ============ -->
+<hr data-page-node-id="wNfZjE93UH3nVpEpgcGz1Q">
+<h2 data-page-node-id="8ea8rSu6pwEm3Lfgem9n37" id="s0"><span data-page-node-id="cjAQNsF3yE30aoleGSffNd" class="num"><!--pnid:o0mlAHq3O2Rua1lFNCMi83-->00</span><!--pnid:vfgilnKqU6zpCS4r8YAA18-->文档说明</h2>
+<p data-page-node-id="sGZb5oDaj1xwK5xmV6JDsI"><!--pnid:nqylut4KfTm03rv25i0TLp-->本文档面向实际写代码的人，包含可以直接落地的表结构、接口定义、状态规则与边界处理。阅读顺序建议如下：</p>
+<table data-page-node-id="PyqgvZMYd4WMqdEQ7EA0cA">
+  <thead data-page-node-id="yxEXyl81wBz8VKW1maO1KG"><tr data-page-node-id="lKFJQsYaKKMoJorArsXROF"><th data-page-node-id="gD1zVAtnHBIfdXcbXktC03" style="width:130px"><!--pnid:PaN1SDGgDpVrPJLpiBpBvn-->角色</th><th data-page-node-id="gOxCXzo6vzhqpbayGBozOs"><!--pnid:DixASMA4gijtcoi7U0krgJ-->重点章节</th></tr></thead>
+  <tbody data-page-node-id="gcNfsQ4qtnwSauc7n1tILL">
+    <tr data-page-node-id="CN61gjMNnpsJE1UMyeBX41"><td data-page-node-id="ct9TrdHuaWgG5oqR6tN9ku"><!--pnid:6ycWrZIid2BXWsyCB1Fn0b-->产品 / 项目负责人</td><td data-page-node-id="KJOUggLJgr1tqeGwDEzgAG"><!--pnid:ISxYSgVz4RM3cIDGviMmnc-->1、2、9、10、11 —— 确认范围、周期与风险</td></tr>
+    <tr data-page-node-id="rXzaqEhvMGiBJcBSYm0ixY"><td data-page-node-id="otUk46RWOC9iBLlQSa5sOl"><!--pnid:4O7qMKpmTwdkElyRxCrzyV-->服务端开发</td><td data-page-node-id="HiC875wYZ4tOauTOnMzQW0"><!--pnid:AiW0ALc2pHB9xyEspnHE4T-->3、4、5、8 —— 模型、接口、时序</td></tr>
+    <tr data-page-node-id="SIuz7ZpTI9gjGEZ5MEsOsw"><td data-page-node-id="gDEO6Pf1hfzV6dSfwJmo9E"><!--pnid:l9Cu1o8pbSAxdXzxbxW5HJ-->大屏客户端开发</td><td data-page-node-id="clSevlP1fyFPQ75nqruCY6"><!--pnid:U0twgYbn7PYwGCpEw4RTE2-->4、6、8 —— 渲染规则、播报队列、断网降级</td></tr>
+    <tr data-page-node-id="dP0HxoOO4oRTGKtlZ7reSJ"><td data-page-node-id="sMCoCinRLY7q6orqteNzmf"><!--pnid:0lUl87l4WPTjrfBGLpdO4W-->小程序开发</td><td data-page-node-id="Z6lfMGiw0FLWSE9vAL0d41"><!--pnid:KmulihiQ3Gx35oGlc1CYVY-->5、7 —— 页面流程与交互约束</td></tr>
+  </tbody>
+</table>
+<div data-page-node-id="iu966bvcwNRpu2UMXxYgQ2" class="note"><b data-page-node-id="yFoTmXVwsk66cUQcdpPNg2"><!--pnid:w7Y1EWUrqzBWaLBv4wE1GV-->范围外：</b><!--pnid:NJjDBj5M0BASitjSHWrgLB-->本文档不包含成绩、作业批改、家校沟通等功能；不含多校区 SaaS 计费与租户隔离（表结构已预留 <code data-page-node-id="o8LTyujJoq4Dn6reGXRRDN" data-pnid-children="Bmkq9kLc39gBSQ6JOn1BTz">school_id</code><!--pnid:JlquHjdlVrnnu2lFvuwRH1-->，但不实现租户管理界面）。</div>
+
+<!--pnid:A0hrrSnK65u1fbT91uzddQ--><!-- ============ 1 ============ -->
+<h2 data-page-node-id="JxBDgBEcOtk8Q9lSdO61OU" id="s1"><span data-page-node-id="i0ad7yjL6lbgTUHaF3mJUQ" class="num"><!--pnid:cGLwC8SZ6MThwJIBiV1Y4b-->01</span><!--pnid:lyzflRYVG3PqCWtUdSzjy5-->产品概述</h2>
+<p data-page-node-id="HgcLGI1eUj9XpjmRs3SysJ" class="lead"><!--pnid:mRpihAROY5cyvsrPDIk5yJ-->把「老师临时要通知一件事」这件小事，做成一条从手机到大屏的可靠链路。</p>
+<p data-page-node-id="LuUWDpDCdjzLt6JbEAD5Vv"><!--pnid:w9Pcc50FpE6c72bOeZiaYq-->现状是老师在班级群里发消息、或者跑一趟教室口头说，人不在就传不到。本系统让教师在小程序里发一条公告，几秒内出现在目标教室的大屏上，需要时配合语音播报，到期自动消失。</p>
+
+<h3 data-page-node-id="WbiKa1z0iuT37VbeWfPHto"><!--pnid:hX9krd6tqYROLngjtprzRP-->1.1 一句话定位</h3>
+<div data-page-node-id="Div8esv3GJK9FsO03My9I7" class="card"><p data-page-node-id="otyLS9juNIXnXfP2P9ODuS"><strong data-page-node-id="nTKOMloPsnFuYH1aoMQFfA"><!--pnid:u5ZKQyfwopfZvEHuOsCmwF-->面向中小学教室的轻量信息投递工具。</strong><!--pnid:ftRPb9EfoQOXTNZ53sVoZ8-->不替代校园广播系统，也不做内容管理平台，只解决「点对点、短时效、要人看到」的通知。</p></div>
+
+<h3 data-page-node-id="VUvKlTAJOW541vQ8lK4wyf"><!--pnid:Shwa9FQuh0t6zxkxyb4os8-->1.2 核心能力</h3>
+<div data-page-node-id="v05I4nkbJVWqfvQKq0spkE" class="grid2">
+  <div data-page-node-id="XOqRFOmFhOfkzWRXCF8SMJ" class="card"><h4 data-page-node-id="ZaPZxROEJt33ZmSI9eSKhe"><!--pnid:9tvZafZeKop29Wi2SSEGEd-->定向投递</h4><p data-page-node-id="pxFhSEj5bDoWh6f1ZVBpJ9"><!--pnid:banbVODQ0InultlokEljlR-->一条公告可投一间教室，也可一次投多个班级。教师在手机上选目标，不涉及复杂的权限树。</p></div>
+  <div data-page-node-id="AOyt2ACnxjBTYuCOmxxUeJ" class="card"><h4 data-page-node-id="2gCeqq4ZAe0cYWYSDDFaNB"><!--pnid:dLUx8WbH40e7alMFojyW90-->三种公告类型</h4><p data-page-node-id="onF8MvaopXHIBM80L8PzY4"><!--pnid:2XX8DDGc8WbFZD5GW8mDtR-->呼叫个人、批量作业、普通通知。类型决定大屏的颜色、排序和是否播报。</p></div>
+  <div data-page-node-id="cwdG52sIct99MeKHizPvjr" class="card"><h4 data-page-node-id="MkeSmTOZALkMhSdMrTcZhD"><!--pnid:WFGN9ocYfASobtyLDdYrPA-->可控播报</h4><p data-page-node-id="cpg7wl2xiCyGgZ9jFqHhWG"><!--pnid:nwN1hExMGiGo63genvKAZC-->只有需要「喊人」的公告才播，播 1–2 遍即停，不打扰正常上课。</p></div>
+  <div data-page-node-id="Atf51fEo3cDEEX7SyWLG9G" class="card"><h4 data-page-node-id="MGDeWQf2aeourlaQG9ylhf"><!--pnid:RyE9tRc4HV1RhIAa15osH3-->自动过期</h4><p data-page-node-id="6zNNfi9POqWxNibxF2tMwn"><!--pnid:I7RcXD9lhPcS5SSSv6zuEY-->公告带下屏时间，到点自动消失，避免早上的通知挂到下午放学。</p></div>
+</div>
+
+<h3 data-page-node-id="pN6AN7RRFBahOHp8XWxsss"><!--pnid:VsQUz0dHTFfYDqrTNrTAZB-->1.3 设计原则</h3>
+<ul data-page-node-id="rrlvPgErqECpBxIeoNfxkJ">
+  <li data-page-node-id="VwdvGwYRG7FBgtSv7Fy7oE"><strong data-page-node-id="9rkxDnSXixD5dfLkKAGGpP"><!--pnid:6NtQ8aYosKA0RgBnSVLVKo-->教师侧三步内完成。</strong><!--pnid:GCNVVMQTYGhRiGpuX1nJVg-->课间站着操作，任何超过三步的流程都会被绕开。</li>
+  <li data-page-node-id="8EH4i8WTM0zILnRzECsa1B"><strong data-page-node-id="vVxqlswi3SNVyBLYYCilNt"><!--pnid:BlZFwoKprQAcb1OzmimiG1-->大屏侧永不白屏。</strong><!--pnid:aBecxozBIwltGbXfQM3beG-->断网、服务重启、更新失败，都要有可展示的内容。</li>
+  <li data-page-node-id="GXitfpbmYRc3RfSCs610CU"><strong data-page-node-id="QPugXZeqTF4BmGDnxyIzd4"><!--pnid:H9u1xY37l8vRAy6ADpWU3U-->服务端不做复杂逻辑。</strong><!--pnid:ntpLsBHClycZLew3Pv4beV-->排序、过期判断、播报去重都在客户端完成，服务端只负责存取与广播。</li>
+  <li data-page-node-id="ksMhkchZGcKIeyYM2EBmL7"><strong data-page-node-id="0LeMII8mvW9Te8xB7DXWWk"><!--pnid:R4b76dHcP7Nr5LrdX5ah7n-->一切可撤回。</strong><!--pnid:uSpZXDuTVYeAIqX2AtvVUs-->发错了要能立刻从所有屏幕上消失。</li>
+</ul>
+
+<!--pnid:H7fcQgupIF3O38G3wacMEr--><!-- ============ 2 ============ -->
+<h2 data-page-node-id="OKnUo9sXC8gmq58xTImtf4" id="s2"><span data-page-node-id="jw2dHOur8REG0EHq6pL0kQ" class="num"><!--pnid:P8WstBgneCgbgAW8CzcoEd-->02</span><!--pnid:IZtY3Z3OveIKkHN7Brayvf-->角色与场景</h2>
+
+<h3 data-page-node-id="dCOsxAZpWUa6zBbVvDOyq2"><!--pnid:YHqHAiu4rbbGYxSmAB3GXB-->2.1 角色</h3>
+<table data-page-node-id="jHtMEWnvInCPJssMg13G1W">
+  <thead data-page-node-id="fmD8dY2Yogof0ndRw4bZGp"><tr data-page-node-id="5HwJOZPF4RlkekrtVGYsOF"><th data-page-node-id="nE0j6U55XqyPyEUlJry6wm" style="width:110px"><!--pnid:D09qTBuzahgrLU2ZVn4wKx-->角色</th><th data-page-node-id="A5ZyymM4ZtO23FU7LrZqS3" style="width:130px"><!--pnid:1OIsnYDZBJhLRAsCM8zsut-->入口</th><th data-page-node-id="2bHIMf7w2P7vTBmkdn084N"><!--pnid:ugTPuYoEOblKZ7QJidUM8Z-->职责与权限</th></tr></thead>
+  <tbody data-page-node-id="tVwvjyG7xyZvTInKSggxjr">
+    <tr data-page-node-id="0v2jKk7Gf1aWqW1d9tg3Z0"><td data-page-node-id="5tnO0CRmRWZIrh8SSk3mTW"><!--pnid:KZNu3ZiSbXEOpkkmVBa0da-->教师</td><td data-page-node-id="Ly2CQTuBt0Keh60q8SdHA7"><!--pnid:h9ErvNLxxi8M6mSiTitZ7N-->微信小程序</td><td data-page-node-id="g5NZSAnXqkfAtt5Lz0IxWB"><!--pnid:bYtwWH5VLlo5HSzTlKzHZu-->发布、撤回、重播公告；只能投递到自己任教或有权限的教室</td></tr>
+    <tr data-page-node-id="JAuj3XC5B8f6F0i22H07i1"><td data-page-node-id="4EmRcXDytwMvhO5yAjqYHa"><!--pnid:Jwz7SsHrhw0Hf03JckLnJ2-->管理员</td><td data-page-node-id="hLPfyK165YeZ5h3pv63FvF"><!--pnid:YOOY70pMrb1iKuNAsNbWxj-->小程序（同一入口，权限更高）</td><td data-page-node-id="Vgam4nHocaMVGE9IJs1h4K"><!--pnid:84Y40YD9aW5MidusHjU7aS-->维护教室、绑定大屏、导入学生名册、配置教师权限</td></tr>
+    <tr data-page-node-id="l0tA6sQrQSpRJ9ls7t2G3u"><td data-page-node-id="CbMpUDp4iA1fdhZZcaRjNp"><!--pnid:EVMcKdJO0L8Sf0TGPfQshN-->大屏</td><td data-page-node-id="BxAJtZs0l8gaDUPlTwz64Z"><!--pnid:2WxF80xCFfnBLTErlExdOG-->Windows 客户端</td><td data-page-node-id="Rfykb8C3Wy5erW1qYkzx5x"><!--pnid:VDQHWCqYRt2AwQUh1N8McG-->无人工操作。展示公告、按规则播报、上报心跳</td></tr>
+  </tbody>
+</table>
+
+<h3 data-page-node-id="bnZhVZJsSi4ReDA5YgnpAY"><!--pnid:kt4Uhm5zIh3n13ISU3FPpg-->2.2 三个真实场景走查</h3>
+<h4 data-page-node-id="mJ4ecnuBTnHrclbNswTYwx"><!--pnid:hIuiDDIV8ymYTl5JQu89YT-->场景 A：喊一个学生来办公室</h4>
+<p data-page-node-id="arzDBWsOQNlxIcZM9gWLxd"><!--pnid:9YcUffpEzW75ZnTBIEE9x2-->张老师在办公室找李明帮忙搬资料，人不在教室。打开小程序 → 默认选中自己带的班 → 点「呼叫个人」→ 勾选李明 → 输入「到 3 楼办公室」→ 发布。教室大屏顶部滑入一条红色公告，语音播两遍「请李明同学到 3 楼办公室」，40 分钟后自动下屏。</p>
+<h4 data-page-node-id="soml9QSViJkxL0ETFLvjI7"><!--pnid:PKA86HkLrOY1DVy3tvDXjZ-->场景 B：通知一批人订正作业</h4>
+<p data-page-node-id="Lf9I4bajAHNvHr6Zycz0mj"><!--pnid:ZWlWpK2SZHmGa7WgtSsceM-->王老师批完作业，有 12 人需要订正。小程序里勾选 12 人，正文只写「午休到 205 订正作业」。大屏显示为橙色公告，名单**不逐条展开**（超过 8 人折叠为「共 12 位同学」），只在名单首位显示前几人，并播报一句汇总提示。</p>
+<h4 data-page-node-id="zAByypeLSssdvw1boQHBgx"><!--pnid:LQEeS96JUtC9gFc9xERwhA-->场景 C：常规通知</h4>
+<p data-page-node-id="RcgOsKPFpbHsyehGTDgC5p"><!--pnid:sM3QCJ78uZDIUbYFsKLLsQ-->年级组长发「周五 15:00 家长会」，投给整个年级 8 间教室。大屏显示为灰色常驻条目，不播报，周五 18:00 自动下屏。</p>
+
+<h3 data-page-node-id="gNVwYWnOTi0UOZCLFOpsez"><!--pnid:DOLFQgieJf32WWaVysmBct-->2.3 类型对照</h3>
+<table data-page-node-id="PuuzzgxsmWKL49cS9x1ku7">
+  <thead data-page-node-id="X9AzPxQPGrUlNVd79IKnIs"><tr data-page-node-id="WO3UQ2kg45TbqYIY5hY0me"><th data-page-node-id="lGvp1vfeCIBWiJ6K4ys1T0" style="width:100px"><!--pnid:7irKj1PWmpAMZIJgEJpZXe-->type</th><th data-page-node-id="LMpLTWTQbRw743QDBG43Pg"><!--pnid:RD8STGe3PQoJpgEbxJtY6K-->典型内容</th><th data-page-node-id="nQnVCxBjvlz0o9YFAJXnZR" style="width:90px"><!--pnid:O7jzbrGYFvJGrtWQGypVnl-->优先级</th><th data-page-node-id="NC2prWpbZGLjPUdkcoK2Zq" style="width:110px"><!--pnid:2lW5QBLAAilN1nSbB5S9M2-->大屏样式</th><th data-page-node-id="vdMWz8rrKBJidNrntCzStq" style="width:100px"><!--pnid:Hmyf59FQ8yhMWA8M1Q8TGN-->播报</th></tr></thead>
+  <tbody data-page-node-id="L0GVDHMdF60oiCBh2Lc4X0">
+    <tr data-page-node-id="VofZlYMIVtFYU6s6cZzmGh"><td data-page-node-id="Mkvi4hrEWY3Wp3wZpt0TSE"><span data-page-node-id="CJE3o2BiSJO1ISY9NgsHpH" class="pill p-red"><!--pnid:hc1owaZaqRj7YABEjrBOwv-->call</span></td><td data-page-node-id="062WSrVCntMh9kLSLu41OS"><!--pnid:OEzs85W4fnor50MZtjFsDo-->张三到 3 楼办公室</td><td data-page-node-id="rWCB9drLKznecMNJLa8ODn"><!--pnid:wOkOUseRTM4ipdwQHrDlIO-->置顶</td><td data-page-node-id="QwZ10zF2ho1YNayVuvQzFH"><!--pnid:09KE0GDZteRZuY8iXgIieP-->红色左边框、白底</td><td data-page-node-id="g6mUFzMb81QCvmZyONUWU6"><!--pnid:yTE6NXAFkH9RR4BcVAho6Y-->默认 2 遍</td></tr>
+    <tr data-page-node-id="wzpuYQ6KhDyTclFYBHV24N"><td data-page-node-id="YtAFOs6tBvHePAGAQ7bp63"><span data-page-node-id="Ht7zAACqMuLzRA9GXnqQ1d" class="pill p-amber"><!--pnid:oxZurNydvzerK8m2060Bdv-->batch</span></td><td data-page-node-id="G4urzzOKMH41qfadqykYY8"><!--pnid:amaodWYP7ZBsYmb9ftfqR3-->以下同学到 205 订正作业</td><td data-page-node-id="dDHjGOyarTpU3LXZRjuRkg"><!--pnid:rwewgPof0025Sj1QwcHO6d-->高</td><td data-page-node-id="dJgQZThKkO1NysPOAZgdoj"><!--pnid:pFXFgmz504PvI46Gaa2RRQ-->琥珀左边框</td><td data-page-node-id="Y2YpkrCyLOVeTWqEaSa3hp"><!--pnid:EKmEp1szShBqo3hJwn5Ek2-->默认 1 遍（汇总句）</td></tr>
+    <tr data-page-node-id="oBqss60JKX5KpO5rpWlK68"><td data-page-node-id="KXokFZZg1TVoJpIELA0uSt"><span data-page-node-id="7G7qYIvBRnnmlaOli80upI" class="pill p-gray"><!--pnid:emimdZuQx1vmKxIdLjVbQD-->notice</span></td><td data-page-node-id="bio2saxoyyHPBevFC6oxCV"><!--pnid:TCMM3mvUrG5KyHa7raL8wp-->周五家长会</td><td data-page-node-id="KjvIDw7ce7XbiTSAlNBy6W"><!--pnid:AyxFPb3jyD1BovSr08ySTq-->普通</td><td data-page-node-id="gN3wQc7YeE7C5OVPq8x9Kp"><!--pnid:0pigdQq1PVgp3QphaNiE8a-->灰色左边框</td><td data-page-node-id="2qYsRO3b7cotD3am3FXhXm"><!--pnid:K3CFbJfQ2KrtvsZWKuApu5-->不播</td></tr>
+  </tbody>
+</table>
+
+<!--pnid:yF9BWx8PS2XcIuEsFBMMlu--><!-- ============ 3 ============ -->
+<h2 data-page-node-id="t46eqomhWWBctUUCGKMHSK" id="s3"><span data-page-node-id="bAlbfqBE1erdJHjj7Xjdw0" class="num"><!--pnid:DoiDVw6R631D5P27Ksbd0m-->03</span><!--pnid:SdSTWg0AK1NRjMk9gPqvsZ-->领域模型</h2>
+
+<h3 data-page-node-id="CMHqQx02Ev4cyQUmeZ8I7l"><!--pnid:orIgf9v4gYLFH7YbGHJluJ-->3.1 实体关系</h3>
+<div data-page-node-id="nTG0wRcMTtaKPXVooMwY3I" class="flow">
+  <div data-page-node-id="ZBxwGdyBIYwFcwUDux4Wsf" class="step"><div data-page-node-id="rnMW92zBDBXHtewQisptuk" class="n"><!--pnid:pbK7GIWPUABnBIC4Po6EQo-->1 : N</div><div data-page-node-id="J4mlHXAAxyOjwFR8ZaiG7h" class="t"><!--pnid:J4CKk431o7fGmpnhMtgxvK-->学校</div><div data-page-node-id="ZZM9zmS9Ygk0opDFdHQ2kl" class="d"><!--pnid:DQfvUL2s6IJ9hij4taWI90-->school<br data-page-node-id="eZ5rrqnyGhkitQ3z55Pv0K"><!--pnid:NEs7Ozz3jbPfIAkJuFEsWx-->教室 / 班级 / 教师</div></div>
+  <div data-page-node-id="ff3GKHNvdW5JmgybTYqB5G" class="arrow"><!--pnid:Alzkyzka9yYV5iTpSScenD-->→</div>
+  <div data-page-node-id="ZGNnxY1ERhUrKs7Z79qcvS" class="step"><div data-page-node-id="IVORdqaAJazRalyMcx5Vfu" class="n"><!--pnid:qoyV1hJ9HF4txubpo4pIkX-->1 : N</div><div data-page-node-id="FCxlDv6Y9dzrlnkQ7bvAH9" class="t"><!--pnid:VjTlBpxwVWGo7tLAGxysww-->教室</div><div data-page-node-id="sXnHbgVOQxs2Jb3BeYYLC9" class="d"><!--pnid:ow61Fxl91gkMWMRae4Ouah-->room<br data-page-node-id="MKK76Ff2s4CZROvMjpod1t"><!--pnid:EhFFhNl0dYPeOynUPMCiLC-->绑定 N 台设备</div></div>
+  <div data-page-node-id="kjqEtVZldxb895F9LvBDXt" class="arrow"><!--pnid:XzWNgPLRuaIPlcctHMlJ38-->→</div>
+  <div data-page-node-id="TxGUzPAg0juC0FJYdmOdcd" class="step"><div data-page-node-id="68EnaySHM9r0LugMPMRVFV" class="n"><!--pnid:agu2RxwtbawGQcdL8nhyaw-->1 : 1</div><div data-page-node-id="rK1Sc0cvJCUCQTUkvfojTq" class="t"><!--pnid:FfD7zoNaFpLCtMGjk2Y637-->设备</div><div data-page-node-id="JELWRF9YXSUCxeL7scTwEF" class="d"><!--pnid:5vkM52M82cCkZhuyMRlM2G-->device<br data-page-node-id="4JU5h55y6mzUZz9OWhWkkd"><!--pnid:120ligw8PgXpEnVRgiv5u9-->即大屏客户端</div></div>
+</div>
+<div data-page-node-id="UBMeCT4mrNak6fXgpKtcO8" class="flow">
+  <div data-page-node-id="zBJN0SsAlQfaqhNdbLH6L6" class="step"><div data-page-node-id="kgL8hb46E0p4SDMPyq6tEr" class="n"><!--pnid:KqX0w3TcC90Vi4aJqbDsBg-->N : 1</div><div data-page-node-id="w0rfJu7hoozIkR0hDhNPuD" class="t"><!--pnid:xc2uwOB6JeD3Iam8xDHcpu-->班级</div><div data-page-node-id="VATJXX3ScyDd9qCUpFuE2l" class="d"><!--pnid:mm2HPZ7mjHOhnQlD6MsPs4-->class<br data-page-node-id="0yiwFOFSCEJfrWPJJo3KNC"><!--pnid:XquNclUW0MWRmUJFcOHRAt-->归属学校</div></div>
+  <div data-page-node-id="mHmqPGldbYMeWvINZtkAN8" class="arrow"><!--pnid:Jcpn3z6Jsjnzr2muNGtslc-->→</div>
+  <div data-page-node-id="VfuCh0mpzjV4tdldjsFl1t" class="step"><div data-page-node-id="WRmlzAPbkbYZzWEOT177Bw" class="n"><!--pnid:ep0kpu1saNJJnDsKMQZrMh-->1 : N</div><div data-page-node-id="Ml0gq3ZK3d6lY8NzvBKRjy" class="t"><!--pnid:ow6FgjpGX1kVknTo0YRxAr-->学生</div><div data-page-node-id="o5heopt2NhdMWtuHJEK5xX" class="d"><!--pnid:3T0rPQJijucv46tpDBRF5L-->student<br data-page-node-id="xgOolNmEIxeXV5vp4TJno6"><!--pnid:5nSTVsbqFSThpUkxoSK6na-->用于批量勾选</div></div>
+  <div data-page-node-id="CXS7c8QApX2tvq0lxGtSdc" class="arrow"><!--pnid:J21qON4K9yymeECARnhBiM-->·</div>
+  <div data-page-node-id="w9mzOCAB8z9x7Sv7AoqjsW" class="step"><div data-page-node-id="GGMs3LY0LvLXzIkH2F4IEn" class="n"><!--pnid:j30leTg8HjbvPiGnXRPtqX-->N : N</div><div data-page-node-id="Til8xTc3SGmXPnlpL8SkZ3" class="t"><!--pnid:JwMHhACyv059q3cUPBYvGX-->公告 × 教室</div><div data-page-node-id="1cXtYwvMJv0SOwJzXsSUml" class="d"><!--pnid:Kkg271pQ3hCR09C5FAjtrb-->message_rooms<br data-page-node-id="v9jULiaswPOiscPRULbOy0"><!--pnid:wn2kEZrVzEOmbY8ei6uzQT-->一条投多块屏</div></div>
+</div>
+
+<h3 data-page-node-id="5d4SyQV9DjGhTqsZPDEqyZ"><!--pnid:3rCbZvOQ7Vg3mI6SRlE1KG-->3.2 表结构</h3>
+<p data-page-node-id="LCNFxOpVPirSYnuhMWdVkU"><!--pnid:xI07029S1qPAWtX8mOVcsS-->PostgreSQL 14+，主键统一 <code data-page-node-id="koyRXhEuiobfr2wSMAHbkJ" data-pnid-children="uFXvoJQGpL7qra1luF6YPD">bigserial</code><!--pnid:zlpGys06nfPQU460FBSBdm-->，时间统一 <code data-page-node-id="oWUdfEhYdvCARQuhpnwxYh" data-pnid-children="4pQPZrRyoh8YXAONHkXC0Y">timestamptz</code><!--pnid:zPg3qurPI3pPt4XK8nVcUm-->。</p>
+<pre data-page-node-id="huR4VAeaeqivN5smwmz9hD"><code data-page-node-id="jl9T1MyOjKAzRZAaeR2baE"><span data-page-node-id="F4kRsVFrvvn5B0OxI0VsO1" class="tok-c"><!--pnid:FkxZc6qB6FVCGJbrByyOIi-->-- 学校（单校部署时只有一行，为将来多校预留）</span><!--pnid:BriKfhaLZTaU79WoNV9Mq0-->
+CREATE TABLE schools (
+  id          bigserial PRIMARY KEY,
+  name        text NOT NULL,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+<span data-page-node-id="Bm9CHk2889ZpeLpeHLInYC" class="tok-c"><!--pnid:X1J3f5YqiNbp5RIMAzF1B1-->-- 教室：一块屏对应一间教室</span><!--pnid:EaYx1v3TWGieCHQ7ryVAD4-->
+CREATE TABLE rooms (
+  id          bigserial PRIMARY KEY,
+  school_id   bigint NOT NULL REFERENCES schools(id),
+  name        text NOT NULL,               <span data-page-node-id="ksyWw8dSNf8Jl8MpARXE6S" class="tok-c"><!--pnid:72fOxlstiVArKPx3k5mmkt-->-- 高三(2)班</span><!--pnid:RiXjsOmAyBTfX1rO7TcjMg-->
+  building    text,                        <span data-page-node-id="OQwzcCrVqgpM4RJvnnLYTO" class="tok-c"><!--pnid:s1Iql7OMbNggRFOOWkytaA-->-- 3 号楼</span><!--pnid:r9c8Fif7PwXxO6yGR7TQiJ-->
+  bind_code   char(6) NOT NULL UNIQUE,     <span data-page-node-id="rIdcMc3mUfUphvIvd2KKu9" class="tok-c"><!--pnid:HvarmZzISpO1HVEndqBdWa-->-- 大屏绑定码，管理员生成</span><!--pnid:ixB44Loh8kN0TKR6b790uh-->
+  status      text NOT NULL DEFAULT 'active',
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+
+<span data-page-node-id="eC4FvgxGeO0ZzIHL2sD75E" class="tok-c"><!--pnid:8LyypQFqabqJHbw32wKUqF-->-- 设备：装在教室里的 Windows 客户端</span><!--pnid:X6l5RJlBfLgR0IOBlQxtsf-->
+CREATE TABLE devices (
+  id           bigserial PRIMARY KEY,
+  room_id      bigint NOT NULL REFERENCES rooms(id),
+  device_no    text NOT NULL UNIQUE,       <span data-page-node-id="88QyKxapP3V8wJ4nXfYP79" class="tok-c"><!--pnid:jOvLwW0kbbVujzIpxSj3S8-->-- 硬件序列号/机器码</span><!--pnid:9JdgGbhuuAcioEsXFOKrjR-->
+  secret_hash  text NOT NULL,              <span data-page-node-id="JIhUYnG7BTWQwnHAsrfU9P" class="tok-c"><!--pnid:JkOglVWtItBnDdXO4UHzYO-->-- 设备令牌哈希，绑定后下发</span><!--pnid:fYPrFfd8UtEVHbvNXupl73-->
+  app_version  text,
+  last_seen_at timestamptz,
+  created_at   timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_devices_room ON devices(room_id);
+
+<span data-page-node-id="NNeRurv0KyIBNNaQASpzCi" class="tok-c"><!--pnid:ZCfqWTUUxba5ByAm1qhj5K-->-- 班级 / 学生：用于「批量勾选」</span><!--pnid:kDlXsIwy0VhYdCbqzChWGS-->
+CREATE TABLE classes (
+  id        bigserial PRIMARY KEY,
+  school_id bigint NOT NULL REFERENCES schools(id),
+  name      text NOT NULL,
+  grade     text
+);
+
+CREATE TABLE students (
+  id         bigserial PRIMARY KEY,
+  class_id   bigint NOT NULL REFERENCES classes(id),
+  name       text NOT NULL,
+  student_no text,
+  UNIQUE (class_id, student_no)
+);
+CREATE INDEX idx_students_class ON students(class_id);
+
+<span data-page-node-id="GhAJiRstem59nxTQhrMWYJ" class="tok-c"><!--pnid:2UU6f8glVNxZBSfdZjXQ2W-->-- 教师：openid 为微信身份，role 区分教师与管理员</span><!--pnid:k9dTla7LX1po0jyhUOPXLr-->
+CREATE TABLE teachers (
+  id         bigserial PRIMARY KEY,
+  school_id  bigint NOT NULL REFERENCES schools(id),
+  openid     text NOT NULL UNIQUE,
+  name       text NOT NULL,
+  phone      text,
+  role       text NOT NULL DEFAULT 'teacher',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+<span data-page-node-id="a4wySpCHQjkdH6Kum5Yt07" class="tok-c"><!--pnid:WbJ5REz9tzVTT8EAShwGnZ-->-- 公告主体</span><!--pnid:xhmWy2rYfkZ282cK6aqjri-->
+CREATE TABLE messages (
+  id             bigserial PRIMARY KEY,
+  school_id      bigint NOT NULL REFERENCES schools(id),
+  teacher_id     bigint NOT NULL REFERENCES teachers(id),
+  type           text NOT NULL,             <span data-page-node-id="c4jUBXduwezxDL6meF8XPr" class="tok-c"><!--pnid:Bh7X08ZlsFFfbQnvOOCoQW-->-- call | batch | notice</span><!--pnid:bXgysiQCr4h0t26cn8a3vL-->
+  title          text NOT NULL,             <span data-page-node-id="fIm9Upqu7GnKZuoQw7drvO" class="tok-c"><!--pnid:g98pOvp83O5kMg3089fhLS-->-- 大屏主标题</span><!--pnid:xIs5FwPddXTNOaUhVNXH2K-->
+  body           text,                      <span data-page-node-id="9oPx8YCAgJzlVWFl9OKVr6" class="tok-c"><!--pnid:EQOoP3wq6BR5ELw4vLDRlB-->-- 副内容，可空</span><!--pnid:3AlZzYkw0LVrvhX8Rc5Bca-->
+  priority       smallint NOT NULL DEFAULT 0, <span data-page-node-id="g1xpBMVMDLhYVJaXeNWnJI" class="tok-c"><!--pnid:EHJkl4FscHetNXFtpb37g8-->-- 1 置顶，0 普通</span><!--pnid:OEL3lQdnXcAeYRnVDo4AC4-->
+  start_at       timestamptz NOT NULL DEFAULT now(),
+  expire_at      timestamptz NOT NULL,
+  broadcast_times smallint NOT NULL DEFAULT 0, <span data-page-node-id="expdk6sBden2dadTGASuOS" class="tok-c"><!--pnid:mD3RybRm5WaLa0yKY28dd5-->-- 0 = 只展示不播</span><!--pnid:WTLssWt30xpAeOztYnLXVD-->
+  status         text NOT NULL DEFAULT 'active', <span data-page-node-id="xn5ExKgZ6KdiNEJmsWXYkP" class="tok-c"><!--pnid:UwlaUipoP07OYARN2JyDtj-->-- active | revoked</span><!--pnid:L119gUnV1zEVSiwzDic4ZM-->
+  client_token   text UNIQUE,               <span data-page-node-id="RkPqDXa17uANRVnVHc6mz3" class="tok-c"><!--pnid:FtPFT6oEcHfQvhBoraQCqS-->-- 幂等键，防重复提交</span><!--pnid:T79mRZQl0gbfW6iIGwq2TK-->
+  created_at     timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX idx_messages_active ON messages(status, expire_at);
+CREATE INDEX idx_messages_teacher ON messages(teacher_id, created_at DESC);
+
+<span data-page-node-id="QtIYDK76n8Fjwvk1QexeG9" class="tok-c"><!--pnid:e9wPoDKSNhsc2iUc07LDh2-->-- 公告投递到哪些教室</span><!--pnid:DZftPuo6Ho9ZllyWE93tL1-->
+CREATE TABLE message_rooms (
+  message_id bigint NOT NULL REFERENCES messages(id) ON DELETE CASCADE,
+  room_id    bigint NOT NULL REFERENCES rooms(id),
+  PRIMARY KEY (message_id, room_id)
+);
+CREATE INDEX idx_mr_room ON message_rooms(room_id);
+
+<span data-page-node-id="gQwG2McUtoaG3QVM0VvM9r" class="tok-c"><!--pnid:2cxhEmHYfXycWB9ZMaSRyV-->-- 播报审计（客户端本地也有一份，服务端仅用于排查）</span><!--pnid:FyXm6KZsT0pfqOxaqSaUms-->
+CREATE TABLE broadcast_logs (
+  id         bigserial PRIMARY KEY,
+  device_id  bigint NOT NULL REFERENCES devices(id),
+  message_id bigint NOT NULL,
+  round      smallint NOT NULL,
+  played_at  timestamptz NOT NULL DEFAULT now()
+);</code></pre>
+
+<div data-page-node-id="rVzmNIJ3LwIrECLPQyFlMH" class="note"><b data-page-node-id="I7ynog3BNgZNdKVKPlvHpD"><!--pnid:ukuFd8Dg6LBFCOoz0mWHSw-->为什么 <code data-page-node-id="57crPj2F09VdG32OwSvQtm" data-pnid-children="M4ehPe3A2z4tsv8gklx2lT">message_rooms</code><!--pnid:iC6zPimPYr1lo7MKFduZgN--> 单独建表：</b><!--pnid:CXqBybzWQAcuH6PSwRNAWC-->一条公告投 8 个班是常见操作。存成逗号分隔的字段后，「某间教室当前该显示哪些公告」这个最热的查询就没法走索引了。</div>
+
+<h3 data-page-node-id="HKsomiYIsybEhAgCXZDHmQ"><!--pnid:dkQBqViotjsJMXEOwwaUWn-->3.3 状态定义</h3>
+<p data-page-node-id="FT5g1FnxGjSObbSjjYdtdN"><!--pnid:1CcFzIMctr64eQC7WDjVJk-->公告只有两个持久状态，其余展示状态由客户端根据时间推导：</p>
+<table data-page-node-id="ABUETYEn1iHq304EpunwWy">
+  <thead data-page-node-id="HWK7ekQ93dpvriubQiRaLa"><tr data-page-node-id="mzfx0S9ZK911lnKE1VU5OH"><th data-page-node-id="vil94jpOI34IhZJOW6mxC5" style="width:130px"><!--pnid:PIXCF3sskDzP0MFmObMqMk-->状态</th><th data-page-node-id="XPu4PZv8RslPPv1hJe4Etc" style="width:150px"><!--pnid:ie6P84imShXLfss8jVFQYY-->来源</th><th data-page-node-id="ALJm5xlylBfpiX7IajzM1Q"><!--pnid:EEcF1xMR7YbEOkER9dj7NM-->说明</th></tr></thead>
+  <tbody data-page-node-id="jkWVUnE90oe1txV40S8043">
+    <tr data-page-node-id="H8Yh9TZlAUMcgRTycV6gwD"><td data-page-node-id="GpNvg8HeVB3qMDHyLoLr2a"><span data-page-node-id="X61c3i7Q3O4Urw7UuFfWGK" class="pill p-green"><!--pnid:DjZOB04NZidUv1WXKW1zrQ-->active</span></td><td data-page-node-id="6wLi2dIK6q2CmTYHqMrkkB"><!--pnid:QsrGKadQscYooXoweDH6eV-->数据库</td><td data-page-node-id="JhJAOI0Bji5o4qbx1F1wxD"><!--pnid:uTutr51O4xWP8MysDnrShN-->有效记录，是否该展示由 <code data-page-node-id="RGPGUZ3mT8pUFzWCoZdDGp" data-pnid-children="lmrWYcYO0w3W7G2JTNxJZk">start_at</code><!--pnid:ethGJbyvlBoVRly1G16wH0--> / <code data-page-node-id="bDQmqXEhRrtr15hibROrGI" data-pnid-children="ViADGnRHNJk5EiIItQzmrO">expire_at</code><!--pnid:PJtpQKGpMVIbIeRkGKw72Z--> 判断</td></tr>
+    <tr data-page-node-id="4DZ3Ru9Wd7qJ7W19Qr08bw"><td data-page-node-id="yTtcY6jN5kllqQTzQQZqY1"><span data-page-node-id="XmkcqMPshj7bsAGCod62qp" class="pill p-red"><!--pnid:C6QgUo23Fohv79ZJYPrOsz-->revoked</span></td><td data-page-node-id="aLh0TWloG83R7GRtMjrxSp"><!--pnid:gNvRC2QwYUwLAUxTuhfGHp-->数据库</td><td data-page-node-id="BAbKoxqPO5VpSOv4PEZqGt"><!--pnid:e2Fis8PEy4ILIfznVJeCHO-->教师主动撤回，任何端都不再展示，但保留记录便于审计</td></tr>
+    <tr data-page-node-id="zggkYWgn5n3zoVHOUYL3Ux"><td data-page-node-id="IgPdOIRKhGZ8SEGIWHwvdw"><span data-page-node-id="ih2UjXi6KXEbyVcf13fBzk" class="pill p-gray"><!--pnid:IgObwMnePG5I57FljzrHeJ-->pending</span></td><td data-page-node-id="aCgqoIAMseArDhBYEQrGzc"><!--pnid:IwyfMgOuNZrTCFHjVOnd24-->客户端推导</td><td data-page-node-id="aSIMcrUIkUlZO8xCl74myv"><code data-page-node-id="NJO3xz6Eaz6f9QYMQi4HmK" data-pnid-children="6ua6PeExktcpkj8QyIPKOB">now &lt; start_at</code><!--pnid:b1e0FQuY5PQOt6KAIf43XZ-->，尚未到生效时间，不展示</td></tr>
+    <tr data-page-node-id="i7oeFOWTpL4RoQCU5iwIYG"><td data-page-node-id="M5S4ieWUB5Z6KAJQCxCgpy"><span data-page-node-id="aHwO0LN81KFRYdU5IDGpA2" class="pill p-blue"><!--pnid:DK7EYAD103ZvvIn3GrHlux-->expired</span></td><td data-page-node-id="S5nzjgNyDq2djPbfJSQR7x"><!--pnid:Xu11QSzWQYvHpPzO0rZAwI-->客户端推导</td><td data-page-node-id="RjD8DPUz8PlFkbnDvP313t"><code data-page-node-id="ie5pi2EQlgCgYtzj040nPe" data-pnid-children="l3X7YozKABTTZKjPQWUFvh">now &gt;= expire_at</code><!--pnid:MtzMe79ni1zPu1nQ1mNur5-->，本地移除，不依赖服务端推送</td></tr>
+  </tbody>
+</table>
+
+<!--pnid:boPyjBQN2ruRug2BEFiPJ6--><!-- ============ 4 ============ -->
+<h2 data-page-node-id="qeymUM5tinT0jKq0ojdfaP" id="s4"><span data-page-node-id="VEVUqBKTZme7qgCQ41OqPb" class="num"><!--pnid:Uq0xG8xqQLv9tF2ml5i08R-->04</span><!--pnid:tNBOdBSZB3S0QPMhYk5oIV-->系统架构</h2>
+
+<h3 data-page-node-id="tgtc73ycexxGY6cSG8wp8S"><!--pnid:XCU6ia9pzlOklqY8BmWD4S-->4.1 拓扑</h3>
+<div data-page-node-id="rgaQQA9UICiunfV56LdtS3" class="flow">
+  <div data-page-node-id="3nSlja710GU6pPArP3Phgl" class="step"><div data-page-node-id="o1FOog7ghXApLfbxhcmdDm" class="n"><!--pnid:vehcqqxUSRS7n1BArikFRv-->CLIENT A</div><div data-page-node-id="S3DL7rTGwAJhAhczGLuPj1" class="t"><!--pnid:D8APn4ML6xk5kRavQptJ0i-->教师端小程序</div><div data-page-node-id="dZ48eIhSdJxlrnZuSNj1ic" class="d"><!--pnid:EdjTSmyf0W3cnzTRVDgm78-->微信运行时<br data-page-node-id="07gNxWceS4TaQevhcJuANI"><!--pnid:RvZfQco6aOWPmm55d3WccA-->HTTPS 请求</div></div>
+  <div data-page-node-id="Igf7ANbbTVuqMzrHAAfXQS" class="arrow"><!--pnid:sVMUcsSSzwVvqvVwU4FHk4-->→</div>
+  <div data-page-node-id="gQMNNJHXZPV7gr5Pr2IISq" class="step"><div data-page-node-id="v8ruT7w0m0TdaL5p82ANHe" class="n"><!--pnid:eDxk4BRS8DoVHqYfWRnvTM-->SERVER</div><div data-page-node-id="ntJBCtqZPtfzEPtEFF1Rtm" class="t"><!--pnid:kJwjvMXBKS1ulFWpQYV9hM-->Node.js 服务</div><div data-page-node-id="cRxrnZR4bVplKrFLXCVWG7" class="d"><!--pnid:i0SpksvkiHRrKvyddZ6gVb-->REST + WebSocket<br data-page-node-id="9oAAwZ2MowzSjNxZm60SoF"><!--pnid:NZ9bZHRrvqg6Naa3nVfEHN-->PostgreSQL</div></div>
+  <div data-page-node-id="6a3YcAfRJYFQ4usgSEGfke" class="arrow"><!--pnid:AGlLC9pTZmfAKn9JPn2G9p-->→</div>
+  <div data-page-node-id="nL0K6B4WSRdCgldAjW3Zb8" class="step"><div data-page-node-id="OlbNUOek9sKn1wQx2uVmY5" class="n"><!--pnid:OstbhzZfB7zKgnTMC56k2a-->CLIENT B</div><div data-page-node-id="jf9EVOnNmpw87eAHC81v1j" class="t"><!--pnid:6qoWkXp68Hl8xY94SrR7nM-->教室大屏</div><div data-page-node-id="sYANqAc9oU8a5x65l2tU2y" class="d"><!--pnid:yz7SNcwuJkIxFPChiscxYI-->Electron<br data-page-node-id="k2dxOJ3UWU2ks9RnoTmiXs"><!--pnid:VvPmr0PAZHfytOMEZPgzTj-->本地 SQLite 缓存</div></div>
+</div>
+<p data-page-node-id="fwff45oH72lus88IRO12wA"><!--pnid:RWGnMqRp2Feweyfz4z2YOV-->单机部署即可支撑几十到几百间教室：一条公告产生的广播是内存操作，瓶颈不在 Node 的并发能力，而在教室网络的稳定性。</p>
+
+<h3 data-page-node-id="8wCdZLgwkwS2rTtvuxryn9"><!--pnid:8C35FTdIqi5rf5bwEnIWJ2-->4.2 技术选型</h3>
+<table data-page-node-id="qrAMWvigPK9270OQHKmdH4">
+  <thead data-page-node-id="PcahncQMm0RcqSPhdDS9Gi"><tr data-page-node-id="LPiAR5UxV8AwcLdIwsqyBM"><th data-page-node-id="tgUp82h7KLV5guyUD6zEHJ" style="width:110px"><!--pnid:1qX330kUcLHMW3KhQ9sb1y-->层</th><th data-page-node-id="kdD15RVLcgP3wSIoEtOvfi" style="width:180px"><!--pnid:2HQaTPbaVp4tUvCYqwYIyK-->选型</th><th data-page-node-id="36kPf9hEUMZpgfAe1uaIug"><!--pnid:zIqEORpeqGCLQjZXbCHtXS-->理由</th></tr></thead>
+  <tbody data-page-node-id="AroFYkogQBMdjg2R4VpAxE">
+    <tr data-page-node-id="Qf6hrVqGhPKVe9zUnTee0R"><td data-page-node-id="hJDAuofvQipGAlzdKdYfQZ"><!--pnid:ED4Fw8EUvpJ1N4bj3lmp53-->大屏</td><td data-page-node-id="sF20tX8XLhXAhAuQnCAAw6"><!--pnid:Z60B0uam6ZOw8vwIDUSIkS-->Electron + Vue 3 / React</td><td data-page-node-id="CSNPS3q471tDFv8qrNhGmu"><!--pnid:Es7JaBQz0KPx2rXu4v4H8f-->前端技术栈复用，全屏 kiosk、自动更新、开机自启都有成熟方案；TTS 通过主进程调用系统语音</td></tr>
+    <tr data-page-node-id="dAqs4tZKcBVaEsbNAbjNmx"><td data-page-node-id="pF5H5gcbA6uytmmzOv15Uv"><!--pnid:Xbwwklz22fOwYKyRJmmMhg-->大屏（备选）</td><td data-page-node-id="t9AKj5EqQtWGlDhGH2gfxT"><!--pnid:YtV8yRkLzKvyTxAQr6vBnO-->C# WPF</td><td data-page-node-id="QKrjFvZGFRTlKN8odX6WGy"><!--pnid:jaNGLv41CiuiUlQ2IFUoJy-->若团队是 .NET，<code data-page-node-id="0R0XcAdsps2OrzRaRErcy5" data-pnid-children="hjKGyIpR0FgUVzU1e97GzA">System.Speech</code><!--pnid:1Zm7IzEPefnKWzTKR9OWR5--> 调本地语音最直接，无需额外依赖</td></tr>
+    <tr data-page-node-id="XboYywaz4DzU0RuhqWUUbv"><td data-page-node-id="2hg6unv9uVIuNZLI2DY0xp"><!--pnid:6MP9EsW8C8J9vpfjqsIbmr-->服务端</td><td data-page-node-id="fNnTk6hfUlRKLEnaZxQHFl"><!--pnid:knmNOnHCURmqj7a6AnuCuc-->Node.js 20 + Fastify</td><td data-page-node-id="uaXYggNNyF0L1T5kFQ0hf4"><!--pnid:MibsqFYH2MMCpVtrjRz0zq-->与前端同语言，WebSocket 生态成熟；<code data-page-node-id="Vohljal3HxEQIWRy33cBTX" data-pnid-children="DgvURnA9Rn9lwsfHqzzLDc">ws</code><!--pnid:OmkLZamwraoua6dhwuifVB--> 库足够，不必引入 Socket.IO</td></tr>
+    <tr data-page-node-id="lAWGjRaZam2YtsWsNgTaM4"><td data-page-node-id="y3rsrkiLtkruLg4r0XBngd"><!--pnid:Eucd6lJxXjBsLC3idTwQ5R-->数据库</td><td data-page-node-id="LAepltS1KYz3P92LD5dTnC"><!--pnid:qamG1pfCD6d1dRXTNmhHmc-->PostgreSQL 14+</td><td data-page-node-id="w3AG5OYTBbXHpc073ncFrl"><!--pnid:dYiPrUrrWsyMW7NF7wT0lm-->时间区间查询、部分索引好用；数据量小，无需缓存层</td></tr>
+    <tr data-page-node-id="JdFAi1LxJ2rsSJrA0eTVec"><td data-page-node-id="TwWDNtY0AwhLaJfp1nFuTJ"><!--pnid:5WRu4KP07bxBw1vBDCZR5u-->小程序</td><td data-page-node-id="adTZJyRphKUH8B0aGtzE8i"><!--pnid:dNUW4uR1ROCGbGKIxYecWZ-->原生（WXML/WXSS）</td><td data-page-node-id="7LKcVrnmL0aOxpn5ojYjRI"><!--pnid:7mH0z4MzUfMHRF7N5xb6tT-->页面不超过 5 个，引入框架反而增加构建复杂度</td></tr>
+    <tr data-page-node-id="OJRtC6VaQh6vD76BAiC1JC"><td data-page-node-id="i75jDsM91XsneV0OzPrtwS"><!--pnid:j3NmICube65L8x63uNQYro-->部署</td><td data-page-node-id="ulOFUYp1K34Z2iXZmhYjDh"><!--pnid:ZPopEiOu6ST1UDsYbd49Te-->Docker Compose + Nginx</td><td data-page-node-id="ETvTs3A3mkb0R9OlhPrmVS"><!--pnid:I3penZwALK6vvGcNd9XLWE-->单机可维护；域名复用已有 ICP 备案主体</td></tr>
+  </tbody>
+</table>
+
+<h3 data-page-node-id="D2zvmLnVfNCYNkqKGzhyCc"><!--pnid:ex8GziSbigYzUb81ZFOTfO-->4.3 部署形态</h3>
+<pre data-page-node-id="32TiR52ty9lpMoqLWWIqPR"><code data-page-node-id="VCxNgYGoc2mfniKqB3id66" data-pnid-children="pNetwIBd6KsHEJPcRKCemX">                    ┌──────────────────────────────┐
+   小程序  ──HTTPS──▶│  Nginx  (api.xxx.com:443)    │
+                    │   ├─ /api/*   → Node:3000    │
+                    │   └─ /ws      → Node:3000    │
+                    └──────────────┬───────────────┘
+                                   │
+                          ┌────────▼────────┐
+                          │  PostgreSQL 14  │
+                          └─────────────────┘
+
+   教室大屏 ──WSS──▶ 同一入口，长连接常驻</code></pre>
+<div data-page-node-id="3Xdwt7gWMs7HacvTvXAFok" class="note"><b data-page-node-id="gTr36aSZSDPo4Xl7Ni5HZT"><!--pnid:JdRvqyXaykEl4yOiCc3938-->域名要求：</b><!--pnid:N5pATxrBt5WnU4KNZHWE3s-->必须 HTTPS + WSS，且域名已完成 ICP 备案、备案主体与小程序主体一致。Nginx 需开启 TLS 1.2 及以上，证书链完整（安卓真机对中间证书缺失很敏感）。</div>
+
+<!--pnid:4bXm6SgRoXCsBm5vIH0XiE--><!-- ============ 5 ============ -->
+<h2 data-page-node-id="W5rPatI03kMRdLK1uvbLv1" id="s5"><span data-page-node-id="lIn1ZjRbTkutgaMEGISCX5" class="num"><!--pnid:jcU8lnIsipQhJ3wyNT54uv-->05</span><!--pnid:fhvGGalzkDB2YpMipXNMJL-->接口设计</h2>
+
+<h3 data-page-node-id="PuAzt3TMONkpyABynYLiWg"><!--pnid:DJcMqSpIZpgW4jzfSZM6vV-->5.1 通用约定</h3>
+<dl data-page-node-id="6mGL6vD0KhnIhuL0YYmySN" class="kv">
+  <dt data-page-node-id="ol6jw444JY4LkPCe4WNZs8"><!--pnid:8FVzb5riRwvwLi7cjVoJqJ-->Base URL</dt><dd data-page-node-id="48ajjJvCd77Jj6K2QTnEE4"><code data-page-node-id="o6v3j8VO67IEgiQfZW2qeB" data-pnid-children="dYNaF5oRXKCmvqdFT0NFYz">https://api.example.com/api</code></dd>
+  <dt data-page-node-id="sppPEbGWn5iyZpDLrLtdoN"><!--pnid:KqYYIp3vmWFMVnE60d33tx-->编码</dt><dd data-page-node-id="i5h4rhXP9BChplGFvV2ijo"><!--pnid:QFdVppJtD8X0FfX0sMuSOO-->UTF-8，请求与响应均为 <code data-page-node-id="aawOJzOASkBZ3CxfEzxeZY" data-pnid-children="UNqwKY1Jb0GDn2cJBO55i0">application/json</code></dd>
+  <dt data-page-node-id="Zbm2aBVOVR7BAhpoqXqscM"><!--pnid:zP8A75BuAXRdcPPc2OCamY-->鉴权</dt><dd data-page-node-id="mkAPBG2dl97yh2TCLePu7I"><!--pnid:irZZrZkutb84BEhY5SHwCt-->请求头 <code data-page-node-id="0FtLoddfgosmxtHBUYW1az" data-pnid-children="APvfq6pqIHV2TknNtuiF79">Authorization: Bearer &lt;token&gt;</code><!--pnid:d34n6fgs8e0RDl44oLs1u8-->，教师令牌 7 天有效，设备令牌长期有效（可后台吊销）</dd>
+  <dt data-page-node-id="UB8ns3Fjy8S9y8MdF32lFL"><!--pnid:Pb0OQDnAktg4mMH43dWz53-->时间</dt><dd data-page-node-id="HasF0LsLXR8ua8Q4Q37Xi1"><!--pnid:6n0VkVIEJ6i1FOYaCE4HDh-->ISO 8601 带时区，如 <code data-page-node-id="JazZfg38UeBuhr2F3jnJ1U" data-pnid-children="C96czGpRpRXABPrBVLuFIO">2026-10-21T15:30:00+08:00</code></dd>
+  <dt data-page-node-id="Ew3bwXXVWs3H1ugzNQRWE7"><!--pnid:eLRHYlkhtpgexhbzXRIsIW-->响应结构</dt><dd data-page-node-id="1p8ZOmS77E583M3wCiuKGe"><code data-page-node-id="PP6b8L3BXJOu0rXHY5Ttp6" data-pnid-children="S1U9QSUJVYg2WobbXJu0Gq">{ code, message, data }</code><!--pnid:cyXC5HhVhPJMWD5t8ejugj-->，<code data-page-node-id="ZYwYHGecUJArqHDJbGi3AS" data-pnid-children="PAq3GawTDMyicHlB8j3U2a">code = 0</code><!--pnid:Z1E3GZbVU5DKmedt8xeicZ--> 为成功</dd>
+</dl>
+<pre data-page-node-id="mYmp9xwiznH4Fl6TPoibG5"><code data-page-node-id="uO1Pmrym4xR7pabPpj58Fs"><!--pnid:GUNFR6lA1AUeVq2zyDdNcs-->{
+  <span data-page-node-id="N0zIJx68kPf0v4sToEZiST" class="tok-k"><!--pnid:gLdI39rEw2ZhDhnH5zQYk5-->"code"</span><!--pnid:xyqxhK8NbhBfKhDAMdBsCW-->: 0,
+  <span data-page-node-id="xOsuJzvKzuQGDe2nenQlL1" class="tok-k"><!--pnid:CEwJDIL390AiLlUQqScXne-->"message"</span><!--pnid:CfbuqzBfy80Cw1avkNgkmm-->: <span data-page-node-id="3nUTCgGodBp3KF7lQlPCRx" class="tok-s"><!--pnid:IVFMulyUWmgC92Uc14lQnL-->"ok"</span><!--pnid:O2r3LF1nOU124me4moyh6p-->,
+  <span data-page-node-id="VdId8bWfSaH3FZGjiNDZgu" class="tok-k"><!--pnid:0f3JTTxNEeFcpYpQlp7H3p-->"data"</span><!--pnid:Icw05UlHRavTAECIM3z994-->: { }
+}</code></pre>
+
+<h3 data-page-node-id="X9W2kiwEO77LpA1EyhkcgM" id="s5-1"><!--pnid:v5XxT6kUxjsEczAUvOkBBq-->5.2 REST 接口清单</h3>
+<table data-page-node-id="0kQ6ZkiO2XP4lJmt8FAYx8">
+  <thead data-page-node-id="NNF5w5TKpuLwx95dQjZwr5"><tr data-page-node-id="9gRIauGn7cHQfyAiBOhDtl"><th data-page-node-id="ar8ZVFnpjZftfECdm4JwjY" style="width:74px"><!--pnid:DqHBEgT6WP7DUdDhu1S6Y6-->方法</th><th data-page-node-id="zWcRnTp3962oUFBo0bEFgt" style="width:230px"><!--pnid:Vo93bUUCyERoNhkKb1EBl8-->路径</th><th data-page-node-id="919MqtoUntJt0XTG1EWk7w"><!--pnid:Khh32Ni82luqA6jczjIDNx-->说明</th></tr></thead>
+  <tbody data-page-node-id="OYukU9YIJiPlhkaXQAIOZg">
+    <tr data-page-node-id="5SAlQoZBfXaKpvfRWf9spu"><td data-page-node-id="H6WreYQGKqrzcT3EPR1QME"><span data-page-node-id="bUhg1vzt7CdP8IbqfB8PB7" class="method m-post"><!--pnid:a4r6WGTLB6O7pkdZcxMRMa-->POST</span></td><td data-page-node-id="EICxmO3iNTChxzL9F1lecD" class="mono-cell"><!--pnid:WQaKSvupcXZaXccXWmi8HE-->/auth/wx-login</td><td data-page-node-id="iFGI7QNijkHKqQofyxx271"><!--pnid:qfB2uejSLFti9mNtkl3r3L-->小程序登录，<code data-page-node-id="T1ypveVRuT3jPlh40m0CAl" data-pnid-children="ZVvqCxO1IVQLtN8USdsQEW">code</code><!--pnid:2ENgHHdf0U2v7UHCXrGLnc--> 换 openid，返回教师令牌</td></tr>
+    <tr data-page-node-id="oRhH15mTKUDLPIzeMc7EAU"><td data-page-node-id="SJBQ7RegSgT7KHzTMXtbQN"><span data-page-node-id="Tjawj0fhPLfQJ8n6wtDmev" class="method m-get"><!--pnid:tVLsLHyUaECgn35WCeVhN7-->GET</span></td><td data-page-node-id="qMfxGOEBFYHMnoZ2wId2hv" class="mono-cell"><!--pnid:A1vUvk46c2Wf8rzDNgQSHV-->/me</td><td data-page-node-id="4OuXlNBeGGGLo1RKDgzixz"><!--pnid:OXpAxh3UrqrSCyYfUwyh2M-->当前教师信息与权限范围</td></tr>
+    <tr data-page-node-id="rtLOvEXSPyYqWB2FpqrZjZ"><td data-page-node-id="GXb2zSIf9yGeU3IjyfWnIk"><span data-page-node-id="TQtg12DdZJEZYZ0l0HqbNu" class="method m-get"><!--pnid:vIDBTh3tjvArksRlE9XVvJ-->GET</span></td><td data-page-node-id="QQukaaAXXPT9RxPGmebsN2" class="mono-cell"><!--pnid:6z8c0CTEGj4WYuQHo4MSJ5-->/rooms</td><td data-page-node-id="oc30daJynawiIMwgCVAS8k"><!--pnid:OP3WOQFRQwHj414jwshs6v-->当前教师可投递的教室列表</td></tr>
+    <tr data-page-node-id="ClwQpzANVpMulAAQonqfbW"><td data-page-node-id="jq1AiGrGuseCkyIVfsHaWW"><span data-page-node-id="sHZLkWNucU8tUQl9X6HEZf" class="method m-get"><!--pnid:tX1n3GTwOObnLi2N4j3f4C-->GET</span></td><td data-page-node-id="Xq02kCDfaC4pCjQGNlr7PA" class="mono-cell"><!--pnid:o3nej8WK16d5OX0vF6oPmr-->/classes</td><td data-page-node-id="d4KUklYRQsCpshvAUgkDiZ"><!--pnid:4corvkDXaqQiGEpUPvinzS-->班级列表</td></tr>
+    <tr data-page-node-id="XRpuq7sxrqRpWLYzD3MEWZ"><td data-page-node-id="W2fIZGnCSK5Uv5muTINLee"><span data-page-node-id="GbEJ6qAv7NiPL5rur7qSfF" class="method m-get"><!--pnid:2ULBkRwR8F0dt8TryeKH3l-->GET</span></td><td data-page-node-id="NkKuwOf9oMzKbl2XXMFO1c" class="mono-cell"><!--pnid:bQmK40rijWR5ZolYcmCANP-->/students?classId=</td><td data-page-node-id="IKp2qqfb9BdBdDOfJjZF8s"><!--pnid:vpGeF7vG9oGTUCewwYeCF7-->班级学生名册，用于勾选</td></tr>
+    <tr data-page-node-id="dFvZBd6hzEndAf0CtVtH1G"><td data-page-node-id="VXYXAh6CQSS3d4O9BWxMA9"><span data-page-node-id="9jWuH0RxvpXWrMpNTqSduw" class="method m-post"><!--pnid:gqGk9D2dCSrtJ9hnqR85e6-->POST</span></td><td data-page-node-id="kvmNPuZNn2SzmyvBgB4W0b" class="mono-cell"><!--pnid:AvnEJv17YuoF2zn5UvSYUO-->/messages</td><td data-page-node-id="N1I4HdBB21dwBTxdRBwCZv"><!--pnid:rGklH3PPizh7Ym97FVAMv8-->创建公告（幂等，需 <code data-page-node-id="tea7X5iFuiTwLv6ZMPQQjV" data-pnid-children="cBXFLXrWj56S7UEVSZRvvb">clientToken</code><!--pnid:WR9mmDp9xrNltLSWPO1G5z-->）</td></tr>
+    <tr data-page-node-id="eO2o3kEEyO0uLJcj8EZim9"><td data-page-node-id="T1cWxME2vsWvpX6IeMFy51"><span data-page-node-id="qZcgSG3IwydEKqDt2BOBUh" class="method m-get"><!--pnid:E6XKlF0S5MfY4zcg4yW85U-->GET</span></td><td data-page-node-id="RSQ1UK4ReXe89LJeVqC7pt" class="mono-cell"><!--pnid:jiZiHWePAzFBNhbmItsnyo-->/messages?roomId=&amp;cursor=</td><td data-page-node-id="xpceYKtXPEQUUpHAnzBiFd"><!--pnid:IZNH2WdhH0elwYGBtxV4iT-->我的发布记录，游标分页</td></tr>
+    <tr data-page-node-id="SlHbU2FrpwOzC27bkonbbR"><td data-page-node-id="CG2r9IwrSCysXplp5cQMxn"><span data-page-node-id="7gii2g8kfook4GwoTU4iTj" class="method m-post"><!--pnid:McsN1SyecDeNknvxemZ26I-->POST</span></td><td data-page-node-id="uTN9i5Fq9JpG49xlqkhEC4" class="mono-cell"><!--pnid:5auFliNhe9SdEA1i9MiMiX-->/messages/:id/revoke</td><td data-page-node-id="HjiTI406CfEsiwDytrix9u"><!--pnid:mxUVHJkwYdd8t6rjf7Rk4Z-->撤回，立即从所有屏幕移除</td></tr>
+    <tr data-page-node-id="11k2diGdUNqgBkDcr56YT1"><td data-page-node-id="vKZJQnpjBdOtVZXl3SJQRL"><span data-page-node-id="75TKr5TUgbE8a3OG0rGau5" class="method m-post"><!--pnid:mjxkAqUIC91jEOjVaOjzpr-->POST</span></td><td data-page-node-id="H8RxcS6CNm5GjXmwvm3QP7" class="mono-cell"><!--pnid:MEPBvsMLxg3BtzzXe7LOT8-->/messages/:id/rebroadcast</td><td data-page-node-id="PdiI1ZzyqdJWEuFIAbpWzZ"><!--pnid:0kZDvm46T3FC0PFBnMO4QR-->重播语音，不改内容</td></tr>
+    <tr data-page-node-id="1SRG1cs2MzbPnv7W3hxrEk"><td data-page-node-id="mEEnXVQ9aSMdJyrIzVomkI"><span data-page-node-id="d36kU4pMXUekMcwcMGVdST" class="method m-post"><!--pnid:6qvw8zNEOombcBUFRf6NI5-->POST</span></td><td data-page-node-id="OkZ5EWva7SSTH7SF4e8u0W" class="mono-cell"><!--pnid:Kt4fPQHSWDHL1P7Ly78OvY-->/devices/bind</td><td data-page-node-id="pmtWSlGs4kFLrjQIk7rpLV"><!--pnid:1Cg0BgLgZMQ0o5VOtrF03j-->大屏用绑定码换取设备令牌</td></tr>
+    <tr data-page-node-id="gQHaLNLMBCOrErZ8lcb6J1"><td data-page-node-id="tL8MGOWQE0g034etOvdqjG"><span data-page-node-id="DJKmuf7Q9VpZrpc6xbtONb" class="method m-get"><!--pnid:5k4W1sW3Dguyd3G5QgL1Wd-->GET</span></td><td data-page-node-id="fxC5Xb7VegNncQFATR2my7" class="mono-cell"><!--pnid:6TqqALG97k6M7Ir3ajDaP0-->/device/snapshot</td><td data-page-node-id="PrEV96DkUkPsjM8aF2uznT"><!--pnid:si9WOQcGjdfSnJWiOdhcSU-->全量快照：本教室当前所有有效公告 + 服务器时间</td></tr>
+    <tr data-page-node-id="qJA5v5j5YDVEgs5DPZ7rgT"><td data-page-node-id="UejBzp2OjA1WnhtZHPDJmZ"><span data-page-node-id="rfsT3tIJlTkmHGjZO7B1eu" class="method m-post"><!--pnid:c4OLdGODTgI0hypTnFcEIg-->POST</span></td><td data-page-node-id="sXjABlK7IYONsT7wQ3Haaf" class="mono-cell"><!--pnid:merpZOJUJb0oGgbbn3h9ED-->/device/heartbeat</td><td data-page-node-id="Bny5bTqCvNYeKe1mtWgkdC"><!--pnid:DdZGfSWT6FzoDZLPjPQcF5-->心跳上报，兼作降级轮询兜底</td></tr>
+    <tr data-page-node-id="KzUeTsJ37gEJmYRRc8AI94"><td data-page-node-id="02Fdn439Hk4U9Vgw3wdQXR"><span data-page-node-id="JfoSXf9hGYaEFF7978ntPt" class="method m-post"><!--pnid:Gcsradr6wu0M2jn3oeTqGX-->POST</span></td><td data-page-node-id="Gq2RURQuycNQQHgDmu3njY" class="mono-cell"><!--pnid:CBQyYY1gdLgVKCdpC4dDoo-->/device/broadcast-log</td><td data-page-node-id="we5H6y1BKT9fst4PUik96y"><!--pnid:uESErusOzGPFRlH78oRl27-->播报回执，异步审计</td></tr>
+  </tbody>
+</table>
+
+<h4 data-page-node-id="uRBLkRuTePywQMGjxMPL0S"><!--pnid:oEoks4dBoNNpeuBjkxcZ1k-->创建公告</h4>
+<pre data-page-node-id="DTxnRBmMA2EVYrphVIbEdg"><code data-page-node-id="Jaoude0HFeEjXF5TMpG7IN"><!--pnid:zTGQGN06XFI02jXGMv1sqU-->POST /api/messages
+{
+  <span data-page-node-id="Ki1Gouup5Z1hXf3TERy9jM" class="tok-k"><!--pnid:Uk4qYgXMKYWaYO7zUEd7ta-->"clientToken"</span><!--pnid:QsEK1HEja7EXhJRTLwPKjc-->: <span data-page-node-id="oTNvNa0rxtY1uXBGSmWSfC" class="tok-s"><!--pnid:WtjS8OxAJj4hERovXPTGgQ-->"9f2c1a7e-..."</span><!--pnid:FvduNU8u3ZnSasQqWmVJOp-->,          <span data-page-node-id="y82IwE0Kt85uL0pb66Vcdw" class="tok-c"><!--pnid:EEdONLgqab6Dmn57Pn8nEs-->// 幂等键，前端生成 UUID</span>
+  <span data-page-node-id="zGUp1MPKwkK0iopfNupjOf" class="tok-k"><!--pnid:xw4dxoEMMUD2CLbZwDCBHR-->"type"</span><!--pnid:3V9ToW4nMT31jcsRUOm5vC-->: <span data-page-node-id="djltcjZIEtFqeJTo9gPTXj" class="tok-s"><!--pnid:2INEguk40hdO7oRspKZuks-->"call"</span><!--pnid:y2xhFtGzDo1tTaREbkyYJp-->,
+  <span data-page-node-id="8pXUxQTEKSuWISC73c0Q0s" class="tok-k"><!--pnid:wXqHwon5jo8cImECqaQmJW-->"title"</span><!--pnid:b4Ga6TvmfNAligzefjp4LL-->: <span data-page-node-id="bZcaCXfs2Rtsh9lNtj5Vnk" class="tok-s"><!--pnid:Ek06x5cwAZ10rrFvlnJ32k-->"李明 · 到 3 楼办公室"</span><!--pnid:BSO7jLjLV7fDRiYlEXS0LR-->,
+  <span data-page-node-id="E6OahH5o781KJ8UJj2WiB8" class="tok-k"><!--pnid:yrRLiteBBSL8zZ10GJfWrm-->"body"</span><!--pnid:dLwuwamAwp7bKLQQypMYuz-->: <span data-page-node-id="nBTAxcIATXuRMKf8aAXZAk" class="tok-s"><!--pnid:3xGfjC50JORhboK9K6KyH1-->"带上班牌"</span><!--pnid:xR3kFUwbDbKJnteYVqokXN-->,
+  <span data-page-node-id="Gsq4HuBCddV3EWS4bxjZQx" class="tok-k"><!--pnid:3pxYbdqu6efM3uORsEHVwD-->"roomIds"</span><!--pnid:v6ZU04ZGdumI9rQbpBdVMO-->: [12],
+  <span data-page-node-id="y9gurVlZpemf6OKluNnDJV" class="tok-k"><!--pnid:DF60AXhEnztMKiY0nyjLJH-->"priority"</span><!--pnid:RXTyUpsqbs3D4LZdKCfy4s-->: 1,
+  <span data-page-node-id="PXiehdymEhoF1h33SZWBWJ" class="tok-k"><!--pnid:GxWi4oq5BHb5yz550zBfe7-->"startAt"</span><!--pnid:AE1m1pGnScdnmLZhR4J7FV-->: <span data-page-node-id="4o7GoIAiLC1Wself8lYlT0" class="tok-s"><!--pnid:Bp4ztedhkSc2uBK4tv00iq-->"2026-10-21T15:30:00+08:00"</span><!--pnid:NzCFz1wNzxeJfWjvMf8Mkb-->,
+  <span data-page-node-id="BOUtxJn9Nht55BYuDXcZzz" class="tok-k"><!--pnid:ccO8phgiOun1gDld8dGlzY-->"expireAt"</span><!--pnid:sLYouUPdC62XQyNQpN1dK5-->: <span data-page-node-id="X0SDTpphJwiqKNxe5KT3ka" class="tok-s"><!--pnid:jBVDIaVEWQGfbJvV9PLPSh-->"2026-10-21T16:10:00+08:00"</span><!--pnid:YY9Nz2wpCdeKwErivr1uzx-->,
+  <span data-page-node-id="cb5H54mdzADdlT2Nb05psW" class="tok-k"><!--pnid:AWNrkE7SGhcdrRVhLrQgFk-->"broadcastTimes"</span><!--pnid:0HCAzf91ECkrLNlRwkqTkE-->: 2
+}
+
+<span data-page-node-id="A7j2C1NcMynLeRajwS4DCb" class="tok-c"><!--pnid:m2zD8W6Xs8ulsJTcFMW0CD-->// 200 OK</span><!--pnid:HpDrWtXRQYNxmKi898YvZU-->
+{
+  <span data-page-node-id="S8c9F43usGgAPyyGCBgzF0" class="tok-k"><!--pnid:XUIOTN0t2Ki5yzMfCKm1a7-->"code"</span><!--pnid:T22CIg6ZUzitgpvqSmnacD-->: 0,
+  <span data-page-node-id="JTP2vEsTBuV8gjRTzaOIbP" class="tok-k"><!--pnid:vGbzdkyW7uJ9UHN96JiA0O-->"data"</span><!--pnid:NTvJohzGBqJqLuHpEASU3u-->: {
+    <span data-page-node-id="wYoLUTVl3JiIgsImpEygW5" class="tok-k"><!--pnid:Nz5lXTiK8JvkclJLEtFibJ-->"id"</span><!--pnid:k0qt9cR5A14mLyvEQmZ1NN-->: 1024,
+    <span data-page-node-id="b35YoMsqcN1EmmX2cEDld2" class="tok-k"><!--pnid:4ODKm4zt00GRNaPMrIKm6j-->"status"</span><!--pnid:xpt25eNGEpE7HJNcHGIcid-->: <span data-page-node-id="6bOKLuXqQHz61JQp2pFX0S" class="tok-s"><!--pnid:46Xp9jQZWR0EkcJMeZ1KZW-->"active"</span><!--pnid:4JHZ3noK8NOK4uyWNDy91Z-->,
+    <span data-page-node-id="Ec7Zlk4pjYzXlptVpFI4c2" class="tok-k"><!--pnid:ISEqnNapGouOinXOFW8BHB-->"expireAt"</span><!--pnid:DMPNPvyTjJcA6gGXmWJ7Go-->: <span data-page-node-id="wChIndk9hnfs8jrjqQzCuO" class="tok-s"><!--pnid:uiq3d7oeuC3HkcU6xkY3hI-->"2026-10-21T16:10:00+08:00"</span><!--pnid:HrnjqPRtPrPKY9IYxhr24T-->
+  }
+}</code></pre>
+<div data-page-node-id="H0f8eyrsKgDsPHeUZ4C7mH" class="note"><b data-page-node-id="WdWqDAMC4VDDsXRf3B0SiK"><!--pnid:Mcg0GHwjqxTGF8rOKqp5jJ-->幂等实现：</b><code data-page-node-id="NTNdCjUhYj6IShmcxFDy9V" data-pnid-children="2cNW6flRnrDCckacJcm38O">client_token</code><!--pnid:o9kkRLblME94VLzAVJCIRh--> 建唯一索引。重复提交时捕获唯一键冲突，直接返回已存在的那条记录，<b data-page-node-id="NPfjXTjwPHZDG2pV1XF7tn"><!--pnid:grB24ch6ZGtP236hVQjCRc-->不重复广播</b><!--pnid:9i3zblLleWAbxGZEUh5cPF-->。这比在应用层查一次再插更可靠——并发下不会有竞态窗口。</div>
+
+<h4 data-page-node-id="Bq2YmhfqIQjChiYyllmrGw"><!--pnid:qG5p93g19YiXuDGPhjN4qX-->大屏绑定</h4>
+<pre data-page-node-id="8Tg4hvt1s3oDeP0YiKLGJ1"><code data-page-node-id="3wzSvGmSBfMN3vZKcVNJmp"><!--pnid:qhKk46ZwMkplCs72nVujCu-->POST /api/devices/bind
+{ <span data-page-node-id="cugL4JDQbZFsYOTFTL44yt" class="tok-k"><!--pnid:a3kGPFWmskVG3DAuhLi5mf-->"bindCode"</span><!--pnid:HCyTn8PK9RD6WInvwC3ZCR-->: <span data-page-node-id="U7fwtJZPX3Ec4WyhDZnpNO" class="tok-s"><!--pnid:5VeydtmZa8uYUKBkw5xSaf-->"483920"</span><!--pnid:eqlMH3ZFPiipJVevywYx6X-->, <span data-page-node-id="CyIMPyDhevZLYpvMvSiDTu" class="tok-k"><!--pnid:N0FMRLHsdztU7bpOzfr8Ts-->"deviceNo"</span><!--pnid:CL7mNSuKHXwxGDvGZvbv3A-->: <span data-page-node-id="786UbP7DLYvnuVFjeTLe8o" class="tok-s"><!--pnid:9JnsjbRddB3APvJ3WmHAog-->"KIOSK-3F-201"</span><!--pnid:SDWa4x311YDcWCOAiSKggu--> }
+
+<span data-page-node-id="LhCV7SgPiyxL6lUPxwwlAr" class="tok-c"><!--pnid:rqOrjcheim3PjX9kpKCbGJ-->// 200 OK</span><!--pnid:cLjLRn0VOLkvIrmtf1cbxc-->
+{
+  <span data-page-node-id="V2EtzjhmYnK6p7cItByGL5" class="tok-k"><!--pnid:M3ZMt1hjCbNf79M3jcJxpF-->"code"</span><!--pnid:vFuruMiQaRIR2LATrIAKSL-->: 0,
+  <span data-page-node-id="2BvCnVV7p5bKFNJa2jVlIW" class="tok-k"><!--pnid:Yi2PSlX7khPXyEItI4Ivtt-->"data"</span><!--pnid:BZbSMPr55Mf8F4tJbdOR7z-->: {
+    <span data-page-node-id="vgS8zhZOmrLFDhhiHxpNGw" class="tok-k"><!--pnid:7XbzLrRKSPxlh46tKVaD5I-->"deviceToken"</span><!--pnid:aQMoAzO2vLr2k8R4UJCFOp-->: <span data-page-node-id="d2YKaRwstFiC0xyfYipsvp" class="tok-s"><!--pnid:NMhyvTpCzsexCVVgP8QZVU-->"dev_..."</span><!--pnid:8KhShKtNjn0xwuWpApfKyP-->,
+    <span data-page-node-id="Y4cB03uLogKehFVKhvlxs9" class="tok-k"><!--pnid:tRt64oK3fAatHsTlMqAvZj-->"room"</span><!--pnid:ObEERrwaGfUU5qRAM6oNaB-->: { <span data-page-node-id="qtb8WckfkktuHH783tYJEz" class="tok-k"><!--pnid:tbuWJWsju1Q7Twd3QQhRnQ-->"id"</span><!--pnid:i7seH2drtDAmf9dFjTx6h1-->: 12, <span data-page-node-id="GKyKsLWa0Fu4ddxqKEiSpZ" class="tok-k"><!--pnid:9azzYjKcCUkIJRAML0pYBL-->"name"</span><!--pnid:7byFrJ7Gglecm3QLLOtjhO-->: <span data-page-node-id="H25RAKckGNz2UczgSsbRqi" class="tok-s"><!--pnid:Neb69K0LlnaMSCeSjSxlwX-->"高三(2)班"</span><!--pnid:ddA2xAMAe9q75zQGLp2oN9-->, <span data-page-node-id="mKmw35luYVaXhgTRYQbSRz" class="tok-k"><!--pnid:WrdZFphrdQsFQvPkuokNPB-->"building"</span><!--pnid:nSJ1FXqXDnQyby2CgqwuT4-->: <span data-page-node-id="J3N8TwMKlkrAbnrxuTV7EG" class="tok-s"><!--pnid:vybaizkSNyCNxrfXJJlZMt-->"3 号楼"</span><!--pnid:ep9ToiNMH89zNnFWWf49Xd--> }
+  }
+}</code></pre>
+<p data-page-node-id="BOEuuBxbBq4XarR36lCZNi"><code data-page-node-id="KyT2bRSjh4hKLR07MtAl9n" data-pnid-children="Z0DTAAocXTnBC8fbJYA2xe">bindCode</code><!--pnid:lgcUCUGoRtclGdCPVZveuz--> 由管理员在后台为每间教室生成，6 位数字，只用于首次绑定，绑定成功后作废该码并换发设备令牌。设备令牌写入本地加密存储，重装系统需重新绑定。</p>
+
+<h4 data-page-node-id="SCgsR0yCWbzCBHxU4O0dzZ"><!--pnid:Tr77vkDgWHvNnzNy8jxSYP-->快照</h4>
+<pre data-page-node-id="CzKzOw2L3p0FMDXf9ZW2tZ"><code data-page-node-id="ZRYxAgcwt5AMxD1v7w6q2e"><!--pnid:WUNWmkrkvHSLH9RVLkgO6k-->GET /api/device/snapshot
+
+{
+  <span data-page-node-id="y77GBn7pw56O8czbJBmp6F" class="tok-k"><!--pnid:FXUfjUkGwOW22b4NECYLsn-->"code"</span><!--pnid:kNlywLiuJKY45KTiB7GqXz-->: 0,
+  <span data-page-node-id="g42dwYiWaTHRlsTGoVhGCz" class="tok-k"><!--pnid:OHBWrzTsIfR08lF1iS9zyG-->"data"</span><!--pnid:phKchvv5FvHIovbm0PNlcH-->: {
+    <span data-page-node-id="kTjTQbhVxBHdHM54rr6Xjf" class="tok-k"><!--pnid:ZQi06WTiP4T7PfLzDmTEjT-->"serverTime"</span><!--pnid:nhmhsDpyAx6RHlnkhI38cm-->: <span data-page-node-id="kHGROsxrKhtVe4yyi6t6Ds" class="tok-s"><!--pnid:jdx0iAhhlI5vPnekD4WGln-->"2026-10-21T15:31:02+08:00"</span><!--pnid:eYuXiIajb4cOQyiW6LkIJA-->,
+    <span data-page-node-id="B6EnxdLXzSwytlj62ROwoA" class="tok-k"><!--pnid:bsi6Ry9r5HxxglR6CzBrBW-->"room"</span><!--pnid:8TmwAfkdoFZ8HPCzTi6Kek-->: { <span data-page-node-id="Ul03AJmUaGjEUGJxc9LarB" class="tok-k"><!--pnid:fMrvKyiSLCzkfDWBGh6nbf-->"id"</span><!--pnid:PhP7UroW7yNPtOvYrnyQ2O-->: 12, <span data-page-node-id="Sp17gng2AVCcIE9vqOgxcl" class="tok-k"><!--pnid:nQEOAUBkrEcSScdRqqeWfv-->"name"</span><!--pnid:gdlYliuPePVo9spH6yjXa0-->: <span data-page-node-id="nYkYiEk0ob3iXzunzjU6kr" class="tok-s"><!--pnid:zRCzTDezmGOpDTOoMhv0as-->"高三(2)班"</span><!--pnid:q0tGMODDIo7pG2aNLADyEb--> },
+    <span data-page-node-id="kJeRiSS5cSewByeU1wwUaC" class="tok-k"><!--pnid:MbNCKgr9bZux6oDcue2rGE-->"messages"</span><!--pnid:13ZXexS4mFBsFmYXwwym3x-->: [
+      {
+        <span data-page-node-id="ufSJksuFhUFrxlV3Ziaqtx" class="tok-k"><!--pnid:WREDZJrMsjQJJpoGcz1MD0-->"id"</span><!--pnid:2teq61LipohPkwYkZNvh11-->: 1024,
+        <span data-page-node-id="dMCVv4uEKJ8AEaKVjuUq2u" class="tok-k"><!--pnid:fVVyWMtxbmehlCSEJKxta4-->"type"</span><!--pnid:eKM9zC4CRuovia6pn1NU2a-->: <span data-page-node-id="6lPPYR66wJh8F8MA85JKi6" class="tok-s"><!--pnid:9rk2GAByloZ44DAUhCiGXh-->"call"</span><!--pnid:51VYrbSTG01JlBN16hbLqA-->,
+        <span data-page-node-id="8ZgQCBotrWdwNRsAmYrV6S" class="tok-k"><!--pnid:LipXENOodxagqStAtTeH8F-->"title"</span><!--pnid:f5yerTe9N0ZAwap2DCIpHQ-->: <span data-page-node-id="ln62oIVdVNfCBpyJtFAZnK" class="tok-s"><!--pnid:ky8akJ4XGfH683MdO96xSM-->"李明 · 到 3 楼办公室"</span><!--pnid:rx3YyaKjjjNmPk4RxuhtSA-->,
+        <span data-page-node-id="RIaOEnpcuqY1jykOCHghvi" class="tok-k"><!--pnid:kxdp5Dx4NHw6Sp0oHjwtuG-->"priority"</span><!--pnid:QCqpsxbAQf4ImjSUY8KVAC-->: 1,
+        <span data-page-node-id="P7snEOOTMpq1x0F8jDuJHi" class="tok-k"><!--pnid:Kt7Fe5qzWaP7rHtNbU9zaS-->"startAt"</span><!--pnid:5YGurwpmY0U0cD8eJfSG9z-->: <span data-page-node-id="mM2IN6iBHkKFAv9aL3RI5S" class="tok-s"><!--pnid:CJ5jjiHxmt07bfWgYBQtsW-->"2026-10-21T15:30:00+08:00"</span><!--pnid:P7ZMVjetC9nW13LgJ2DF8J-->,
+        <span data-page-node-id="4AoHj5xhFKQto40LGyfWYr" class="tok-k"><!--pnid:E3w9Tv0cHZF4zqsuH9YmiR-->"expireAt"</span><!--pnid:1GSvnHTzv7LdIzwllseFFE-->: <span data-page-node-id="0ZMU0jKV5RAXQmBBSD0pyO" class="tok-s"><!--pnid:zKJdfmBPqg2Bi2Emeg56s2-->"2026-10-21T16:10:00+08:00"</span><!--pnid:gKralUSzN8ybFwJGb94t2E-->,
+        <span data-page-node-id="tDrrxECFmkDwpCBHWKjsX6" class="tok-k"><!--pnid:zKwpxDjfIZ9F8yjuzTiAcc-->"broadcastTimes"</span><!--pnid:Lt87HZr1GTd9tMhLEE48RN-->: 2,
+        <span data-page-node-id="tlxDee1iL3IAf4663Oa1rQ" class="tok-k"><!--pnid:HcYbFHoD9DSfPjtyhg6Sol-->"createdAt"</span><!--pnid:hoeYLTginAWgYZSKLRf7ol-->: <span data-page-node-id="bw3SlexsGDnSO6zATjRW0D" class="tok-s"><!--pnid:6SryBQPBXuY8Hvki1LCBrX-->"2026-10-21T15:30:04+08:00"</span><!--pnid:2mMktloir7LJiqOLjhljQt-->
+      }
+    ]
+  }
+}</code></pre>
+<div data-page-node-id="xmFOkB4ASO6M7BtLMw5j3W" class="warn"><b data-page-node-id="WO4rLKN1P3bLEcVP8oansd"><!--pnid:ntdco3ESsMiUkEwUgTLAwS-->必须返回 <code data-page-node-id="czy3Vq4yp1Tu6gXraJP5uj" data-pnid-children="xQCORMag36T4LM0bmIB5ux">serverTime</code><!--pnid:VeQr9YSwoz4eVPQMLTM4Ch-->：</b><!--pnid:1CteDBdC4T8sUTZszSSRTW-->教室电脑的时钟经常错几十分钟，客户端拿它和本地时间求差值，后续所有「到期下屏」都用校正后的时间判断，否则公告会提前消失或长期不下屏。</div>
+
+<h3 data-page-node-id="8R2nlgNap8SqTmgiJRFoWI" id="s5-2"><!--pnid:Ij8hJayzhlnre8QdgEjC6N-->5.3 WebSocket 协议</h3>
+<dl data-page-node-id="1d3kfnsLEHRbCmeh1axqG6" class="kv">
+  <dt data-page-node-id="FHCFRtbaEfty0KN9HbDwG8"><!--pnid:ogluC9RSBfsP3RH66o5gB9-->地址</dt><dd data-page-node-id="4PTocDvD0yDS1tWu2ZtOmH"><code data-page-node-id="SpDtjwi5vawVeddjaCArEL" data-pnid-children="JKKmMcEzuOtWC7pPijDaE1">wss://api.example.com/ws/device?token=&lt;deviceToken&gt;</code></dd>
+  <dt data-page-node-id="ZCP5l9ISYkZfdTt2uvQe0b"><!--pnid:lVzKdKdHCShD5YbssFjxp7-->心跳</dt><dd data-page-node-id="zcOkQ0KR6KvHTFLsOj68kf"><!--pnid:CJ5ksdPSPK1kCh0R6LzyEP-->客户端每 30s 发 <code data-page-node-id="BYlHGL6NBGpo1KYUC37ipW" data-pnid-children="k4JK3zzcz0r2oEMkDYGXh3">ping</code><!--pnid:yBDZx6uji4K3o0CUWOll5M-->，服务端回 <code data-page-node-id="b8PUenXEF3A2fglv8yttkW" data-pnid-children="J3X0ngIyE6csBXhDkKk784">pong</code><!--pnid:8mpK5CqwEruQf62LBA3o4W-->；90s 无数据判定断线</dd>
+  <dt data-page-node-id="qBAKrWn0Z89Y3Er2naKJDv"><!--pnid:R8jaOZ8DGZE2SVPnJlfCU4-->重连</dt><dd data-page-node-id="rkKjAruG0boiEdiceijmpj"><!--pnid:7Tn1EvGTRNppNxFD8Mg7nV-->指数退避 1s → 2s → 4s → 8s → 16s，上限 30s，加 0–500ms 抖动</dd>
+  <dt data-page-node-id="T1cpQ569b4iww92Kg6NSjX"><!--pnid:5wxSSptMD9DbKUDoC8FWVM-->顺序</dt><dd data-page-node-id="E07QGvooe5trMHnqiZhGtI"><!--pnid:s1AiZjMYBPd1CPdg0XgGxu-->服务端保证单连接内事件有序；客户端按 <code data-page-node-id="wF879Zb45DYRBKApOWEGyj" data-pnid-children="jZ1jtsaGhFZ9bWK6db58d0">ts</code><!--pnid:iW412nlD6F04DODDNAIzIF--> 丢弃乱序的旧事件</dd>
+</dl>
+
+<h4 data-page-node-id="MSJNdqttDfLTw2wOy905XF"><!--pnid:7XqNtEsHtDmhBPO7Ok0A0K-->服务端 → 客户端</h4>
+<pre data-page-node-id="aELT6JwDoGlE8AIP4yj0wn"><code data-page-node-id="eXtWttdLrKX7yHviPxGETN"><span data-page-node-id="3HHkyUUA3RHn4JlN60oZbK" class="tok-c"><!--pnid:O3f7rziOl9MwHNdAwEpJ7j-->// 新公告</span><!--pnid:YhUQkmVD5TVqrDfUeOs9XA-->
+{ <span data-page-node-id="xWtM7MpW4VSy4bosx1Zs3k" class="tok-k"><!--pnid:goLmKobaKU4nyP33TpVxSL-->"event"</span><!--pnid:ZJlEZc3qfQzdh3d9lqVBhR-->: <span data-page-node-id="yYVWUDS9hy2RZsxb96TQzk" class="tok-s"><!--pnid:tblMaCrYOGGEayWqrXI6Gk-->"message.created"</span><!--pnid:dtITrxRbbP5J3dNFu94ztt-->, <span data-page-node-id="aEJfJRguy1kmR4G3zdUpaa" class="tok-k"><!--pnid:vyVTIuZLDU1Si1hKleunsq-->"ts"</span><!--pnid:9nhLpy501FDrmNvGcVZLG1-->: 1761029404000, <span data-page-node-id="A26bZx37Admg1FjDc7U7ss" class="tok-k"><!--pnid:qRQM51w5Tiq5Zw1xdwRlcG-->"data"</span><!--pnid:oNngLsBqup3snBeLMenkAw-->: { <span data-page-node-id="HvtfRjdu428rTKLhrOAkeU" class="tok-c"><!--pnid:QfE6Jf3bqrCkN1sagY2AjI-->/* 同快照中的 message 结构 */</span><!--pnid:ONYPkXASheidaUCnAvHtz3--> } }
+
+<span data-page-node-id="pzLbGp158sDgaSMixBRjxm" class="tok-c"><!--pnid:WLQI0VAnTZImeBl8IsVova-->// 内容或时间被修改</span><!--pnid:iEmFxefDbsgoxnmc05UTsf-->
+{ <span data-page-node-id="NY77ZIIAc2fFvBgNN1PifF" class="tok-k"><!--pnid:Iz7FQeVLGpGWu7V544Tlqx-->"event"</span><!--pnid:5TGBJ2X1qa96XQ3P5gkMTe-->: <span data-page-node-id="vDD1ViXiyKVuQcNAWRt26I" class="tok-s"><!--pnid:xS6QqbYhSXIFMco4d2VWf1-->"message.updated"</span><!--pnid:J6krQzDpogQ6cG0HX72DxW-->, <span data-page-node-id="F58Fsoa2CdLDagAZQtbInz" class="tok-k"><!--pnid:cQJAh3g3KiruE33NVzLmWV-->"ts"</span><!--pnid:pl0kAAUfXAeQCwZSvypTzM-->: 1761029500000, <span data-page-node-id="IsGmHFZCBwXTQhElXkQSKl" class="tok-k"><!--pnid:x6XlmD6yIJG8t1cUaYyqmv-->"data"</span><!--pnid:T4ZjRd18AIeBXnIgMO2476-->: { <span data-page-node-id="rmxtBRII7Qg8yMNC16olWq" class="tok-c"><!--pnid:9bCpMw4BUCmmc7cWysuaDG-->/* 完整对象，客户端整体替换 */</span><!--pnid:pySJeTHTbNtFQrjrImnj63--> } }
+
+<span data-page-node-id="rGfVyQHZ3k9hejycTWAmiy" class="tok-c"><!--pnid:xwQQXh4jpdk5eGZZbykyy6-->// 撤回</span><!--pnid:8vW3Ux2mJvWt9VYG2vdb3h-->
+{ <span data-page-node-id="6D9EkjDTrWosBeqN5nbjDp" class="tok-k"><!--pnid:h0C1VejMJ1S2rMOhcWjUiQ-->"event"</span><!--pnid:q2Wv6DOBucgYcjkoA6KHxl-->: <span data-page-node-id="lEOGQoFrZVKkO1aLf6ctE8" class="tok-s"><!--pnid:hk4gcwSb2WPf5l93EbyBGh-->"message.revoked"</span><!--pnid:kkT6JGivoqL9naF0bD5lLV-->, <span data-page-node-id="8U6eXei1nF0HBLUTLd2y85" class="tok-k"><!--pnid:0gD3DQKQEmXX7TPCJagLnX-->"ts"</span><!--pnid:KhlnJDfFntosaLgg8pWFWO-->: 1761029600000, <span data-page-node-id="IzmHn5o1s6dk1srfdglvmg" class="tok-k"><!--pnid:Gm90I6dscpmV309JbaweWu-->"data"</span><!--pnid:1CQLgJzO63i7QEuAplDguj-->: { <span data-page-node-id="EQ4k6xzrWrKW7Pl5cqUHRV" class="tok-k"><!--pnid:QJqPpUYVcaZxy8e30wjZ9B-->"id"</span><!--pnid:7caDMbxxb1R5i2ZskJTkeD-->: 1024 } }
+
+<span data-page-node-id="vpnfA8L9GRPPbQCXgrlYnl" class="tok-c"><!--pnid:Ys9iZPvtVsnJC2aryEa2Hj-->// 重播指令（只播不复读，不改变列表）</span><!--pnid:ovQrYpmnRRFVpHDi584ClO-->
+{ <span data-page-node-id="g5tHbtcCpMNQnKP2xoDk26" class="tok-k"><!--pnid:OcGrzqK3r64nllBkw3Ld5a-->"event"</span><!--pnid:6qZMGoeutIBcVgz5ZgtDIY-->: <span data-page-node-id="jHKly5w9F0WD5Yc5T2IxD4" class="tok-s"><!--pnid:bcs3m4khB1B3CQ96wz9txz-->"message.replay"</span><!--pnid:oWq63H8Yi5jL8bTw7NSr19-->, <span data-page-node-id="o0oh76wDFAiUQctKgpPEdt" class="tok-k"><!--pnid:jwuwP81okoCU0tIyMm47wA-->"ts"</span><!--pnid:SOwlJ1gzinWlhEtIqz5SAh-->: 1761029700000, <span data-page-node-id="QI2t9XAHNAN04AqGq2JwpV" class="tok-k"><!--pnid:3gr67eTqAZwLvbB8oRBnut-->"data"</span><!--pnid:yqttmHsaazYMrp66LW66pg-->: { <span data-page-node-id="0dnA9AzEODAK5jpSrvhymh" class="tok-k"><!--pnid:acnU19Rtb6mYmzhjMmbWOY-->"id"</span><!--pnid:G3uJ3MMjjLWNdFP4go0eBB-->: 1024, <span data-page-node-id="n5ZiOxqJcoyg58fF2hgSxQ" class="tok-k"><!--pnid:IaBUluowIuGnJz9LCcD12f-->"times"</span><!--pnid:x1D8uF1tBbwDCAeNgrCGGt-->: 2 } }
+
+<span data-page-node-id="gDKGXBLRD1cCkHRqMlguaj" class="tok-c"><!--pnid:DvpX21RcGkVCYoRQqZdBvU-->// 服务端要求重新拉快照（如数据修复后）</span><!--pnid:yZ7PZF7zyvTDBmGO3MdhTB-->
+{ <span data-page-node-id="sAb4fnNnSUBF6B2fW5uy5x" class="tok-k"><!--pnid:9Bwx88Uuw2grC7phu1JR1C-->"event"</span><!--pnid:RohVeZzKQXM4JVDEmaM4sU-->: <span data-page-node-id="Yfpj2HNM3ciotwwdmzLHPy" class="tok-s"><!--pnid:wWXwyUAT1LfwhyWyE90tvU-->"force.resync"</span><!--pnid:XyK3FeiIIUVP1509a3KDCE-->, <span data-page-node-id="Hr8SJmyM2HmphXuCNs2WoV" class="tok-k"><!--pnid:60obP2gjwLlelqEr6S8CUw-->"ts"</span><!--pnid:sBFBEZyfGKfvDSXUlTBw2i-->: 1761029800000, <span data-page-node-id="Gj1sAAB1Je6i7mipR2Vqjt" class="tok-k"><!--pnid:hww5fuUSt5e2lgQ4skqVOr-->"data"</span><!--pnid:7Jmpq6uzP9e5BXhmYf9vYf-->: {} }</code></pre>
+
+<h4 data-page-node-id="d06g6wj2pssiV2ER2ut3ka"><!--pnid:BiWQgLMaZmeJy9KEg1RPlG-->客户端 → 服务端</h4>
+<pre data-page-node-id="gbjniZRuK8lhGUrjJ0ElQ9"><code data-page-node-id="T1if2mTvSDEsrMbSsrIKIk"><!--pnid:HI9C8wjlHVaFBDqm3UAxnS-->{ <span data-page-node-id="aktXcR8iYeCS51llExhdM1" class="tok-k"><!--pnid:Q6qYS7DSSBq2t1HkQxUuZ9-->"event"</span><!--pnid:wEguCsIav3xRCGqSJ1Z9P0-->: <span data-page-node-id="YR51b1CIydrKmU92r0gHjF" class="tok-s"><!--pnid:Dw0NSIB2muT2UtjPhT1JTz-->"ping"</span><!--pnid:jJUo1UvawnfvyX9pETeRX3-->, <span data-page-node-id="NHpINhvpKiWwHFAbDOQlBP" class="tok-k"><!--pnid:y40b8JKBProJaYkpHmmGbx-->"ts"</span><!--pnid:2OFVxWUEuYbCCxaTc4Hf6U-->: 1761029900000 }
+{ <span data-page-node-id="DcFH67CD4MGGkcpSU1wqtd" class="tok-k"><!--pnid:6CNvPF8Osz4wlTSBhGEZKU-->"event"</span><!--pnid:2khKXvSKjgbv04ysywQ3ib-->: <span data-page-node-id="s8vyn9KaSyZZFEtsfcB8QB" class="tok-s"><!--pnid:e3rDVIfbXsBm24ss9kMgzc-->"ack"</span><!--pnid:HWhartg4DRe66d9677Wbne-->, <span data-page-node-id="Tb2l4dvVKckQm6IvqDPEyY" class="tok-k"><!--pnid:UrIk96j9HU47kYBDNzu5BB-->"data"</span><!--pnid:wKJAsyfZQnUyscd0Z6NsRO-->: { <span data-page-node-id="SkaE3CbQ9e5eYXjMIOYebi" class="tok-k"><!--pnid:jkVdxF1oOax0DqxPEBcXKr-->"messageId"</span><!--pnid:O3AUEGkXW0RgMvwoC3wGuM-->: 1024, <span data-page-node-id="lvn8m0SVdpANRgFDlE9qSy" class="tok-k"><!--pnid:t24bRswBj0rajF3Fqu9w3Z-->"round"</span><!--pnid:4CG8UVFVrxNg81QacAFejL-->: 1 } }</code></pre>
+
+<div data-page-node-id="tzYkS7bykiCY8Dr1oY9E4O" class="warn"><b data-page-node-id="VRD9xfpexJ67kRMbpTVEeR"><!--pnid:UYwlRCh4LC4h3Qb98YeyPO-->本系统没有「事件补齐」接口，只有快照。</b><!--pnid:65iqMvvFelxBu7FsSDgWLQ-->断线期间的事件一律丢弃，重连成功后强制走一次快照。原因：公告是「当前状态」而非「操作流」，补事件会引入复杂的序号管理，而全量快照在这个数据量下只要几毫秒。</div>
+
+<h3 data-page-node-id="EFwdnGiNe8k7AgpL6OLzwx"><!--pnid:IK9qnkLM3IFVJoMvwzwIji-->5.4 错误码</h3>
+<table data-page-node-id="j7Ld1grpQhVzcYnvcnA18w">
+  <thead data-page-node-id="zAnXTcit3jfqryTjxyPOiQ"><tr data-page-node-id="yqEr1nU5edx2kzJJJeiOzO"><th data-page-node-id="2r7jvjRJelAe9kPIxHq6ET" style="width:90px"><!--pnid:nG4TGtAmkRVuSTmkUOzyKO-->code</th><th data-page-node-id="FLAi1gu8lILKMeI7znIMSZ" style="width:160px"><!--pnid:vgB9oF0T3wDN6mysC1NJ3g-->含义</th><th data-page-node-id="d0TuKjanNH59hjrvY3l3cP"><!--pnid:IxRQQ84Akgrds9QtZrguHU-->处理建议</th></tr></thead>
+  <tbody data-page-node-id="KNi1vEWCyDd0asZN2qaSTQ">
+    <tr data-page-node-id="bMkbo6xzEXZDynpauMh7k3"><td data-page-node-id="i8mVTNdvF2W7Wi0Qc43C89" class="mono-cell"><!--pnid:VTfySJgFzaYRkfr7acU0Bh-->0</td><td data-page-node-id="iZhXeOrAGbJM5Um4j722Po"><!--pnid:Emnwo70e3EShINlXT75j8F-->成功</td><td data-page-node-id="EZ3t5LaWlSU5IzUdbIbQh7"><!--pnid:Djfj1ZwrgxlqZGk5zDPZSh-->—</td></tr>
+    <tr data-page-node-id="dtG1JZOEM7AVx0aWIqqk7c"><td data-page-node-id="PRbb09FgTB28r6G3SDPHns" class="mono-cell"><!--pnid:aG3jyeUUWL4UJsL5ZlBkmE-->40001</td><td data-page-node-id="82twZtTt6rzAT3FGmlZIix"><!--pnid:52YQqn32ujeeLss8fopekd-->参数校验失败</td><td data-page-node-id="8JzA5h8I7PwhGXg2tm7P4t"><!--pnid:Pp4Z2xxoYkDU0p9aIaqztJ-->返回字段级错误信息，小程序直接 toast</td></tr>
+    <tr data-page-node-id="3n4ewk4Q6w3vuuge9e6qFI"><td data-page-node-id="PwBzQaImVeqwPRgtL2mJ3K" class="mono-cell"><!--pnid:nBGLU7kldEkcZP7ZNLA4lP-->40100</td><td data-page-node-id="MdzVSSZyDGYubqSo0RnzmO"><!--pnid:0ucABZ7tyU1ZjQ7iKWR8SU-->未登录或令牌过期</td><td data-page-node-id="BVw5b4twrG3hnnydDDOhIC"><!--pnid:rIcmvEyZjuMAyc2uprq7Jz-->小程序静默重新登录；设备端不重试，提示重新绑定</td></tr>
+    <tr data-page-node-id="rEVmLSinvDF8qqkJYp8gUR"><td data-page-node-id="hrAoFQh9WGVT4iENDHTXZ2" class="mono-cell"><!--pnid:cIkeDKcZlI4dhaiNjhinvJ-->40300</td><td data-page-node-id="KBh8fP0VvZg5BgvJkmc9SF"><!--pnid:LOpn2UscKdHYpxD4M6W3I8-->无权操作该教室</td><td data-page-node-id="CWp4mP3G9P4HWTgtXVks1L"><!--pnid:D2EaH1YBHBUS04CGpmVfml-->提示「你不在该班级的任教名单中」</td></tr>
+    <tr data-page-node-id="0o9eOtFqOaDH9TC3dV6OIK"><td data-page-node-id="NQa3XZzN6HB90LPRgFSjTb" class="mono-cell"><!--pnid:TPfn1XykG4Hd8jTYdYLaKS-->40400</td><td data-page-node-id="GRjNkCSxonXi69dCpkydG6"><!--pnid:8683pHfa5wW0k09RpveK8J-->资源不存在</td><td data-page-node-id="OboBTa4O7cr0Z2mVyRkiMy"><!--pnid:HMrBllqdmWx3821yCr2FIF-->刷新列表</td></tr>
+    <tr data-page-node-id="0pGMtesPWW1ZF3mJQ82wjO"><td data-page-node-id="nGf6OOp91IRboydX84DYXF" class="mono-cell"><!--pnid:PU2ufrWy7QYfFohRkgPeKx-->40900</td><td data-page-node-id="H0785XTntDh5hH2oN5YxWk"><!--pnid:rSXIIfucbUUYrzDpCvkelo-->重复请求（幂等命中）</td><td data-page-node-id="icKk6Hgmr1CQiMD6303jEk"><!--pnid:U2no1R1LUYLhJnTGfGN4wv-->返回已存在记录，视为成功</td></tr>
+    <tr data-page-node-id="TBgpGSCg8Bv4GRkTYgttWe"><td data-page-node-id="OMZGU2IDrbTA4xUrLy5w4G" class="mono-cell"><!--pnid:UTg48am7qaCJmXUS9doZGY-->42900</td><td data-page-node-id="dA7fV097t3SzEDm75NBrtt"><!--pnid:ZSZfnskI0QgRBdvwxJ24zu-->频率超限</td><td data-page-node-id="CbjBKRmU0XY09xaZ35KLrQ"><!--pnid:PpwrYU3DQWr3SKBJTwkIt4-->同一教师 60s 内最多 10 条，超出提示稍后再试</td></tr>
+    <tr data-page-node-id="p5y1Lm6uC8MbrGH92P5Qk8"><td data-page-node-id="9ULwV69D8WKCYOJQNArRSE" class="mono-cell"><!--pnid:4MUZBz9cbKb9sCCRCrfis2-->50000</td><td data-page-node-id="HikNlW1P5IJJUcbpw2mQ16"><!--pnid:F3Rrpsnm254gtVVL3OjGv3-->服务端异常</td><td data-page-node-id="opVzGqRdQPlMrgAjYw3AMJ"><!--pnid:VPSxv0Jhl5TkB8K4uoPvOV-->指数退避重试，最多 3 次</td></tr>
+  </tbody>
+</table>
+
+<!--pnid:4cChL4je0QVArDQ57JTNMJ--><!-- ============ 6 ============ -->
+<h2 data-page-node-id="vJrpSBOyngKDxzuCN5XYhG" id="s6"><span data-page-node-id="qAABEdYOVF56GGKNb0ZgZT" class="num"><!--pnid:nCZdgkhOZ3Ph68AoSlzfs9-->06</span><!--pnid:j1E16meYW0Ok7vhTmlshe4-->大屏客户端</h2>
+
+<h3 data-page-node-id="zrmnrnK2ixMV4p3s1W57N7"><!--pnid:LXWPKs7YJ6FFTjNfWPJnbi-->6.1 界面设计</h3>
+<p data-page-node-id="9X512QhtErkqcAx3kO8j1A"><!--pnid:GDvLUDOvtgJmIVeaRMeDhj-->基准分辨率 1920×1080，等比缩放并居中，四周留黑边不拉伸。下方为按真实尺寸绘制的设计稿（已等比缩放显示）：</p>
+<div data-page-node-id="e6aoUxlgkSGl3dU0NzrTZq" class="screen-wrap">
+  <div data-page-node-id="ApKZcKYzRuTtxCjM2VQ9sU" class="screen">
+    <div data-page-node-id="6hupWYbeILL6vR5reVVWca" class="s-head">
+      <div data-page-node-id="75QP9aXC1gNZHFz8T5kgOW">
+        <div data-page-node-id="CSwsFkpMqbhYa1oIJi2dYp" class="s-room"><!--pnid:lI3LanGOxG1v8FIfiIlFzC-->高三(2)班</div>
+        <div data-page-node-id="cfe84V9lVjtRSonmdCTXcd" class="s-sub"><!--pnid:r4x0mEudgWdA3o8JuJZSeR-->3 号楼 · 2 层</div>
+      </div>
+      <div data-page-node-id="lgk8f9fmFun5jQtHeiPaXs" class="s-status"><span data-page-node-id="11hu4VjuKiHu8dVzRW7VDJ" class="s-dot"></span><!--pnid:t2vfUfkcnUWP0JPQlDFuS8-->在线 · 15:31</div>
+    </div>
+    <div data-page-node-id="4MeK3iiU0rvR9V01ON3LRy" class="s-list">
+      <div data-page-node-id="lerZnpcehfWlooT4KrVCMe" class="s-card" style="border-left-color:#C0392B">
+        <div data-page-node-id="HZEm7Y00xiF03ZN2nrRsNK"><div data-page-node-id="M1Es7X6GCmkTVM3eywIRPS" class="ct"><!--pnid:2sSWGjmbrZZLdCjC54sDQ2-->李明 · 到 3 楼办公室</div><div data-page-node-id="4Z4rYCn1kkWk8PIZdPPFTi" class="cm"><!--pnid:TzAAiZhijWLIJreQNfD2ng-->15:30 发布 · 已播 1/2 遍 · 39 分钟后下屏</div></div>
+        <div data-page-node-id="zzj3kP8oFF0IxdgYqNKtCX" class="s-badge" style="background:#FBEDEC; color:#A93230"><!--pnid:hONbFRqct2trEvs5kZrs3k-->播报中</div>
+      </div>
+      <div data-page-node-id="4JrYkMHvvhSpZcIPxpUW8T" class="s-card" style="border-left-color:#C08A2E">
+        <div data-page-node-id="ZnxnD3hNKTgTzlr9FMAmKF"><div data-page-node-id="jcJrDOIjAMDdumhOsli8OM" class="ct" style="font-size:34px"><!--pnid:yf3DICa8zEmFssvTRFrPPH-->午休到 205 订正作业，共 12 位同学</div><div data-page-node-id="wSsv0qN6mbU3e3t7PlwTnb" class="cm"><!--pnid:A69QWZZGrVWxvCQ2SIEaJL-->15:20 发布 · 今天 13:00 下屏</div></div>
+        <div data-page-node-id="VEfdrbeA5KwmNeCXKJAzmJ" class="s-badge" style="background:#FBF2E2; color:#8A5A12"><!--pnid:RvmCiiVCnFcuRNmxzxqxRl-->仅展示</div>
+      </div>
+      <div data-page-node-id="7KWUaNd9nYOBXYSJ0VAP7F" class="s-card" style="border-left-color:#CFCCC2">
+        <div data-page-node-id="y8T6kDwiOBrb92l9VUNh2Q"><div data-page-node-id="WztY5PSB94ts7ZUmEz9r8k" class="ct" style="font-size:34px"><!--pnid:QvoRxqoYu6gOCxGzJWiOvH-->周五 15:00 家长会，请家长群内报名</div><div data-page-node-id="vxsoEm58hrQUf1zUcjd8op" class="cm"><!--pnid:5MRDN0VzigeNHSMrm0fxYL-->本周五 18:00 自动下屏</div></div>
+        <div data-page-node-id="epCLH0gtOu7MrhP2Gbc85p" class="s-badge" style="background:#F1EFE8; color:#6A6A62"><!--pnid:FnpzWNUiyy8rc23SEeT6wb-->常驻</div>
+      </div>
+    </div>
+    <div data-page-node-id="s2saMFAXLNhZxe1aE7xjEh" class="s-foot"><span data-page-node-id="EktNNj6Yj0zTImLiv7NLP4"><!--pnid:ioKw2NF4QAcigsd097qefX-->按置顶 → 类型 → 发布时间排序</span><span data-page-node-id="hOsb8Xz6GwhFqFy4G469u0"><!--pnid:1w4mYaEQZtQA1L8uh2rdN1-->最后同步 15:31</span></div>
+  </div>
+</div>
+<p data-page-node-id="aHgd9IGwPDO9C1whDHcXdE" class="cap"><!--pnid:TsplLOolZ9QJxYblUWEDAt-->图 6-1　教室大屏主界面（1920×1080 设计稿）</p>
+
+<h3 data-page-node-id="lq41P5wvItyM6xXq8PJiq3"><!--pnid:aq14KUjTLn1mv8j0UN8C5U-->6.2 视觉规范</h3>
+<table data-page-node-id="5ehKb2Anx3rNa4IK3pXqCg">
+  <thead data-page-node-id="nOpoYJTrjaNiRc0RhXT2Dy"><tr data-page-node-id="aoy6mqQjxeFXZAIgkxPMhN"><th data-page-node-id="BKwf3xmnZ7pGuQaG56bjDr" style="width:130px"><!--pnid:B8LaLTYf6JfdFK0MQm9h6G-->项目</th><th data-page-node-id="pGwkaimOU45YkLjNYZtIcW" style="width:180px"><!--pnid:9p09ztbehfJNKXPp0vTfri-->规格</th><th data-page-node-id="D1grqeznLfnX2vPwgfHPu7"><!--pnid:MHwLuVoXEyzRgC8p6XwAcn-->说明</th></tr></thead>
+  <tbody data-page-node-id="i9MJRHhPmqoZWkMiSi6Qm8">
+    <tr data-page-node-id="sj5EIqQReEXTzcba1eLA9r"><td data-page-node-id="mRbKtSyJYzjO2a6fwY9Ay3"><!--pnid:2XDpUyihUcqSpgrfABCavm-->安全边距</td><td data-page-node-id="P3vKbjDaDGt5RAmUcXZ77K"><!--pnid:MTlTN0Oj4VqGJwN0rZmQoV-->左右 64px，上下 56px</td><td data-page-node-id="IXJy4xqhfiUN8ich4HVYUL"><!--pnid:4BU1Seh1m1S0LOKjnxE0CG-->电视过扫描会裁掉边缘，内容不能贴边</td></tr>
+    <tr data-page-node-id="x6TF7zimSrEtY7ydhsoDSB"><td data-page-node-id="woDPjImXiL91mxtZZ5DABd"><!--pnid:J0uwFZGx9Cj3NppT0YDgZw-->教室名</td><td data-page-node-id="TSQT0haEBEt7popdfDIzwI"><!--pnid:gasJeFCksPmTXnr60ScFic-->38px / 500</td><td data-page-node-id="g5lxzHUzfSe7CMOuYqPIER"><!--pnid:HJq5Z5UEkrHtOf7qZkXG9f-->放左上，远距离也能确认是哪间教室</td></tr>
+    <tr data-page-node-id="QfaFJtKoq24VSRUhmrMjFl"><td data-page-node-id="TeZhmkYLH63ARXDGmxjKHu"><!--pnid:r6IeSGv7uszjZeg50j7iuk-->公告标题</td><td data-page-node-id="yCUAWRDNmOW10SioJ7PDwO"><!--pnid:fSuTgc0iFE3KtWPOyyVX0s-->36px / 400，行高 1.3</td><td data-page-node-id="x9u0FAi990LZihNrE7EfLc"><!--pnid:rF5ItlkySPGt5HBMA2zKqp-->超过 2 行截断，完整内容在详情里看</td></tr>
+    <tr data-page-node-id="Sx03nRFFIl0UYPZmCyaJHW"><td data-page-node-id="qfcm3TMK4Hj5WpM8XgL6ls"><!--pnid:FpiflfIIN8UlAjJnXJHLNC-->元信息</td><td data-page-node-id="XUZqA9GdT2ZkRzlNS8XGZx"><!--pnid:YmIATn7tbWlZyj5qLYcW0J-->22px，次要色</td><td data-page-node-id="ZdaZKhRQsDHp7WlXIkzgBi"><!--pnid:gT2nARDSWBeNwzdvBLEIHQ-->发布时间、播报轮次、剩余时间</td></tr>
+    <tr data-page-node-id="0AX3iMJN1GjcCmPxNjpRRI"><td data-page-node-id="6bIWBxLkAx4VZoW7bFmMVa"><!--pnid:289bnvAHRnHjbAbHaKleft-->单屏容量</td><td data-page-node-id="ZwuKoXHrpJMfC0v1Q0jgrc"><!--pnid:sCh5HkVIOcSbeUh0QPQTpe-->最多 3–5 条</td><td data-page-node-id="kDIIYAGty4juGMW0NHle8O"><!--pnid:iN0QmUO96YLAyjzBvs4ZrA-->第 4 条起降为紧凑样式，第 6 条折叠为「还有 N 条」</td></tr>
+    <tr data-page-node-id="xoE8vsC7opaV2zUoEFKNmF"><td data-page-node-id="6w1vXUYEbaBxRVevetY89D"><!--pnid:2mSNaG9Ojb0LZe2HQN0nos-->类型色</td><td data-page-node-id="xfCgGxgcHBLlsypMoF3Yiz"><!--pnid:yDXSqBLtoQhtpy4d4necIc-->call #C0392B / batch #C08A2E / notice #CFCCC2</td><td data-page-node-id="MuSDhAVXS4pJnoLF29Xm86"><!--pnid:1nyDFa9sGMA3mTDvhHCzA5-->只用于左边框与徽标，不整块铺色，避免刺眼</td></tr>
+    <tr data-page-node-id="z5VAyzgkNQYCck9UblX2gx"><td data-page-node-id="oFgXjLEA5PU8pMdE4iVKgY"><!--pnid:VG1K2vwmE8yK0Gui9QmG0r-->新公告动效</td><td data-page-node-id="Ffwr1fQMJb0lciyTOHgShM"><!--pnid:S1r4M54tjSwr7cSGMaqarv-->顶部滑入 280ms，ease-out</td><td data-page-node-id="0G2NDzaWD6ujwBEJMh0XRI"><!--pnid:RqsT23eM1J0Gf5c5AbBvjj-->播报期间整条做一次轻微高亮，不做循环闪烁</td></tr>
+  </tbody>
+</table>
+<div data-page-node-id="iO99RWKxMCShmzMMYQbdYS" class="note"><b data-page-node-id="yjNOBCB8ISGKg5ivvILK0h"><!--pnid:a1nLiFQ9ikWq2LtqJjzEtV-->为什么不铺深色背景：</b><!--pnid:glhg4sNiLXSULsbPh6RmVG-->教室投影和电视普遍偏亮、对比度差，深底白字在廉价面板上会发灰。浅底深字 + 单一强调色在实测中更清晰，也减少长时间常亮的视觉压迫。</div>
+
+<h3 data-page-node-id="yT6L9OW4LENqQhB3Bn8zAP"><!--pnid:Tg5lO7rq7bW4FdxnKPbsdb-->6.3 排序与折叠规则</h3>
+<ol data-page-node-id="cYeNacU30cioys6b0cS28S">
+  <li data-page-node-id="EzKY6VagtTlwHXn6z1lbWs"><!--pnid:oZHGXHMj4rMgN2nuBbt4Q4-->先按 <code data-page-node-id="1KFk190w7hHdzTRBuzESb1" data-pnid-children="z4fPWx4EckR4oWzQl4TgnY">priority</code><!--pnid:LFlVnI4PSswGpMRzysKBGr--> 降序（置顶优先）。</li>
+  <li data-page-node-id="TwC9k9Sa0qzPfTdB4bTHOh"><!--pnid:zqeOmQ9N1PSXDsyK0Mbx4p-->再按类型权重：<code data-page-node-id="NJJM8Pwbmtz9EiY5d5kCp2" data-pnid-children="uniq4tLh0JUqHftFpUSCsl">call 3</code><!--pnid:haYW4PfzNBEkRUXgAtyX27--> &gt; <code data-page-node-id="5H2zdE5whqG5QbxRbtWqAu" data-pnid-children="plwhcEjomodzGGLgxzfiJX">batch 2</code><!--pnid:IoCkDPNqIcxneOvA9CfRhN--> &gt; <code data-page-node-id="NFBW9gZvNexb7N8OpnGPiP" data-pnid-children="opFYW3IRM1BNJstCXoDaZv">notice 1</code><!--pnid:nPGkKh8vV9Mc6Uae1lStJF-->。</li>
+  <li data-page-node-id="tzDHrLg2B4qABqSGeTLVk7"><!--pnid:mluGaSXOZhKsDRuvCcsPnp-->最后按 <code data-page-node-id="bO0yb8Pb2kslx1lyTOMAOE" data-pnid-children="qhRgq7YfiLf85RgNvUFPpa">createdAt</code><!--pnid:CNGZyTZhZDwAVIj3spJ4Mh--> 倒序（新的在上）。</li>
+  <li data-page-node-id="7l57NOWPr2wVv45BR1GZIL"><!--pnid:E1HusXpkYZVW5MPb6UNeNl-->过滤掉 <code data-page-node-id="wIrZINyeNYM2VRygZIjJSr" data-pnid-children="YFwqkhsCU2MINqPRPjErfw">now &lt; startAt</code><!--pnid:TjS60nGIVICrcbEuWd3Ebw--> 与 <code data-page-node-id="stoKKs7P2yrDNEeblulxW3" data-pnid-children="ppKwPBYW2ENjJIYolnbzia">now &gt;= expireAt</code><!--pnid:GOiyL1k6K21kOg3hxpnG5t--> 的条目。</li>
+  <li data-page-node-id="oL5meSpDt6xwRQ558EXnGd"><!--pnid:jjG00zq2lX9x96uQMgerBC-->超过 5 条时，前 4 条正常渲染，第 5 行固定显示「还有 N 条公告」。</li>
+</ol>
+
+<h3 data-page-node-id="APxtf86uyryzHPf67hsQio"><!--pnid:123zP9Z6EWcVQJ90JIsX7c-->6.4 播报队列</h3>
+<p data-page-node-id="xNST8Q31oHGBJ3ms68hVJZ"><!--pnid:kvr8aUbHkRBTzpQukiDMv6-->语音是这类系统最容易翻车的地方。三条硬规则：</p>
+<ul data-page-node-id="FhKoo8k43mfJs4qGJl7Akb">
+  <li data-page-node-id="HKrvexcUVpLO0zRWzI1oQX"><strong data-page-node-id="oxNYmznQFHz4uUR9jMgUFs"><!--pnid:hxwxNPK4PB6YkDFNy3CkVu-->串行播放。</strong><!--pnid:sGI9FFkSbfYQsNJQGuXyct-->用单消费者队列，一条播完再播下一条，绝不叠音。</li>
+  <li data-page-node-id="wUKy28hFba0XtPQuZqGyh2"><strong data-page-node-id="PeglddPYhCtCt6YJ7oUeLC"><!--pnid:zfSE9yZCeF40tI0s8qcIMq-->去重按键为 <code data-page-node-id="GzIyB8BnW8EJobzwlc9ixx" data-pnid-children="b6tyskRwz0KgEYeO4huHKw">messageId + round</code><!--pnid:NCgPMja6HAb1jv4ywXCBlL-->。</strong><!--pnid:OY58MLCkaCZOEHUsN6IZtm-->已播过的轮次写入本地表，重连、重放、服务端重复推送都不会再念一遍。</li>
+  <li data-page-node-id="cR1tBAYITVFE6QZkx85eXk"><strong data-page-node-id="gCc2JXwqWlvsvIXZzIiNlB"><!--pnid:DIaarqnXnSpsr0RwaUGYy0-->可被打断。</strong><!--pnid:Hf6KAWm1AEkgn9VvQp7jNk-->新来的 <code data-page-node-id="pm4iGolJlONeM1ZWqB0xmV" data-pnid-children="qveR15BOdu5yBv20j2PJ5K">call</code><!--pnid:Ol4n5LojzWeVxGC5FmgGqE--> 类型公告优先级更高，立即中止当前播报并插队；<code data-page-node-id="g2fi5rjlRThWGmoMF2yCPN" data-pnid-children="hNDmeg1IcQFaXfXcdUxJyf">notice</code><!--pnid:9MCB5jfeg24EjyjlTeiDjJ--> 不参与播报。</li>
+</ul>
+<pre data-page-node-id="JcM93RY0Dy2Kf1JQ7OFZru"><code data-page-node-id="1bY1pVdxryyrvq0vOW4QNO"><span data-page-node-id="pecXiTfJq1VWWHua9iD7da" class="tok-c"><!--pnid:V0wDSIr1TYoiRDiY8pble2-->// 本地播报记录，用于断电重启后不重播</span><!--pnid:6kRGwYD4TBxaWjBZ0XokR5-->
+CREATE TABLE local_broadcast (
+  message_id  INTEGER NOT NULL,
+  round       INTEGER NOT NULL,
+  played_at   INTEGER NOT NULL,
+  PRIMARY KEY (message_id, round)
+);</code></pre>
+<p data-page-node-id="hWjLp6xAJhr5R4Fa2TnyeD"><!--pnid:Jzo90huYLoHGYpkBwz2PKr-->播报文本拼接规则：<code data-page-node-id="WILMCGRqIRXuApnJ9OhwCh" data-pnid-children="OpJi55tn7jn5pKZn51xOW1">请 + 姓名 + 到 + 地点</code><!--pnid:XZV9iXTSqCIXO5i1mh4KKc-->；批量类型使用汇总句「请以下 N 位同学到 205 办公室」，<strong data-page-node-id="6fOpURy3mjRHBG38jcs6PP"><!--pnid:zzclLlHAUE5qu77s4Dc76r-->不逐个人名朗读</strong><!--pnid:ZidQGEZlGUuDrFYceTgUjk-->——12 个名字念完要 40 秒，教室已经吵翻了。</p>
+
+<h3 data-page-node-id="7EQx3f3Cxle6pGWXaQpXNC"><!--pnid:lw7KxCWioIbRILZOPBhecK-->6.5 连接与降级</h3>
+<table data-page-node-id="xEXTCTQmEnZQbIsraaZCsS">
+  <thead data-page-node-id="Uf080oMTtgXX7gY9XziIx4"><tr data-page-node-id="HBFaRTrLTouYhKj46glEWw"><th data-page-node-id="agwsfkCfbpL9lNgO4SK1qu" style="width:140px"><!--pnid:3nlZLumNQfNZM09SH4712P-->状态</th><th data-page-node-id="wMRDn7x4LZr9L3QxVBsobH" style="width:100px"><!--pnid:CmP1TNZAZXtaTJvfNC8ewM-->界面表现</th><th data-page-node-id="PG7UbItEXCFvHCfDJXtepW"><!--pnid:xz0Z4Z0mo8LSDHai2tMAXh-->行为</th></tr></thead>
+  <tbody data-page-node-id="t90EJDjW9U8ya4B2BoFu6p">
+    <tr data-page-node-id="4fd8JYwWnSFANv0rGitWDJ"><td data-page-node-id="OqFGEvE317nX4kuPe8GqYk"><!--pnid:fJAgMUEYnouD6VBqO0tl69-->connecting</td><td data-page-node-id="xsK2Jml416LkKC8QHdWmqO"><!--pnid:MCsIYDNY1XgtzHH48LFJp1-->右上角灰点</td><td data-page-node-id="s42xurNIUrWTwAeEUMDcln"><!--pnid:rdZi3xCT2MFPjASu2VGkrz-->显示本地缓存内容，不做任何提示音</td></tr>
+    <tr data-page-node-id="H054bf74q0NuOuMlU6jZkT"><td data-page-node-id="es1SVdCF4FRmV7fh55gj7w"><!--pnid:nTCTMtt7HiVmq3lT62BP2o-->online</td><td data-page-node-id="hmcgdUIgJMwgJUEjRcWSC7"><!--pnid:4L5PzNm9fUoSLfxSqlXANX-->绿点 + 时间</td><td data-page-node-id="XTzblOFfTPu0fd09xIeykK"><!--pnid:KBUmpjk0WpxYWlOgGFvZMp-->正常收事件</td></tr>
+    <tr data-page-node-id="MsRh8Ygk7l0o1ODNUc0qym"><td data-page-node-id="8s4aWSOyo36j1K3UpFhqZ1"><!--pnid:ZEhMsvMjZWjnmLoHvCf0Mc-->reconnecting</td><td data-page-node-id="KS62nddQiQO7kESDPiCgRK"><!--pnid:8WJZEG1nzrAaca6kBGVgP8-->黄点「重连中」</td><td data-page-node-id="MW8v635Qy7U6ACKrSQp6EY"><!--pnid:vl3W6pXepnxs31PbfBDkx2-->指数退避重连，期间继续展示缓存</td></tr>
+    <tr data-page-node-id="1MTi15oSoRB6OvRsPmKL5I"><td data-page-node-id="o0BZMYE1FBUIhwtqeJmWvp"><!--pnid:GN9lt5u8AXTe0Wkx8FRqS3-->offline &gt; 60s</td><td data-page-node-id="jOr4xdmtiV8dcn6fJkcJvR"><!--pnid:2Wap4sQhdXFMIeIwnrxxUw-->红点「离线」</td><td data-page-node-id="hstP3QLPPgPj0fwGva5617"><!--pnid:MQtAQBtnJcIVCKCNBBzJcy-->降级为每 60s 轮询 <code data-page-node-id="QgbpZ6LITYmmT1uC5iW6HN" data-pnid-children="o3ipLajRDZ6b30p0MhsPuL">/device/snapshot</code><!--pnid:2DDFsmdfh6mhvMklhxC5VF-->；恢复后自动切回长连接</td></tr>
+    <tr data-page-node-id="P48FmYemCHRgPaOyebamWi"><td data-page-node-id="dkXD1F8HRnRh9GExYQGYEz"><!--pnid:2NcnUsox86qsFch3pyx9nH-->offline &gt; 24h</td><td data-page-node-id="zWWEjRkJF2FPSgvC7g4ba5"><!--pnid:77Cr5yDrPNMpIrST1fBtsa-->全屏提示</td><td data-page-node-id="IJUNGDWxIcf8UGrUPRFHJk"><!--pnid:uI1VyMBAAyE7YDMZT3L1k2-->显示「网络异常，请联系管理员」+ 教室名与设备编号，便于现场报修</td></tr>
+  </tbody>
+</table>
+
+<h3 data-page-node-id="kCuM2AYPiEHlPDAUlZjbqF"><!--pnid:CHqfMnzFHH1Wa9DlKN9CZq-->6.6 Kiosk 七件套</h3>
+<p data-page-node-id="KsAkzmm8U46lh8VEvHMyRQ"><!--pnid:uwewxa34IEXVIC1XWbyfVx-->教室电脑是被忽略的重灾区：会休眠、会弹更新、会被学生按 Alt+F4。以下七项必须在安装包里做掉，不能靠现场配置。</p>
+<ul data-page-node-id="1utM8vQIbcBzChyngk6iRp" class="check">
+  <li data-page-node-id="NZ6k3fU98R7b03ElBvjNS0"><!--pnid:gSUXvN6GcNBZVz6w6SinvH-->开机自启（注册表 Run 或启动文件夹），无需登录桌面即可拉起</li>
+  <li data-page-node-id="VE2sXYtn8vgVgv2byucvwz"><!--pnid:0m1uMR9jBBCPbGWhQBnoxJ-->全屏无边框 + 置顶，屏蔽 Alt+F4、Win 键、任务管理器快捷键</li>
+  <li data-page-node-id="JkfJtzJ19lOuQeK7hUYUfo"><!--pnid:pwodcATUf5XnIqBw9iOpkY-->鼠标指针隐藏，60 秒无操作自动熄屏光标</li>
+  <li data-page-node-id="fh0v7Wg75fxXkGEn1pxQKB"><!--pnid:PE80M2s3XSjgjWHQ6QFYJc-->禁止系统休眠与屏保（调用 <code data-page-node-id="Ic2gDlN7QyExMCCe0HQdLC" data-pnid-children="9hPhiw9o1ffR0fzjoBPZGM">SetThreadExecutionState</code><!--pnid:AFDfnduSgAEYSTDJZzxLdl-->）</li>
+  <li data-page-node-id="lyKqs94AJRkIgbAckqC9ZV"><!--pnid:P0wMcQKCPZbxomPoFLVW7x-->看门狗：主进程崩溃后 5 秒内由守护进程重新拉起</li>
+  <li data-page-node-id="kyYjPZ6o3C2Iha7OzlJbHx"><!--pnid:oKdyJJArMbsbFKft7e2F7n-->版本更新失败自动回滚到上一可用版本</li>
+  <li data-page-node-id="6rP583rOQVF9jWDLSQvgER"><!--pnid:GvNnV5YiPA7phpRC4IoPSk-->本地缓存兜底：启动时先渲染缓存再连网，保证不白屏</li>
+</ul>
+
+<h3 data-page-node-id="4vA8lxCunQhLeXJUpgXLZq"><!--pnid:gknvOLU30SD4NeVclEFmBY-->6.7 本地缓存</h3>
+<p data-page-node-id="z5b9ZF8Aw9r6bXNB05jSC8"><!--pnid:tQeFG6BoyXrezTnzA2M3Ao-->SQLite 单文件，位于 <code data-page-node-id="jhtBiY5xwFuZZoWC0j0Wb6" data-pnid-children="kw1RboINOwpIUTwsyusbHs">%APPDATA%/ClassroomNotice/cache.db</code><!--pnid:37eqzKki8IymMZdoWu66ek-->，存最近 7 天的公告快照与播报记录。启动顺序固定为：</p>
+<div data-page-node-id="jBGvbLQogEOLLLGCSXUj5D" class="flow">
+  <div data-page-node-id="tKxkILugYNWukwzcJQT8JZ" class="step"><div data-page-node-id="oMb7L3I7avw6Ytc8ouD3fP" class="n"><!--pnid:e9fQLXpO9DJ43KfseFTlJp-->01</div><div data-page-node-id="jlur6dY1MXE4k8tlH1DUgG" class="t"><!--pnid:YZcfyhDSF7rmoIKt8lLLnW-->读缓存</div><div data-page-node-id="tLcJpcQagUc85bIJFqHX4w" class="d"><!--pnid:R4EJtNImExGlTSDMT7BTgC-->立即渲染</div></div>
+  <div data-page-node-id="tCYSXiQxcEeZnXHiVpUTZK" class="arrow"><!--pnid:O3MzEyM3AZmxIZtmZsa7oU-->→</div>
+  <div data-page-node-id="WC0FcJ0oyxtfktVh1y86U6" class="step"><div data-page-node-id="zH5xhtoIHgWe3WqX2bMknE" class="n"><!--pnid:iDOtdUC0KlQtKdrUaB050c-->02</div><div data-page-node-id="CwxHAzO6SzkZlt9SRb46DD" class="t"><!--pnid:vL9uufbQjMZvWA9i88TVFs-->连 WebSocket</div><div data-page-node-id="lREnB0LiTfsWosuwJIs6OI" class="d"><!--pnid:7Ml70BPGKPfQ90hfUE2L0L-->带令牌</div></div>
+  <div data-page-node-id="CjU3xMFtMsnVHrJNNqNox1" class="arrow"><!--pnid:VlWiBIceBvDf1Z4OQbeFei-->→</div>
+  <div data-page-node-id="v5p0uM2U31yoQ9CodE5MAg" class="step"><div data-page-node-id="EiWHviqfuhVh6NptAtURjm" class="n"><!--pnid:1Z2eWvgEmMRImGjoDlwDEg-->03</div><div data-page-node-id="KYj1dTl0IqKQX6ZFockLLF" class="t"><!--pnid:Kp3F1gEwsPlf2dvo3EKZG5-->拉快照</div><div data-page-node-id="RQ2SJibJID2w3pMRop7MNM" class="d"><!--pnid:K6YKyYzNwErEyzVwMfiGJt-->覆盖并校时</div></div>
+  <div data-page-node-id="khf9W6YSAsj0Gu8DXMVeOD" class="arrow"><!--pnid:UGdGAhxWr9VR0p91ld6FuA-->→</div>
+  <div data-page-node-id="5yt9pOeufdoaHRf0ahUdV8" class="step"><div data-page-node-id="aXiGAQN4bMLLdpKC2hwx16" class="n"><!--pnid:x54E5uQytSqc6pLql3Hyjf-->04</div><div data-page-node-id="uvk64fZsCM6ac23WFY8OVt" class="t"><!--pnid:LpIonXxg7g2w3sWE30RyyN-->消费事件</div><div data-page-node-id="0A0BVZKkDoLG7ieMDg9F1q" class="d"><!--pnid:TcAM4bAecC9fSKyRUn433Q-->增量更新</div></div>
+</div>
+
+<!--pnid:iDp7mgCLx46EE86OvUB2xB--><!-- ============ 7 ============ -->
+<h2 data-page-node-id="Bf99xkTEjPjoUDCLs7KGN6" id="s7"><span data-page-node-id="CE59T2BgucfILedYdKZ34A" class="num"><!--pnid:pZLvurmXQXezxerKnWfs0c-->07</span><!--pnid:9ta9GUMu6e7DkBVowoqlSM-->教师端小程序</h2>
+
+<h3 data-page-node-id="VoLNreqvhf7EfSobCMUc0v"><!--pnid:Jzl9G5XmWFQXhpS3U53qdz-->7.1 页面结构</h3>
+<table data-page-node-id="FD5si7tMf1P2ODbchvyF36">
+  <thead data-page-node-id="2GrmzlWPLiF23jGnY0MKjr"><tr data-page-node-id="qsWBPuWFU9XaL826vI77Fs"><th data-page-node-id="mi5dhTyfWlvnsj039FWMCI" style="width:130px"><!--pnid:cLYlfQ2H1uIfXgprFm63Hh-->页面</th><th data-page-node-id="RO0cKawCzNU3TbbNyZJOLu"><!--pnid:T6xWAx8F4NJJR4hFVWJayv-->内容</th></tr></thead>
+  <tbody data-page-node-id="pDCH8BAGuDdbeJgJ82XVv6">
+    <tr data-page-node-id="jT1GGb7JiYv7Fhbcf6lYdX"><td data-page-node-id="pUZd8oml3Ksr5E93SpN8LM"><!--pnid:ZaCvKE7LMd3IJhbVtPrn1G-->首页</td><td data-page-node-id="x5Q53RXvxwThuAE92uuJfR"><!--pnid:9fwKVVbaVk73vDZIsobe6L-->我带的班级（大卡片，点击即进入发布）+ 今日已发 N 条</td></tr>
+    <tr data-page-node-id="zv4U7LuXwRLc91zhGW27ve"><td data-page-node-id="YGFcxQqYiVXSeNIIpt8gsd"><!--pnid:6ocdYL0GzoyeH7VlTWzDGY-->发布页</td><td data-page-node-id="ZjCyCOSFsBmJ0htRV82HjR"><!--pnid:C8UipMjGvNx6wX2wvlIvRW-->类型 → 对象 → 内容 → 播报 → 发布，单页完成，不分步</td></tr>
+    <tr data-page-node-id="epiNAftjphx3kALjXzPxlO"><td data-page-node-id="bGCaOEroerulmNkZtcMGHy"><!--pnid:EE03fBtTpqlXnG7X0XpriZ-->记录页</td><td data-page-node-id="qGeaXh4Gi1lKNzjxBPeYW4"><!--pnid:jGYkfkCP7ynIKE2GFzYXVZ-->我发过的公告，可撤回、可重播</td></tr>
+    <tr data-page-node-id="SFzuB2xk0iXP46RRQsj0ET"><td data-page-node-id="q1Mf1jDEILwommj9OizZqH"><!--pnid:FQCzUNTo2hNra2dGvRHJLE-->我的</td><td data-page-node-id="2Vo0IVAGuMiKlrVgxcPp7T"><!--pnid:2SnkaHlPT4s5zW9DyALPqg-->身份信息、所在学校、退出登录</td></tr>
+  </tbody>
+</table>
+
+<h3 data-page-node-id="I1jrEmpzAPyShmisz3UZX5"><!--pnid:YPTzCQskel0FvR23isyIWn-->7.2 发布页设计</h3>
+<div data-page-node-id="9O1U0PTCIjOb6MmvJKZwsj" class="phone-wrap">
+  <div data-page-node-id="xT5mmQSDHZaSJtcjjFK1k7" class="phone">
+    <div data-page-node-id="FyTppG1HPCfe5ns1KzNlws" class="ph-head"><span data-page-node-id="4XLgUmBFYhHO6iO0nAGmij" class="ph-title"><!--pnid:qxUbCJrYhMbg8UTjjiLGfW-->发布到 高三(2)班</span><span data-page-node-id="u93jbnYaW0Cegow9b9cVTz" style="font-size:11px; color:var(--ink3)"><!--pnid:ttjJuDitsLXW6Yxai334ja-->切换</span></div>
+    <div data-page-node-id="gjOrBCu33IyuxXgMJvAqs2" class="ph-body">
+      <div data-page-node-id="vTU9A3AQPVN5hdMiaqz5tp" class="ph-label"><!--pnid:uIIyZUEGmVQfrVLo9EdNAJ-->类型</div>
+      <div data-page-node-id="rGBVvIN8EgXf33q2DGPGkJ" class="chips"><span data-page-node-id="QFv6asymUoSWpFDW57PF3l" class="chip on"><!--pnid:oAzVMlVqyr3tGnzFiCGyh5-->呼叫个人</span><span data-page-node-id="0HLn6dLpIWuPXr4RJXC6qW" class="chip"><!--pnid:pv2NXSOdNSMANdn4SEJV0E-->批量作业</span><span data-page-node-id="j8L9zPadekiwxGEf5Mq114" class="chip"><!--pnid:7BeylgHD2zA02qeTFbW08x-->通知</span></div>
+      <div data-page-node-id="BTK5DjuLNQ2VY4Kj5pteFt" class="ph-label"><!--pnid:Chz74QfNoAXT7jYkBVAzKn-->对象</div>
+      <div data-page-node-id="Textr7pKF12CvjuAn2Iji5" class="field"><!--pnid:SPrBL3SV8mcZ33KzI7jijY-->李明、王小雨　<span data-page-node-id="gSw9tJveOXjbFSxzVWCl1X" style="color:var(--accent)"><!--pnid:XR6SHxSjk3LQVnDCYRidnw-->+ 选择</span></div>
+      <div data-page-node-id="rDNyniimRT3jTUAJf6lLGI" class="ph-label"><!--pnid:MBxJdrO6jbfcao2vwfvrrs-->内容</div>
+      <div data-page-node-id="KDiETVyAtCcuapXo6lNlWP" class="field"><!--pnid:HljdqqaBCu5XTFOQjaqhIS-->到 3 楼办公室</div>
+      <div data-page-node-id="DcB7xYV4legh7x5eozbQtq" class="ph-label"><!--pnid:7aIM1c86Br2v1UOt3aDW0j-->设置</div>
+      <div data-page-node-id="j4nXEr4OwRAvrdRFEeWc6I" class="row"><span data-page-node-id="WY2nrXtu8Ef3wBJps4SoN1"><!--pnid:BfINB5V3t2KRiehMNGzqM5-->语音播报</span><span data-page-node-id="25pb9iUZ59GnXVGtdSI4q1" class="v"><!--pnid:te1N2eujNiVRRHXhY3ai60-->2 遍</span></div>
+      <div data-page-node-id="x58Bi8L3U6XobiU9QlhB1v" class="row"><span data-page-node-id="5ZpvZAQgjADW6E0vKCd9dS"><!--pnid:8T4WHdWpvKye3IdwiBA2Tp-->下屏时间</span><span data-page-node-id="ZRYG4mnzMEU3PiZXs4YZCl" class="v"><!--pnid:WFbrO8Skivbrlnbj9UlXPg-->40 分钟后</span></div>
+      <div data-page-node-id="RhiCIxGXkYT8rJB80Qxq3k" class="btn"><!--pnid:bu3cWBVT8yW1WeddPdpxiX-->立即发布</div>
+    </div>
+  </div>
+  <div data-page-node-id="zSFLgudoKQ672K7I0cOsln" class="ph-note">
+    <b data-page-node-id="wCS7RmHIVKQ1jRgPVSHLpG"><!--pnid:4hWyF39qRZB3DXTJPRYejr-->交互约束</b><!--pnid:e3RzqxGXtvyg59aEJVEJkX-->
+    类型决定默认值：选「呼叫个人」自动带 2 遍播报、40 分钟下屏；选「通知」自动关闭播报、下屏时间设为当天 22:00。<br data-page-node-id="V0ZghHFXSQjEDspuj17pVx"><br data-page-node-id="n6K9jgTGv0AM2dvC26tkPk">
+    <b data-page-node-id="7ICUjBHJqSJLSF5kreD8iA"><!--pnid:F142QpqAXSXfZYjBcZfu5W-->为什么单页不分步</b><!--pnid:c3y02on3XRr5gcxlAbIJbl-->
+    老师课间只有两三分钟。分步表单会让人中途退出，单页滚动一屏内解决，且默认值已经把 80% 的填写工作省掉。<br data-page-node-id="4ihA6jM1H4A7exOyUPv5gs"><br data-page-node-id="Dg6P4Fjpg9SyKH0r7WJhjm">
+    <b data-page-node-id="eSvVTPK927nZ23CKrInmHi"><!--pnid:RiRpM1pn5t6kkFqaAb7LMP-->发布后立刻给反馈</b><!--pnid:z0DZOeXnYBC6DwUSRPDVLK-->
+    成功页显示「已投递到 1 块屏」，而不是简单的「发布成功」——老师需要确认到底有没有送到。
+  </div>
+</div>
+
+<h3 data-page-node-id="oAWxTM5AsSnBv5qIKvnmfp"><!--pnid:44qpXapKLW4ju71hcrC4BG-->7.3 登录与身份</h3>
+<p data-page-node-id="0NknXIEgn4B8QXwIgQbsMq"><!--pnid:41BwasHE2d2yhcB5mNbu5a-->使用 <code data-page-node-id="Mr1oximY5a5p31Guoy6fIh" data-pnid-children="ItcskZG7ZDjyL1CAbnS7pK">wx.login</code><!--pnid:wPk51NJFrSuUh2whAwmlvc--> 拿 <code data-page-node-id="FpYSHfhWVCv1mmL7S2U6sj" data-pnid-children="bNKIIRQ7nHJPa2cVpOgg6E">code</code><!--pnid:BgcYwiRAsmyUGTkJwA7I00--> 换取 openid，服务端按 openid 查教师表：</p>
+<ul data-page-node-id="AM9yFH7AsBPv5mQ7UiG26q">
+  <li data-page-node-id="8tpUgX0FoE7oaYbSUfUkbb"><!--pnid:pQJ1NCzOCz7LLa1QKLNQ25-->命中 → 直接登录，返回令牌与权限范围。</li>
+  <li data-page-node-id="ntq1yvzwQHWXvjcPQeAY0X"><!--pnid:ZH7z2mZ8uh3WFaq1ekwNeA-->未命中 → 显示「你的微信尚未被学校管理员添加」，附管理员联系方式，<strong data-page-node-id="3hPbZnasZDmS8ahceS34dR"><!--pnid:NT7hoDhQt2XgmP0DUpUttI-->不开放自助注册</strong><!--pnid:V0EzfEM9jXPyzjZ5YJcY48-->。</li>
+</ul>
+<div data-page-node-id="dHiVTEfPxdwIMuXZnqnLu2" class="note"><b data-page-node-id="4ZQZ1oCan3Ozf7Q7Uox5OU"><!--pnid:CYSC6wghvMjXgoD9Kr5IQ4-->为什么不做注册：</b><!--pnid:R9VEPGGvI39AqOwNTuRxIP-->这个系统里「能发公告」等于「能对全教室喊话」，必须由学校侧白名单控制。开放注册会直接导致内容事故。</div>
+
+<h3 data-page-node-id="ZIFoNHupq02l3IPeqtsn64"><!--pnid:HNKq8wwA68tnZCLLi6HurC-->7.4 内容安全</h3>
+<p data-page-node-id="eQRJXHnsPPzq1qIoy4QPXN"><!--pnid:QHCIGl6sSfGVUCmTAmVHWU-->发布前必须调用微信 <code data-page-node-id="WRMvZlrNeqczU8dTRv760i" data-pnid-children="UC1kiSLUn2SJKl8xjFl0Y6">security.msgSecCheck</code><!--pnid:eP83xtkboGpydWFgQ2SshM--> 检测正文，命中违规词直接拦截并提示修改。这一步不是可选项：一旦有敏感内容出现在教室大屏上，小程序可能被整体下架。</p>
+<pre data-page-node-id="IydLhi52siaRsyN25ZfiAG"><code data-page-node-id="q5Ql5WpVlBaHyBFRKzNT4W"><!--pnid:6iH0y6JUH7YP2vaKnlX0FB-->POST https://api.weixin.qq.com/wxa/msg_sec_check?access_token=ACCESS_TOKEN
+{ <span data-page-node-id="kYMwr1hbDpZxV2eFHKYyjD" class="tok-k"><!--pnid:wtT6ujRazbl3Ur7dfxT7VG-->"content"</span><!--pnid:RURCkzETjcpKYfviJW3cXZ-->: <span data-page-node-id="RdPB0vHQSUCUe3hG5Pp1WG" class="tok-s"><!--pnid:g1X1EimtElnZFnyYW9m1WQ-->"到 3 楼办公室"</span><!--pnid:n9m4UmNbGwH1ZGHA8F2AKP-->, <span data-page-node-id="bePzniPQadQsA4wDn0XSCK" class="tok-k"><!--pnid:JL2ZAnIe9k2ywRTDYMaJdw-->"version"</span><!--pnid:DGzuOcGOH8ptvAG6Jjac2y-->: 2, <span data-page-node-id="CVtgLIhTDl2dg0JOG2SOe1" class="tok-k"><!--pnid:Oa3IBiibjOyYIjxGI2U3rG-->"scene"</span><!--pnid:nuofI6zb2B7q7u4FgPKCT0-->: 2, <span data-page-node-id="d8PLC5JEwWPK0tlznt1Y1i" class="tok-k"><!--pnid:HML9YcIKXyH7TyajzMGS2t-->"openid"</span><!--pnid:O51XLgSg666W4WvKlZNEp5-->: <span data-page-node-id="lPgTdNd7eSzH4ozUmTAsMc" class="tok-s"><!--pnid:Xvyq6tprygDeDjlUDinG9f-->"oXXXX"</span><!--pnid:AM44dcFyPTmkJqcbNmSMI1--> }</code></pre>
+<p data-page-node-id="HOQPd4uqIrokSCVdW79621"><code data-page-node-id="t6gSlbSI9TZ3fb2qmeEwHU" data-pnid-children="3PZ4cO9tMgaKLcKc7CzIF4">access_token</code><!--pnid:C6wmxQbQHQTfxlmHKwq6y2--> 必须由服务端缓存（有效期 7200s，提前 5 分钟刷新），绝不能在小程序端请求——<code data-page-node-id="bOx4OnypxlLcncnxzja0B0" data-pnid-children="ZOh78dAFSRFHr9qbPhT8Vv">AppSecret</code><!--pnid:xMPISLXBGqrkXuEW3AvZnB--> 一旦泄漏，整个账号的接口都可以被冒用。</p>
+
+<!--pnid:7tGgUwZFFzzASpugXQq4s6--><!-- ============ 8 ============ -->
+<h2 data-page-node-id="opcouSfj87prMvgai7gnKr" id="s8"><span data-page-node-id="W5Ic2sXnqQnQR7sJBjlcC8" class="num"><!--pnid:kpf25i00X9MpCRQDEIxtCQ-->08</span><!--pnid:6mvciORtcXmcErMhXoNTFg-->关键流程</h2>
+
+<h3 data-page-node-id="08Xg5xbz45hws2aY7oFK4j"><!--pnid:M9jPA2OMpOwzGEb8ggm7Ox-->8.1 发布一条公告</h3>
+<div data-page-node-id="Cfda7ADhiTwsv0QGK28z0N" class="flow">
+  <div data-page-node-id="xTFxOBdixs1jbg3h8ElAQP" class="step"><div data-page-node-id="kKUBB8kjmJadHn3H32ouet" class="n"><!--pnid:pOuGpCwH5JD39tsUFQTP2w-->01</div><div data-page-node-id="Mi6UcUIASsYHlp3NByE2oY" class="t"><!--pnid:QwEwAMAvDXJOlcQ2AkD6c2-->小程序提交</div><div data-page-node-id="mJqmCzfMQpH1Zb3kMM46ij" class="d"><!--pnid:0b1B7GJ4xype3Et3I75GlR-->带 clientToken</div></div>
+  <div data-page-node-id="KL1GJUIwwonuWoLI3u84Ej" class="arrow"><!--pnid:IDOWXL5Oxg5l0BvpCTbbJ8-->→</div>
+  <div data-page-node-id="zmq55UY6MXFPBPopuxFV77" class="step"><div data-page-node-id="FRyR1sm7o8jmk7eWv59T10" class="n"><!--pnid:dTio5AOvZy0gg2TFOHRqM4-->02</div><div data-page-node-id="ZNNkG61MT2IV9T9NLI57ue" class="t"><!--pnid:WB0efSfd01lVWFg4khVfir-->内容检测</div><div data-page-node-id="F1Ggj2KUou6xeAtzW8j1ij" class="d"><!--pnid:8smIf62gHjfltvi35bGSDc-->msgSecCheck</div></div>
+  <div data-page-node-id="K4SWmjZ4h36CBfLvvjCEUQ" class="arrow"><!--pnid:yQp8nVFptStAmK2woCH6iw-->→</div>
+  <div data-page-node-id="GyROqJSqiZa8EJMO3MsCBH" class="step"><div data-page-node-id="AxDe3iOfIM4oVqkoAmT0pK" class="n"><!--pnid:NCxzw1sG95WvLlW5kM40T7-->03</div><div data-page-node-id="3dak663FQ84bIZQaKPWzyq" class="t"><!--pnid:X3OT7LGTr1976MNozLKHkf-->落库</div><div data-page-node-id="chAPpgaKkX4jlXptiLngUz" class="d"><!--pnid:Xyka21S9nOx3Dfo7rsrWl8-->messages + message_rooms</div></div>
+  <div data-page-node-id="cPktfYUPKqKCimmttibKA0" class="arrow"><!--pnid:STU8mOoc7gqyCnKkS0UgxL-->→</div>
+  <div data-page-node-id="7BwGLEvErYdob1ldxQnnDq" class="step"><div data-page-node-id="J4wFlb01NDoNdQVKK0Efum" class="n"><!--pnid:uvkO9aVgV1sa78QYEYE1N3-->04</div><div data-page-node-id="mc3h2kg9lYbOm9tJoezMMW" class="t"><!--pnid:qRLJbBuqx2Lw8Txc4zr6Qd-->广播</div><div data-page-node-id="sWWpbzG6dnrlExnC1vz07G" class="d"><!--pnid:dMGEeNWoLiAl0WQ4MXgXsA-->推给目标教室连接</div></div>
+  <div data-page-node-id="Hc1dquIM78ZSGV8PhVkXiA" class="arrow"><!--pnid:BfIUme2eM5X1I3JbOW8HSJ-->→</div>
+  <div data-page-node-id="7I3agJWR4E6ubLkgawqWv0" class="step"><div data-page-node-id="IxmW0eW9NOBVl9PVJ11R1z" class="n"><!--pnid:D9Zmkq7uPrgDCQGxr0nG9h-->05</div><div data-page-node-id="xubYVfhslKd0fca7mP6elo" class="t"><!--pnid:T1OCCjEq41EXpXK7fQ0rKe-->大屏渲染</div><div data-page-node-id="OR3lVjhCcxxPSCD87g1B1R" class="d"><!--pnid:LvEnRQEpAFfFCJ2NmXqECD-->插入列表 + 入播报队列</div></div>
+</div>
+<p data-page-node-id="rub73iQVEXLDGp6DfomyVW"><!--pnid:eQh6tglTAz4gB92a7Vw1kl-->整条链路目标延迟 &lt; 1s（不含微信侧检测耗时）。服务端在广播前先完成落库，保证即使推送失败，客户端下次拉快照也能拿到。</p>
+
+<h3 data-page-node-id="SJjFYDwadAK2SFFgXTN324"><!--pnid:V9z9sIvBpQdGzov0g3WzTt-->8.2 断线重连</h3>
+<pre data-page-node-id="4WJjqv1ZfAnda1YbG61ulo"><code data-page-node-id="97tAx4qY9kGnRwbuRPD4pn" data-pnid-children="tabcFkHspXVuasgXKn2WTI">连接断开
+  → 界面切「重连中」，继续展示缓存
+  → 退避等待（1s/2s/4s ... 上限 30s + 抖动）
+  → 重连成功
+  → GET /device/snapshot（拿全量 + serverTime）
+  → 用快照整体替换内存列表（不是合并）
+  → 播放队列中尚未播完的轮次继续
+  → 界面切「在线」</code></pre>
+<div data-page-node-id="sjSTnoOWCoy8uvaeZIeoQR" class="warn"><b data-page-node-id="RGo5a9DGCiJGi9koSWPk2x"><!--pnid:Om3w0dZxK15FcBPaEUNwlz-->必须整体替换，不能合并。</b><!--pnid:3ti4DPlgqmtC6VlGWVXVVw-->断线期间可能发生过撤回，合并逻辑会把已撤回的公告又留在屏幕上。快照即真相。</div>
+
+<h3 data-page-node-id="OykyXuQMbJJVJPQ7uTOpyd"><!--pnid:CdbZrAOXo7mOER2LQgsIGG-->8.3 撤回</h3>
+<p data-page-node-id="KAMv0qq5XBlvlOdnEhhmsr"><!--pnid:QQQk0DwLD10iepDvt5nLBe-->教师点撤回 → 服务端把 <code data-page-node-id="Hkbh9mLVJa5cBfGYCHGSOx" data-pnid-children="ssuhPRbs9Ur8E8oEkt1aF8">status</code><!--pnid:n10qWb83HUCyay7oMcPad1--> 置为 <code data-page-node-id="yf7JzM7unLJ3hSnAOkQgg0" data-pnid-children="NXjHNBEhgdWpoXPO2BxCxy">revoked</code><!--pnid:DI8IqUnIIPrfhDXHxVeU8X--> → 向该公告涉及的所有在线设备推 <code data-page-node-id="SvxwKXUdl5WyIIpOkKZ3Nz" data-pnid-children="FBviOXSVhGhaDCOrF1Llj9">message.revoked</code><!--pnid:460y2LDcuUIw7TazRQGSlm--> → 客户端从列表移除，若正在播报则立即停止。</p>
+<p data-page-node-id="8298ojxhvBfLPXVQOKbmrz"><!--pnid:sJ5XwxjLShnFPO5nBJhI5o-->离线设备不会收到推送，但下次拉快照时不会再包含该公告，因此不需要额外的补偿机制。</p>
+
+<h3 data-page-node-id="Uz2cftSzLOrQs4bPiYiRSq"><!--pnid:TdWAX2yAeaJLSGICkx4uMI-->8.4 过期下屏</h3>
+<p data-page-node-id="TYViolVcf13tYKFj1jE4o5"><!--pnid:GYzIZ8K2nqxdiH2fyiG68A-->客户端每 1 秒检查一次列表，把 <code data-page-node-id="Jwh6iXzOLotQpSCnmrrZKC" data-pnid-children="59V2WeBAxMisa4DfLd6MW6">now &gt;= expireAt</code><!--pnid:HQwi1dHs9oAL2dcm7qrvZS--> 的条目移除。这里<strong data-page-node-id="DrdHoXxxolLLfrlmLetoE2"><!--pnid:2dFzzNfYBoZx9a8Cahla66-->不依赖服务端</strong><!--pnid:F9e3AL7NTmSdp2w6nzxJze-->——服务端推送可能延迟、可能丢，而屏幕上的时间必须准确。所有时间比较都使用校正后的服务器时间偏移量。</p>
+
+<!--pnid:nyp18Yxqri271OLb2Rqist--><!-- ============ 9 ============ -->
+<h2 data-page-node-id="YEWda6gSlMAvrBd6oWa4Nf" id="s9"><span data-page-node-id="ibTrG6zZbQYuFPiyoMq5jB" class="num"><!--pnid:ztiBUzeaoVRtVB4BMSrCKI-->09</span><!--pnid:GcyefHZA06K4FwzhFRTzxo-->非功能与合规</h2>
+
+<h3 data-page-node-id="rJ5iFef1unK6mciLSc0C5t"><!--pnid:m3SDPTRoC8G1nIfHJudMIR-->9.1 性能指标</h3>
+<table data-page-node-id="ML1rycHU1DOPcHhafN9yIa">
+  <thead data-page-node-id="XGklhP9TqSuyUAFKWtfBjf"><tr data-page-node-id="0IeM5dH80DzlESv5LKnB3i"><th data-page-node-id="vEpaLqSbLr33QB3AA74hpW" style="width:180px"><!--pnid:IRKOv07MowF9OHMo39tziW-->指标</th><th data-page-node-id="Pp0VBK8k69mXcmnJTHouan" style="width:130px"><!--pnid:jpwddvLI5k65yrbz9CK5Fh-->目标值</th><th data-page-node-id="Vid8sNgVjOch54pvs4z5G4"><!--pnid:xnLif8U4BhI4Hd4Id3HjYi-->说明</th></tr></thead>
+  <tbody data-page-node-id="GQkcpUJ62O8vGBL1t1Ko6g">
+    <tr data-page-node-id="MxcJQ6ABn7acWRAYZwu2w9"><td data-page-node-id="55oq7hUvVZO8s8rzUlKFUb"><!--pnid:QEA7Uv47alKPwZQKBNWRjj-->推送延迟 P95</td><td data-page-node-id="CJ6FL8qHySZWw06ms3amXe"><!--pnid:NEgvwgHQcIa4geu5nk7CuD-->&lt; 1s</td><td data-page-node-id="Dl1P6ch428MPiUFGe2TNtU"><!--pnid:7QZjGefPRyt95wU6JKWBWj-->从接口返回成功到屏幕出现</td></tr>
+    <tr data-page-node-id="Fv8gksM6eMRlGnRo7o9hfz"><td data-page-node-id="BSuM8S8Y3y4gSxc9u4ID9A"><!--pnid:tlVmfQsCQwL3CDrP2Zl0gi-->单机并发连接</td><td data-page-node-id="AZZJhIzo4kgeDYPslKTMvE"><!--pnid:Dr1jNLxeKmZqxbbLQIGQjT-->≥ 1000</td><td data-page-node-id="NEb6clAcDnQJGnnXBf3DjT"><!--pnid:dgWgbnDLTiuKF6ATGri28A-->一所学校通常 30–80 间教室，留足余量</td></tr>
+    <tr data-page-node-id="WD5SBPA7x6I4BMktAIyqaj"><td data-page-node-id="Uh6KCwqhzTH4yTJagN41Pf"><!--pnid:0wYMyF44LhxTPWVFmrtwb7-->快照接口</td><td data-page-node-id="QiggveLBefsMEIEGqlb2R1"><!--pnid:zyKxwTGGUJLmlCGnx0JXTM-->&lt; 100ms</td><td data-page-node-id="qymw3iWgqGPfL6PR1JPmkJ"><!--pnid:bFm9mYlDqwX2ireVwfEswh-->单教室有效公告通常不超过 10 条</td></tr>
+    <tr data-page-node-id="9wvBHv5DPZMf9RCfVGY7Y6"><td data-page-node-id="8DJ9lyERVh0yAb2IHNHn7A"><!--pnid:UfqOQkK3E8DoSzHZxFYLnZ-->冷启动到出画面</td><td data-page-node-id="BgDejCTzz24yjLJWAkEWZ7"><!--pnid:C2AUo4nLhfZm2zwXWqZ2WH-->&lt; 3s</td><td data-page-node-id="n7T8pTq8deIZ3Jz05drcLn"><!--pnid:a8SCEE1BShsfGwxS6HmYkD-->读本地缓存优先</td></tr>
+    <tr data-page-node-id="ZIHQn8LNycyphxfz1yErHS"><td data-page-node-id="WdwpqdQa0bawttPo7LiP2j"><!--pnid:edLMEoe1ZbSHgngVMUU3bF-->长稳运行</td><td data-page-node-id="N9sXZqvGpueFDc0EzyiLG1"><!--pnid:eT71OSyifmj0pFG4xus0fC-->30 天无重启</td><td data-page-node-id="bBlTpYmlSwVgDZMc5FOX7j"><!--pnid:S9escuhqFR5BBlEJbB2MrS-->内存泄漏是主要风险，需跑 72h 压测</td></tr>
+  </tbody>
+</table>
+
+<h3 data-page-node-id="h1yOuurRogLP1IDQd3zhut"><!--pnid:awLqaSiOj2eiGiixTp9tKK-->9.2 安全</h3>
+<ul data-page-node-id="UjWlj8kAUm4svemvu2S1Ee">
+  <li data-page-node-id="ymygqj26G8wdQA684cUPLu"><code data-page-node-id="qUAGvePHNUKgXJ9jBlV7i6" data-pnid-children="PAlqhw5GvxdzzNTCcP2w5N">AppSecret</code><!--pnid:fCw4AIhu4lVnYqkbcnDg5e--> 只存在服务端环境变量，永不进入小程序代码或日志。</li>
+  <li data-page-node-id="Pyp2R2OG5HXlaiZ9gJ8Yzy"><!--pnid:Skt2pw6LEr7jsSuDSf5R5c-->设备令牌与教师令牌分离，设备令牌只能访问本教室数据，越权直接 403。</li>
+  <li data-page-node-id="l17tcBgeqAqNDJFm1re92F"><!--pnid:HLBQjFyFV3Ucvbkphs2Td3-->创建公告做频率限制：同一教师 60s 内最多 10 条，防误触连点与刷屏。</li>
+  <li data-page-node-id="P6rdD1Dp3Kr9EHCpcy2AFq"><!--pnid:zFk3EdVVv8BnGhBjluOZqv-->所有写接口校验 <code data-page-node-id="1RpCSWqDgDYquJkDFW1OHc" data-pnid-children="GVB0TUJGWufy77BuFvpoDI">roomIds</code><!--pnid:7P8HvSWepZ1aZyeDh3Losn--> 是否在教师权限范围内，不能只信前端。</li>
+</ul>
+
+<h3 data-page-node-id="eJpGm2vlxGag2SInml40bK"><!--pnid:j6N0TlnL3g4JooydzkFOzE-->9.3 合规清单</h3>
+<table data-page-node-id="8pz6xeA7cCg0Z1sSRNN5r4">
+  <thead data-page-node-id="GJ4m3oil1CW96a3Sers8Un"><tr data-page-node-id="6WIfebA3pGmXhT40pSducq"><th data-page-node-id="f5d3iGLj1IZbzevBx7h1sD" style="width:150px"><!--pnid:BsyFbVrOzOH5NI3sHufcvt-->事项</th><th data-page-node-id="utSmMmgHlN6nBxRb81Nnke"><!--pnid:2hIhD87yHIH4bGzqtPhTua-->要求</th></tr></thead>
+  <tbody data-page-node-id="EPnZrLSFRtByvHo1XUzdpw">
+    <tr data-page-node-id="PFkkNm7fsZBVEssseEVerb"><td data-page-node-id="S9EGW1tmdBWVyJcixkdU2d"><!--pnid:cgGROtNVXv3ilvIu0n6fk4-->小程序备案</td><td data-page-node-id="70XmRHXWd1E3XtIYkhQraX"><!--pnid:ijwnOFtAfmzhPv3Gijdsjc-->2023-09-04 起新注册小程序须完成备案才可上架，网站 ICP 备案不能替代。平台初审 1–2 工作日，管局 1–20 工作日</td></tr>
+    <tr data-page-node-id="JTF6Yl8DxiMd9ntlMmN5AO"><td data-page-node-id="JOpnBFcGdDSLKflVI9WvIY"><!--pnid:2NeHw4yeXcOnzh8SKvvA3z-->域名备案</td><td data-page-node-id="ZnwKFrx1oPwQNt72Olus10"><!--pnid:WD6MWStlkxEWnSV24VCcok-->后端域名须 ICP 备案，备案主体与小程序主体一致；新备案域名需 24h 后才可配置为服务器域名</td></tr>
+    <tr data-page-node-id="wTQMPqi8avCeZtciPqAqes"><td data-page-node-id="0hr7JpO2bDjS8uc5Ia4Hle"><!--pnid:tnFt0KtHWrZGCjwDbqt4cl-->服务类目</td><td data-page-node-id="0kn4APxBl2hhr21MxxI6wM"><!--pnid:GenzTO3W6u2qsJoCtoMy6j-->教育类目需对应资质（学校主体提供事业单位法人证/办学许可证；企业主体走教育信息服务类目并提供相应材料），类目不符是审核驳回的高频原因</td></tr>
+    <tr data-page-node-id="A78oU0kgvs9o0wbxnUlSAY"><td data-page-node-id="dMzcWt2i6dHSvGhvb1ogBq"><!--pnid:227QEoYyIiXmEydWoXY0ho-->未成年人信息</td><td data-page-node-id="I8iBpgPtwdDfGuhJBtvfIh"><!--pnid:bJL3VM0o3KyS3ZdW2QN98K-->学生姓名属于未成年人个人信息，需在隐私政策中说明收集目的与范围，坚持最小必要，不采集身份证号、住址、成绩</td></tr>
+    <tr data-page-node-id="W207h5c99vxydJx0X68SJ8"><td data-page-node-id="Kb9aSNULsDBoRt6CGrXpsl"><!--pnid:BmExllxp2XmHUuGEj2StYF-->内容安全</td><td data-page-node-id="9bPM4cegypb3lqX2qP1FnK"><!--pnid:mv5wBQhJ7u7p4qH1OxmiRL-->发布链路接入 <code data-page-node-id="3Cjddlkhsc0qRzy0AKMC9n" data-pnid-children="XiNDZ13xqgwkFMLXVU9tUC">msgSecCheck</code><!--pnid:YJe1UDirOe6fw1DntPmy6e-->，并对播报文本做同样的检测</td></tr>
+    <tr data-page-node-id="iy5udNKY1jfMUgJSmezK2R"><td data-page-node-id="zqu0gUTXl2gLi1NvWOaPZp"><!--pnid:7RNHDaRckENaOa0sVXO3xv-->审核配合</td><td data-page-node-id="CIUTEJdrtPHICxfce8zsa8"><!--pnid:cNKwU3YcwVDjd07psxOnTd-->提审时提供可用测试账号与操作说明；若功能仅对校内开放，需在审核备注中说明并给出演示路径</td></tr>
+  </tbody>
+</table>
+<div data-page-node-id="JMnLiE6Q3xJJL2izB2I1nr" class="note"><b data-page-node-id="YV7nqrnGFJicaMnlzKdOUX"><!--pnid:PgAsUE6CX7fSFnurWVCnjp-->时间提醒：</b><!--pnid:PVZ0aQA6VGzRF295EEZzVR-->备案周期不可控，建议在开发启动的同时就提交备案，不要等代码写完。开发与备案并行，能省下 2–3 周。</div>
+
+<!--pnid:y2UGWYF0FwcUcpIqEMwAI3--><!-- ============ 10 ============ -->
+<h2 data-page-node-id="LSsK1gNjceiDA2t7RBvJlo" id="s10"><span data-page-node-id="eL4xwYrve2o975NySHxUQ1" class="num"><!--pnid:cPoYjly9lcoway1SSb70RC-->10</span><!--pnid:MYXgwx48WXjMVntc8wJdlX-->里程碑</h2>
+<div data-page-node-id="aSm6q9QbhGZdM8r2caLpW8" class="tl">
+  <div data-page-node-id="oyVb56YcbWfJgBEZxNss77" class="tl-item">
+    <div data-page-node-id="zoVgbEGBgEpM7RVIOyMbBe" class="ph"><!--pnid:RuTwmY7Gyd4beTjMwcrlls-->M1 · 第 1–2 周</div>
+    <div data-page-node-id="4mroIKhpb6Cjs8xj1xUw1Z" class="tt"><!--pnid:eIRAD5qjJdHOpqDshFRKsk-->链路打通</div>
+    <div data-page-node-id="WtohYkpJRs1r8AO6Awvtma" class="td"><!--pnid:tLKpf0OAbjI2y3wIUOT9Fz-->登录、教室绑定、创建公告、WebSocket 推送、大屏渲染列表。目标是能在一间教室里完整跑通「手机发布 → 屏幕出现」。此阶段不做播报与缓存。</div>
+  </div>
+  <div data-page-node-id="CfB7HR1T5wfJoGjZ3xbMxN" class="tl-item">
+    <div data-page-node-id="HU3ZyjDXO4hvasIfShjcZH" class="ph"><!--pnid:AYvouWF4FYL02mBx23Ty67-->M2 · 第 3–4 周</div>
+    <div data-page-node-id="9Rziax7MVs9olgr5mw3WlV" class="tt"><!--pnid:MkDGrLKntQPMEjMHe2TR6s-->可试用</div>
+    <div data-page-node-id="viJRqhvJNplj5udkihcdw4" class="td"><!--pnid:9gO8jfCY4gHww7fztvZpCI-->学生名册导入（Excel）、批量勾选、语音播报队列、过期下屏、撤回、本地缓存与断网续播。完成后可以找一个班做真实试用。</div>
+  </div>
+  <div data-page-node-id="uhGWp8pIFDqNmD9jlR0ofM" class="tl-item">
+    <div data-page-node-id="WLdsPLXaeGU61tQ4Cc1Z5K" class="ph"><!--pnid:bUTvdJr7H4bDVZPjE9v48O-->M3 · 第 5–6 周</div>
+    <div data-page-node-id="lDNh3UGUupPJA0Z9OrzKXE" class="tt"><!--pnid:stKbab453x5sUh52hF2ppz-->可上线</div>
+    <div data-page-node-id="JogGgUAl2OadqG8Xk8hJo5" class="td"><!--pnid:LZWVsfBuQWgGiGPnAyeZgt-->kiosk 七件套、安装包与自动更新、看门狗、监控告警、压测（72h 长稳）、备案与类目资质、提审。同期完成部署脚本与运维手册。</div>
+  </div>
+</div>
+<p data-page-node-id="6TUA2yuqctBjIv3STiAUQF" style="margin-top:22px"><!--pnid:HdCbmgWluMkgirRtq4TPYk-->工作量粗估：服务端 8–10 人日，大屏 12–15 人日，小程序 7–9 人日，测试与部署 5 人日。合计约 32–39 人日，按 2 人并行折算 5–6 周。</p>
+
+<!--pnid:jJ8IW8QvEP0axH6TexiMBj--><!-- ============ 11 ============ -->
+<h2 data-page-node-id="BfRf3TKftMjh2yb2IXEayA" id="s11"><span data-page-node-id="4eiv0cDCBP93yUslc7PTzq" class="num"><!--pnid:elQJ5ltaQQkdENePdrRC8a-->11</span><!--pnid:fh8owZbRYJScYHnjJPeM5v-->风险清单</h2>
+<table data-page-node-id="VPMeKYXHk73Jr0e4zTFuA3">
+  <thead data-page-node-id="F35cNhxz9bTo2TMiBeretb"><tr data-page-node-id="SyIKvneYZ7GJS8ta7tuse9"><th data-page-node-id="VO7gHuVwLbVqupQh30o4SC" style="width:180px"><!--pnid:DV26zjObTS3Upe93YovrR8-->风险</th><th data-page-node-id="9hkcncCT1NAKKHt5cNe6Zi" style="width:70px"><!--pnid:zx3lytBDEZqk01besQ7cmo-->概率</th><th data-page-node-id="DAcPbUIPoTCRjtnqIZGJ4S" style="width:70px"><!--pnid:6dnpvyDiGXZcCf4exEedo5-->影响</th><th data-page-node-id="zV8wYdExXLLef1nOTSHQdi"><!--pnid:SymbuiMy6MSftedqBX9N9E-->应对</th></tr></thead>
+  <tbody data-page-node-id="thZZZ0Zn1JR1vSUc6eymae">
+    <tr data-page-node-id="zR5Sii5W8Rmg7a1952oaWi"><td data-page-node-id="TPDKYbiQqEv5POYkNmECeg"><!--pnid:UHDWymh6tPWdU6MvAjSXlU-->小程序类目资质不通过</td><td data-page-node-id="feCMnWaUM1f2XLZK08g4wM"><span data-page-node-id="14WgeHQ3vQxGAQSkLDvXAl" class="pill p-red"><!--pnid:yy450OZCRuqtj8wcJDIgf2-->高</span></td><td data-page-node-id="xUTMmnAbJ4QuRZDAKPQmNc"><!--pnid:z2Kx1yV2YEY7bqsA81lmeb-->高</td><td data-page-node-id="uDX1WhJHZ2VYv9co3pe2uI"><!--pnid:UVDWm3EJN7oYhuZapLnvLy-->开发前先确认主体与类目，必要时调整产品定位为「校内信息发布工具」并提供学校证明</td></tr>
+    <tr data-page-node-id="3n6vfQHsCsNhZxlTbZokSy"><td data-page-node-id="csSUBAnzohbkRfbGp2lZUJ"><!--pnid:O691Sc8TvjelOIM5d6dKCL-->教室网络不稳定</td><td data-page-node-id="RnXi1OtXL4jsl4G6bq6y2M"><span data-page-node-id="8lBL7GhohV9sbtkJs9fMNQ" class="pill p-red"><!--pnid:JnzSqkA7dKoGbqZGaWjMFF-->高</span></td><td data-page-node-id="1FnWQWJTBMiaRCMU3YOu3X"><!--pnid:yXy5CgIc1B5kqhsRLCC5D0-->中</td><td data-page-node-id="aVaXgaVqkRd7ScJd59myqE"><!--pnid:W8X72iJ5G3cI6xaxoecIUp-->本地缓存 + 轮询降级 + 离线角标，弱网下仍可展示历史内容</td></tr>
+    <tr data-page-node-id="9V0jkPYZdMPTH8jelN08ex"><td data-page-node-id="Jm7Sbn1mtPA9327H2iK60i"><!--pnid:m4QAMr8dcPUXinkDastVxr-->大屏硬件老旧（Win7 / 1366×768）</td><td data-page-node-id="ja8j8u5hdG6YZX5GQfNEiM"><span data-page-node-id="8SlLu4Q8QN50pT12oA5dPh" class="pill p-amber"><!--pnid:v4eme8zOMD6RE9uZQY9FIE-->中</span></td><td data-page-node-id="J4ASnzFY9fnkFRHT0I9ohF"><!--pnid:EwNI3nWIdbngSVVTxoYzDO-->中</td><td data-page-node-id="tcmO8M55HscY0218msvOij"><!--pnid:zg9LO1iaU3ZYNRD5UwVW4g-->Electron 最低支持 Win10；老设备改用浏览器 kiosk 模式访问网页版，降低安装门槛</td></tr>
+    <tr data-page-node-id="14Gj0xLWyY7qxeyCKCLW2N"><td data-page-node-id="mXFb4s0DGaQs5AeIncImc8"><!--pnid:IaxQlX4YlVGeAWInsjG87w-->被学生退出或关闭客户端</td><td data-page-node-id="X5p3ou6FSuyyKTvR3IMvxJ"><span data-page-node-id="pElA15b14pKfvDlSelgFAt" class="pill p-amber"><!--pnid:K7XwcFxHLhFVrULD1SWzOI-->中</span></td><td data-page-node-id="mnkSNSjJpusS1daB1u8IgF"><!--pnid:8n2rvTwZ02wzjuwCFBg9po-->中</td><td data-page-node-id="lnvwOntVdULZWt1zCTuIHr"><!--pnid:y2WC0lcaSBsl0qAaFuW0w5-->置顶全屏 + 快捷键屏蔽 + 心跳缺失 10 分钟后台告警</td></tr>
+    <tr data-page-node-id="eV65jzGB4X9hNawhjQt8uV"><td data-page-node-id="OS21Bk2LqvD8M5jWIuam0l"><!--pnid:YBLbGNRTP3jVDlA7tBuEfr-->语音播报扰民</td><td data-page-node-id="ckkyCdcZYAmxTjcaqkYKpQ"><span data-page-node-id="9LC2o3EJuYabJtqJLTS8f6" class="pill p-amber"><!--pnid:d4ir0QDMhw4BjNHUwHqemq-->中</span></td><td data-page-node-id="bqK6mjyyicMnNRJP6IBBwo"><!--pnid:6ViYP94R00o7eA1xP4t3Pc-->中</td><td data-page-node-id="BsX9DNyscwUJp6NBvgiUuL"><!--pnid:tyrBAY9h9WaVGkeQb1HTXJ-->默认只播 1–2 遍；提供「静默时段」（如上课时间不播，仅展示）</td></tr>
+    <tr data-page-node-id="8dRLiJGflf9MXGMyV8ReOC"><td data-page-node-id="fo1u7ts0mD1y3BXfa5QeJh"><!--pnid:2Pqdfd4G2QOvC0P9Xe8AjA-->备案周期超预期</td><td data-page-node-id="RLBKhHLJgD0jBmRXFldobO"><span data-page-node-id="E5hS5xIJdo4D2BtTQTUPxL" class="pill p-green"><!--pnid:cyHgsFYBg4cNPjx4moDIrr-->低</span></td><td data-page-node-id="8Dk4dMqOqBMNWYeC3ph8iC"><!--pnid:0RIBluvhuAaDlZ7vEW9fbw-->高</td><td data-page-node-id="z2rILapuG5dZuTBgq7RPzl"><!--pnid:XzMWtJSBebWhQl9RWGtT1P-->第一天就提交，与开发并行</td></tr>
+  </tbody>
+</table>
+
+<!--pnid:B86GnFp816G3Vje8i4wWiG--><!-- ============ 12 ============ -->
+<h2 data-page-node-id="uHuYQ7axYnrXBZ3KP7nhO0" id="s12"><span data-page-node-id="xruF3OMdYXJm0NmFXyYiS1" class="num"><!--pnid:D5hyvuDoqVT4ZLO6q5oAtp-->12</span><!--pnid:CbaoKVGUPKrjR5aKC05YfF-->附录</h2>
+
+<h3 data-page-node-id="WTCM9kNFAW6iuiz7yFXPAX"><!--pnid:26oB9Gp1irKFsJtQ8QLr3x-->12.1 术语</h3>
+<dl data-page-node-id="daAsTXbCmHKDoR6yLBb1YT" class="kv">
+  <dt data-page-node-id="78eJWu8fHzHA26p0XRjTIu"><!--pnid:u5dpU7DWXAGMxSjMN6pq3D-->公告</dt><dd data-page-node-id="BVM1P8tSwE08AD2hLniwwE"><!--pnid:iJLjtddjUgExYa3EE1v9GU-->一条投递到教室大屏的信息，本系统的基本单位</dd>
+  <dt data-page-node-id="Sr3m8VXQk39ymGFH9Nraxk"><!--pnid:yF0dvh53GgockpremO712o-->快照</dt><dd data-page-node-id="co8dklA6FzlmgIGMg9Ro5O"><!--pnid:AuewW5OKImCULVKw3tnkvn-->某间教室当前所有有效公告的全量数据，用于首次加载与断线恢复</dd>
+  <dt data-page-node-id="tfwfPVeT92u80cvjs10SdG"><!--pnid:JoPO6SfuUOmTsNwzDX41bf-->轮次</dt><dd data-page-node-id="dPHdVknfFamgQzdiUSpMQI"><!--pnid:fTr6Vc6fOHHLMVqUysHXsk-->一条公告的第几次语音播报，用于去重</dd>
+  <dt data-page-node-id="r5gGMcMof0E39Bbkq6jE6Z"><!--pnid:Xswn3oEpo4ENZUFraGelRE-->绑定码</dt><dd data-page-node-id="BbsXKKsuhB2TLnOaQZx2ZN"><!--pnid:84aFcPebOTPHDhIK9H5MGw-->6 位数字，大屏首次接入时用来关联教室，一次性使用</dd>
+</dl>
+
+<h3 data-page-node-id="uuA7snW1SSu4CoC91SmRKM"><!--pnid:RiVcempDfGQdo1mldiX7JP-->12.2 微信开放能力依赖</h3>
+<ul data-page-node-id="bakNejx3aY6x5Wa9U41viQ">
+  <li data-page-node-id="pjU0y1bOYJbve5FR4YTxxW"><code data-page-node-id="yFdqsUK07fQGspgS5eteSO" data-pnid-children="NzGy71nCOM079W3vQXxDc3">wx.login</code><!--pnid:nzeeXsqzm1AVt5uLDytccJ--> —— 获取临时登录凭证</li>
+  <li data-page-node-id="4iEEx1eAgAlIp9y9AxH0LQ"><code data-page-node-id="H1507voLlzi1tKMABZd3fD" data-pnid-children="TZu6LHFaE557dQCRhVa4N3">security.msgSecCheck</code><!--pnid:OvnMIINyoNQ5ZhJFg3DSja--> —— 内容安全检测</li>
+  <li data-page-node-id="VqWJNvgPcmTnxtc1IWTj90"><code data-page-node-id="CGt3MU10qLTPIaMWiseVRj" data-pnid-children="zPRS7L8IXznXAkNIWDJn1Q">subscribeMessage.send</code><!--pnid:ylMKZHXcWMB6vSZB0C8zsc--> —— 可选，公告被撤回时通知发布教师</li>
+</ul>
+
+<h3 data-page-node-id="M9ZtpXrnhKpnwVxdnEPu0q"><!--pnid:4ihZdhlmBmpwNibZF7dixN-->12.3 待确认事项</h3>
+<ul data-page-node-id="LlmZpwCa4KUUVjcrDKlr2V">
+  <li data-page-node-id="DD8uvmbMYGu3uXoF5cLLqJ"><!--pnid:YeU0QpPj3cgl5Qu47XfUa2-->学校主体类型与教育类目的具体资质材料（影响上线时间，不阻塞开发）</li>
+  <li data-page-node-id="TBCNmaxTYQ97ep6nka6QTG"><!--pnid:IbypciaxKc0AEsiEKGeDqy-->是否需要「静默时段」配置，即上课期间只展示不播报</li>
+  <li data-page-node-id="aLrQcMWrKyhNz800EcHJ5w"><!--pnid:Ar2WV8XNMms4ECFNr27Qc4-->教室设备现状：操作系统版本、分辨率、是否已装还原卡</li>
+  <li data-page-node-id="yCZnYsVRmbJIFeA3xeR4zB"><!--pnid:g4MNeoaxlNJ9lSiKG39zPY-->名册来源：是否有现成 Excel 模板，字段是否包含学号</li>
+</ul>
+
+<div data-page-node-id="ZogcIr2Hcmwp7UmJJpFLKp" class="endnote"><!--pnid:DvZd33DM2flQrHzTq1S1Q2-->
+  文档版本 v1.0 · 2026-10-21 · 内部评审稿。章节 3、5 为实现依据，如有调整需同步更新本文档并记录变更。
+</div>
+
+</main>
+</div>
+
+<script data-page-node-id="iehIKYEgKpjuwv91AILgTu" data-pnid-children="P3uAHcfPkS5sFwbUkOnv9N">
+(function(){
+  var wrap = document.querySelector('.screen-wrap');
+  var scr = document.querySelector('.screen');
+  if(!wrap || !scr) return;
+  var last = 0;
+  function fit(){
+    var w = wrap.clientWidth;
+    if(w === last || w === 0) return;
+    last = w;
+    scr.style.transform = 'scale(' + (w / 1920) + ')';
+    wrap.style.height = Math.round(w * 9 / 16) + 'px';
+  }
+  if(window.ResizeObserver){ new ResizeObserver(fit).observe(wrap); }
+  window.addEventListener('resize', fit);
+  fit();
+})();
+</script>
+</body>
+</html>

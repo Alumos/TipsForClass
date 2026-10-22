@@ -1,0 +1,45 @@
+name: Project checks
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: server/go.mod
+          cache-dependency-path: server/go.sum
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: display/package-lock.json
+
+      - name: Install display dependencies
+        working-directory: display
+        run: npm ci
+
+      - name: Run project checks
+        run: ./scripts/check.sh
+
+      - name: Run HTTP and WebSocket smoke test
+        run: node scripts/smoke.mjs

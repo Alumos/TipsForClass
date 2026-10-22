@@ -1,0 +1,8 @@
+{$NOTICE_DOMAIN} {
+	encode zstd gzip
+
+	@backend path /api/* /ws/* /healthz /readyz
+	reverse_proxy @backend api:8080
+
+	respond "Not Found" 404
+}

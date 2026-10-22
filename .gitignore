@@ -1,0 +1,30 @@
+# Local secrets and state
+.env
+.env.*
+!.env.example
+!.env.demo.example
+!.env.*.example
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+server/data/
+server/bin/
+server/.cache/
+.tools/
+.run/
+artifacts/
+# JavaScript and desktop output
+node_modules/
+dist/
+dist-electron/
+release/
+coverage/
+*.log
+# WeChat per-user settings
+project.private.config.json
+# Editors / OS
+.DS_Store
+.idea/
+.vscode/

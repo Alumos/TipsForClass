@@ -1,0 +1,31 @@
+.detail-page{padding-bottom:calc(48rpx + env(safe-area-inset-bottom))}
+.detail-page-title,.detail-title,.detail-device-name,.detail-device-room,.detail-body,.detail-speech,.detail-tts{overflow-wrap:anywhere;word-break:break-word}
+.detail-delivery-tip .helper{line-height:1.55}
+.detail-message-meta{display:flex;align-items:flex-start;flex-wrap:wrap;gap:10rpx 16rpx}
+.detail-teacher{min-width:0;line-height:1.45}
+.detail-title{margin-top:20rpx;line-height:1.45}
+.detail-body{margin-top:10rpx;line-height:1.65}
+.detail-speech{line-height:1.55}
+.detail-meta-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12rpx}
+.detail-meta-item{display:flex;flex-direction:column;gap:4rpx;min-width:0;padding:14rpx;border-radius:14rpx;background:#F6F8F7;font-size:24rpx;line-height:1.45;overflow-wrap:anywhere}
+.detail-meta-label{font-size:22rpx;color:#7C8F84}
+.detail-device-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10rpx 18rpx}
+.detail-device-head .badge{flex-shrink:0}
+.detail-device-room{margin-top:6rpx;line-height:1.45}
+.detail-receipt-list{display:flex;flex-direction:column;gap:10rpx}
+.detail-receipt{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8rpx 18rpx;min-width:0;line-height:1.5}
+.detail-receipt text:last-child{min-width:0;text-align:right;overflow-wrap:anywhere}
+.detail-receipt-label{flex-shrink:0;color:#62756B}
+.detail-broadcast-receipt{margin-top:8rpx;line-height:1.5;overflow-wrap:anywhere}
+.detail-tts{line-height:1.55}
+.detail-operation-card{margin-top:28rpx}
+.detail-actions{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12rpx;margin-top:18rpx}
+.detail-actions button{width:100%;min-width:0;min-height:48px;padding:14rpx 10rpx;font-size:26rpx;line-height:1.35;white-space:normal}
+.detail-danger-actions{display:flex;flex-direction:column;gap:12rpx;margin-top:14rpx}
+.detail-delete{width:100%;font-weight:600}
+.detail-home{width:100%;margin-top:28rpx}
+@media (max-width:360px){
+  .detail-meta-grid,.detail-actions{grid-template-columns:1fr}
+  .detail-receipt{flex-direction:column;gap:2rpx}
+  .detail-receipt text:last-child{text-align:left}
+}

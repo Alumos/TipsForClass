@@ -1,0 +1,35 @@
+CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY,value TEXT NOT NULL);
+CREATE TABLE IF NOT EXISTS schools (id INTEGER PRIMARY KEY,name TEXT NOT NULL,timezone TEXT NOT NULL DEFAULT 'Asia/Shanghai',quiet_hours_json TEXT NOT NULL DEFAULT '[]',config_revision INTEGER NOT NULL DEFAULT 1);
+CREATE TABLE IF NOT EXISTS rooms (id INTEGER PRIMARY KEY AUTOINCREMENT,school_id INTEGER NOT NULL REFERENCES schools(id),name TEXT NOT NULL UNIQUE,status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','disabled')));
+CREATE TABLE IF NOT EXISTS classes (id INTEGER PRIMARY KEY AUTOINCREMENT,room_id INTEGER NOT NULL REFERENCES rooms(id),name TEXT NOT NULL UNIQUE);
+CREATE TABLE IF NOT EXISTS room_display_settings (
+  room_id INTEGER PRIMARY KEY REFERENCES rooms(id),
+  display_position TEXT NOT NULL DEFAULT 'top_right' CHECK(display_position IN ('top_right','center')),
+  pinned_message_ids_json TEXT NOT NULL DEFAULT '[]' CHECK(json_valid(pinned_message_ids_json)),
+  revision INTEGER NOT NULL DEFAULT 1 CHECK(revision > 0)
+);
+CREATE TRIGGER IF NOT EXISTS room_display_settings_after_room_insert
+AFTER INSERT ON rooms
+BEGIN
+  INSERT OR IGNORE INTO room_display_settings(room_id) VALUES(NEW.id);
+END;
+CREATE TABLE IF NOT EXISTS students (id INTEGER PRIMARY KEY AUTOINCREMENT,class_id INTEGER NOT NULL REFERENCES classes(id),student_no TEXT NOT NULL,name TEXT NOT NULL,active INTEGER NOT NULL DEFAULT 1,UNIQUE(class_id,student_no));
+CREATE TABLE IF NOT EXISTS teachers (id INTEGER PRIMARY KEY AUTOINCREMENT,openid TEXT NOT NULL UNIQUE,name TEXT NOT NULL,role TEXT NOT NULL CHECK(role IN ('teacher','admin')),status TEXT NOT NULL CHECK(status IN ('pending','active','disabled')));
+CREATE TABLE IF NOT EXISTS teacher_rooms (teacher_id INTEGER NOT NULL REFERENCES teachers(id),room_id INTEGER NOT NULL REFERENCES rooms(id),PRIMARY KEY(teacher_id,room_id));
+CREATE TABLE IF NOT EXISTS teacher_sessions (token_hash TEXT PRIMARY KEY,teacher_id INTEGER NOT NULL REFERENCES teachers(id),expires_at INTEGER NOT NULL);
+CREATE TABLE IF NOT EXISTS bind_codes (id INTEGER PRIMARY KEY AUTOINCREMENT,room_id INTEGER NOT NULL REFERENCES rooms(id),code_hash TEXT NOT NULL UNIQUE,expires_at INTEGER NOT NULL,consumed_at INTEGER,created_by INTEGER NOT NULL REFERENCES teachers(id));
+CREATE TABLE IF NOT EXISTS devices (id INTEGER PRIMARY KEY AUTOINCREMENT,room_id INTEGER NOT NULL REFERENCES rooms(id),installation_id TEXT NOT NULL UNIQUE,label TEXT NOT NULL,token_hash TEXT NOT NULL UNIQUE,token_expires_at INTEGER NOT NULL,revoked_at INTEGER,last_seen_at INTEGER,app_version TEXT NOT NULL DEFAULT '',tts_status TEXT NOT NULL DEFAULT 'unknown');
+CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT,teacher_id INTEGER NOT NULL REFERENCES teachers(id),kind TEXT NOT NULL CHECK(kind IN ('call','batch','notice')),status TEXT NOT NULL DEFAULT 'active' CHECK(status IN ('active','revoked')),revision INTEGER NOT NULL DEFAULT 1,generation INTEGER NOT NULL DEFAULT 0,start_at INTEGER NOT NULL,expire_at INTEGER NOT NULL,created_at INTEGER NOT NULL,client_token TEXT NOT NULL,request_hash TEXT NOT NULL,payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),CHECK(expire_at>start_at),UNIQUE(teacher_id,client_token));
+CREATE TABLE IF NOT EXISTS message_rooms (message_id INTEGER NOT NULL REFERENCES messages(id),room_id INTEGER NOT NULL REFERENCES rooms(id),PRIMARY KEY(message_id,room_id));
+CREATE TABLE IF NOT EXISTS message_devices (message_id INTEGER NOT NULL REFERENCES messages(id),device_id INTEGER NOT NULL REFERENCES devices(id),PRIMARY KEY(message_id,device_id));
+CREATE TABLE IF NOT EXISTS broadcast_jobs (message_id INTEGER NOT NULL REFERENCES messages(id),generation INTEGER NOT NULL,times INTEGER NOT NULL CHECK(times BETWEEN 1 AND 2),not_before INTEGER NOT NULL,deadline_at INTEGER NOT NULL,PRIMARY KEY(message_id,generation));
+CREATE TABLE IF NOT EXISTS operation_keys (teacher_id INTEGER NOT NULL REFERENCES teachers(id),client_token TEXT NOT NULL,request_hash TEXT NOT NULL,response_json TEXT NOT NULL,created_at INTEGER NOT NULL,PRIMARY KEY(teacher_id,client_token));
+CREATE TABLE IF NOT EXISTS delivery_receipts (message_id INTEGER NOT NULL REFERENCES messages(id),device_id INTEGER NOT NULL REFERENCES devices(id),revision INTEGER NOT NULL,state TEXT NOT NULL CHECK(state IN ('received','displayed','suppressed','revoked','expired')),received_at INTEGER NOT NULL,PRIMARY KEY(message_id,device_id,revision,state));
+CREATE TABLE IF NOT EXISTS broadcast_receipts (message_id INTEGER NOT NULL REFERENCES messages(id),device_id INTEGER NOT NULL REFERENCES devices(id),generation INTEGER NOT NULL,round INTEGER NOT NULL CHECK(round BETWEEN 1 AND 2),status TEXT NOT NULL CHECK(status IN ('played','skipped','failed')),reason TEXT NOT NULL DEFAULT '',received_at INTEGER NOT NULL,PRIMARY KEY(message_id,device_id,generation,round));
+CREATE TABLE IF NOT EXISTS events (seq INTEGER PRIMARY KEY AUTOINCREMENT,room_id INTEGER NOT NULL REFERENCES rooms(id),event_type TEXT NOT NULL,payload_json TEXT NOT NULL CHECK(json_valid(payload_json)),created_at INTEGER NOT NULL);
+CREATE INDEX IF NOT EXISTS idx_events_room_seq ON events(room_id,seq);
+CREATE INDEX IF NOT EXISTS idx_messages_teacher ON messages(teacher_id,created_at,id);
+CREATE INDEX IF NOT EXISTS idx_message_rooms_room ON message_rooms(room_id,message_id);
+CREATE TABLE IF NOT EXISTS roster_previews (id TEXT PRIMARY KEY,teacher_id INTEGER NOT NULL REFERENCES teachers(id),class_id INTEGER NOT NULL REFERENCES classes(id),rows_json TEXT NOT NULL,expires_at INTEGER NOT NULL,valid INTEGER NOT NULL,committed_json TEXT);
+CREATE TABLE IF NOT EXISTS audit_logs (id INTEGER PRIMARY KEY AUTOINCREMENT,actor_id INTEGER NOT NULL,action TEXT NOT NULL,target TEXT NOT NULL,created_at INTEGER NOT NULL);
+PRAGMA user_version=2;
