@@ -1,8 +1,15 @@
 name: Tauri shell (experimental)
 
-# 换壳还在验证阶段，只手动触发，不影响 main 上的 Electron 发布流程。
+# 换壳还在验证阶段，不参与正式发布；改动外壳或前端时自动构建一份测试包。
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "display/src-tauri/**"
+      - "display/src/**"
+      - "display/windows-tts/**"
+      - ".github/workflows/tauri.yml"
 
 permissions:
   contents: read
