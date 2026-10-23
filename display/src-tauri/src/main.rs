@@ -194,8 +194,15 @@ fn overlay_show(
     height: f64,
     payload: String,
 ) -> Result<(), String> {
+    if app.get_webview_window("overlay").is_none() {
+        trace("overlay_show: 窗口不存在，现场创建");
+        build_overlay(&app).map_err(|error| {
+            trace(&format!("overlay_show: 创建失败 {error}"));
+            error.to_string()
+        })?;
+    }
     let window = app.get_webview_window("overlay").ok_or_else(|| {
-        trace("overlay_show: 找不到 overlay 窗口");
+        trace("overlay_show: 创建后仍找不到 overlay 窗口");
         "提醒窗口不存在"
     })?;
     window
@@ -222,6 +229,17 @@ fn overlay_show(
 #[tauri::command]
 fn overlay_payload(cache: tauri::State<OverlayCache>) -> Option<String> {
     cache.0.lock().unwrap().clone()
+}
+
+/// 学生点“已读”：先回报展示回执，再收起窗口。
+#[tauri::command]
+fn overlay_dismiss(app: AppHandle, ids: Vec<String>) -> Result<(), String> {
+    let _ = app.emit_to("main", "overlay-displayed", ids);
+    if let Some(window) = app.get_webview_window("overlay") {
+        window.hide().map_err(|error| error.to_string())?;
+    }
+    trace("overlay_dismiss: 已读并收起");
+    Ok(())
 }
 
 #[tauri::command]
@@ -324,7 +342,8 @@ fn build_overlay(app: &AppHandle) -> tauri::Result<()> {
         .focused(false)
         .visible(false)
         .build()?;
-    window.set_ignore_cursor_events(true)?;
+    // 需要接收“已读”点击，因此不做鼠标穿透；窗口不可聚焦，点它不会抢走课件焦点。
+    window.set_ignore_cursor_events(false)?;
     Ok(())
 }
 
@@ -416,6 +435,7 @@ fn main() {
             speech_stop,
             overlay_show,
             overlay_payload,
+            overlay_dismiss,
             overlay_hide,
             overlay_visible,
             main_visible,

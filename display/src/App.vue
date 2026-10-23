@@ -67,6 +67,12 @@ async function reportVisible(){
   await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
   if(document.visibilityState==='visible'&&(!overlay||overlayShown.value)&&(overlay||showPreview.value))try{await api.value?.displayed(visible.value.map(message=>message.id));}catch(e){error.value=(e as Error).message;}
 }
+async function markRead(){
+  const message=visible.value[0];
+  if(!message)return;
+  overlayShown.value=false;
+  await api.value?.dismiss?.([message.id]);
+}
 function handleVisibility(){void reportVisible();}
 function openSettings(){settings.value=true;}
 function hideBrowserPreview(){showPreview.value=false;}
@@ -110,7 +116,8 @@ onUnmounted(()=>{unsubscribe?.();clearInterval(timer);clearTimeout(hideTimer);cl
     <small v-if="remainingNames(visible[0])">另有 {{remainingNames(visible[0])}} 人</small>
    </div>
    <p class="overlay-info">{{overlayInfoPage(visible[0])}}</p>
-   <footer><span>{{visible[0].teacherName}}发布 · 默认静音 · 自动收起</span><span v-if="overlayPageCount(visible[0])>1 || overlayTitlePageCount(visible[0])>1">内容 {{Math.floor(elapsed/6)+1}}</span></footer>
+   <footer><span>{{visible[0].teacherName}}发布 · 默认静音</span><span v-if="overlayPageCount(visible[0])>1 || overlayTitlePageCount(visible[0])>1">内容 {{Math.floor(elapsed/6)+1}}</span></footer>
+   <button class="overlay-read" type="button" @click="markRead">已读</button>
   </template>
  </section>
 

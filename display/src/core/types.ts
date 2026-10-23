@@ -68,4 +68,6 @@ export interface DisplayBridge {
   unlock(pin: string): Promise<boolean>;
   maintain(action: string, value?: any): Promise<any>;
   displayed(ids: string[]): Promise<void>;
+  /** 学生点“已读”后收起提醒，只有桌面外壳实现。 */
+  dismiss?(ids: string[]): Promise<void>;
 }

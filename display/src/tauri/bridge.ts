@@ -230,6 +230,10 @@ class OverlayBridge implements DisplayBridge {
   displayed(ids: string[]) {
     return api().core.invoke('overlay_displayed', {ids}).then(() => undefined);
   }
+
+  dismiss(ids: string[]) {
+    return api().core.invoke('overlay_dismiss', {ids}).then(() => undefined);
+  }
 }
 
 export async function createTauriBridge(): Promise<DisplayBridge> {
