@@ -18,6 +18,11 @@ use tauri::{
     AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, WebviewUrl, WebviewWindowBuilder, Wry,
 };
 
+/// 最近一次提醒载荷。提醒窗口可能在页面加载完成前就收到事件，
+/// 因此缓存一份，供窗口挂载后补拉。
+#[derive(Default)]
+struct OverlayCache(Mutex<Option<String>>);
+
 /// 常驻的 .NET 语音适配器。沿用现有实现，避免这次换壳引入语音回归。
 struct Speech {
     child: Mutex<Option<Child>>,
@@ -159,6 +164,7 @@ fn speech_stop(speech: tauri::State<Speech>) {
 #[tauri::command]
 fn overlay_show(
     app: AppHandle,
+    cache: tauri::State<OverlayCache>,
     x: f64,
     y: f64,
     width: f64,
@@ -178,10 +184,16 @@ fn overlay_show(
         .set_always_on_top(true)
         .map_err(|error| error.to_string())?;
     window.show().map_err(|error| error.to_string())?;
+    *cache.0.lock().unwrap() = Some(payload.clone());
     window
         .emit("overlay-payload", payload)
         .map_err(|error| error.to_string())?;
     Ok(())
+}
+
+#[tauri::command]
+fn overlay_payload(cache: tauri::State<OverlayCache>) -> Option<String> {
+    cache.0.lock().unwrap().clone()
 }
 
 #[tauri::command]
@@ -306,6 +318,7 @@ fn main() {
             Some(vec!["--autostart"]),
         ))
         .manage(Speech::new())
+        .manage(OverlayCache::default())
         .setup(|app| {
             let handle = app.handle().clone();
             build_overlay(&handle)?;
@@ -374,6 +387,7 @@ fn main() {
             speech_play,
             speech_stop,
             overlay_show,
+            overlay_payload,
             overlay_hide,
             overlay_visible,
             main_visible,

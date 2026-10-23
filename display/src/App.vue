@@ -19,7 +19,10 @@ const autoStart=ref(false);
 const elapsed=ref(0),previewId=ref(''),overlayId=ref(''),overlayShown=ref(false),lastSerial=ref(0),showPreview=ref(false);
 
 const visible=computed(()=>{
-  const id=overlay?overlayId.value:previewId.value;
+  // 提醒窗口一次只放一条消息，直接渲染桥接下发的消息，
+  // 不依赖 overlay 事件到达的先后顺序（首次弹窗时页面往往还没挂载）。
+  if(overlay)return state.value.messages;
+  const id=previewId.value;
   return id?state.value.messages.filter(message=>message.id===id):[];
 });
 const preview=computed(()=>state.value.messages.find(message=>message.id===previewId.value));
@@ -74,6 +77,7 @@ onMounted(async()=>{
   unsubscribe=api.value.subscribe(next=>{
     state.value=next;
     if(!apiSeeded){apiSeeded=true;form.value.apiBase=next.apiBase;}
+    if(overlay&&!overlayShown.value&&next.messages.length){overlayShown.value=true;elapsed.value=0;void reportVisible();}
     if(!native){
       const fresh=next.alerts.filter(alert=>alert.serial>lastSerial.value).sort((a,b)=>b.serial-a.serial);
       if(fresh.length){

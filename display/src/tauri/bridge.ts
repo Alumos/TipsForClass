@@ -174,22 +174,33 @@ class OverlayBridge implements DisplayBridge {
   private listeners = new Set<(state: ViewState) => void>();
 
   constructor() {
-    void api().event.listen<OverlayPayload>('overlay-payload', event => {
-      const payload = event.payload;
-      this.stateValue = {
-        ...this.stateValue,
-        messages: [payload.message],
-        displayPosition:
-          payload.displayPosition === 'center' ? 'center' : 'top_right',
-        className: payload.className,
-        bound: true,
-      };
-      // 复用 Electron preload 的同名事件，App.vue 的可见性判断不用改。
-      window.dispatchEvent(
-        new CustomEvent('classroom-overlay', {detail: {visible: true, id: payload.message.id}}),
-      );
-      for (const callback of this.listeners) callback(this.stateValue);
-    });
+    void api().event.listen<OverlayPayload>('overlay-payload', event => this.apply(event.payload));
+    // 首次弹窗时页面往往还没加载完，事件会丢，这里补拉一份缓存。
+    void api().core
+      .invoke<string | null>('overlay_payload')
+      .then(raw => {
+        if (!raw) return;
+        try {
+          this.apply(JSON.parse(raw) as OverlayPayload);
+        } catch {
+          /* 缓存损坏时忽略，等下一次事件 */
+        }
+      })
+      .catch(() => undefined);
+  }
+
+  private apply(payload: OverlayPayload) {
+    this.stateValue = {
+      ...this.stateValue,
+      messages: [payload.message],
+      displayPosition: payload.displayPosition === 'center' ? 'center' : 'top_right',
+      className: payload.className,
+      bound: true,
+    };
+    window.dispatchEvent(
+      new CustomEvent('classroom-overlay', {detail: {visible: true, id: payload.message.id}}),
+    );
+    for (const callback of this.listeners) callback(this.stateValue);
   }
 
   state() {
