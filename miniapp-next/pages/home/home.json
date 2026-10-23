@@ -1,10 +1,4 @@
 {
   "navigationBarTitleText": "班级公告",
-  "enablePullDownRefresh": true,
-  "usingComponents": {
-    "t-button": "tdesign-miniprogram/button/button",
-    "t-empty": "tdesign-miniprogram/empty/empty",
-    "t-icon": "tdesign-miniprogram/icon/icon",
-    "t-loading": "tdesign-miniprogram/loading/loading"
-  }
+  "enablePullDownRefresh": true
 }

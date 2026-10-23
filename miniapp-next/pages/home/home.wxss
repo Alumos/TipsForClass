@@ -1,3 +1,5 @@
+page{background:#f5f7f4}
+
 .home-page{padding:8rpx 32rpx 64rpx}
 
 .hero{padding:28rpx 8rpx 36rpx}
@@ -5,8 +7,23 @@
 .hero-title{font-size:58rpx;font-weight:600;color:#1f2d26;margin-top:14rpx;letter-spacing:-1rpx;line-height:1.3}
 .hero-sub{font-size:26rpx;color:#7b8a82;margin-top:12rpx}
 
-.home-state{display:flex;flex-direction:column;align-items:center;gap:20rpx;padding:120rpx 0}
-.home-error-text{font-size:26rpx;color:#a4574c;text-align:center;line-height:1.7}
+.home-state{display:flex;flex-direction:column;align-items:center;gap:22rpx;padding:120rpx 20rpx}
+.state-text{font-size:26rpx;color:#7b8a82;line-height:1.7;text-align:center}
+.state-error{color:#a4574c}
+.spinner{
+  width:44rpx;height:44rpx;border-radius:50%;
+  border:5rpx solid #dfe8e2;border-top-color:#2a604a;
+  animation:spin .9s linear infinite;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.btn-ghost{
+  display:inline-flex;align-items:center;justify-content:center;
+  padding:14rpx 34rpx;border-radius:999rpx;
+  border:1rpx solid #cfe0d5;background:#fff;
+  color:#2a604a;font-size:26rpx;
+}
+.btn-ghost:active{background:#eef4ef}
 
 .class-card{
   background:#fff;border-radius:28rpx;padding:30rpx;
@@ -29,6 +46,7 @@
 .class-status .dot{width:12rpx;height:12rpx;border-radius:6rpx;background:#c2ccc6;flex:0 0 auto}
 .class-status.is-online{color:#2f7d55}
 .class-status.is-online .dot{background:#3f8f63}
+.chev{font-size:40rpx;color:#bfcac3;line-height:1;flex:0 0 auto}
 
 .class-foot{
   display:flex;justify-content:space-between;align-items:center;
@@ -36,5 +54,12 @@
   font-size:22rpx;color:#93a099;
 }
 
-.home-empty{padding:60rpx 0}
+.home-empty{display:flex;flex-direction:column;align-items:center;padding:100rpx 20rpx;gap:14rpx}
+.empty-symbol{
+  width:96rpx;height:96rpx;border-radius:50%;background:#eaf1ec;color:#6c9377;
+  display:flex;align-items:center;justify-content:center;font-size:40rpx;
+}
+.empty-title{font-size:30rpx;color:#33493d;font-weight:600;margin-top:8rpx}
+.empty-desc{font-size:24rpx;color:#8fa093;margin-bottom:10rpx}
+
 .home-foot{text-align:center;font-size:22rpx;color:#a6b1a9;margin-top:40rpx}

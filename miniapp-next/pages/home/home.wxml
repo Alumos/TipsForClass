@@ -1,4 +1,4 @@
-<view class="page home-page">
+<view class="home-page">
   <view class="hero">
     <view class="hero-eyebrow">教师工作台</view>
     <view class="hero-title">{{teacher.name || '老师'}}，你好</view>
@@ -6,12 +6,13 @@
   </view>
 
   <view wx:if="{{loading}}" class="home-state">
-    <t-loading theme="circular" size="44rpx" text="正在读取班级…" />
+    <view class="spinner"></view>
+    <text class="state-text">正在读取班级…</text>
   </view>
 
-  <view wx:if="{{error}}" class="home-state home-error">
-    <text class="home-error-text">{{error}}</text>
-    <t-button size="small" theme="light" variant="outline" bindtap="load">重新加载</t-button>
+  <view wx:if="{{error}}" class="home-state">
+    <text class="state-text state-error">{{error}}</text>
+    <view class="btn-ghost" bindtap="load">重新加载</view>
   </view>
 
   <view
@@ -34,7 +35,7 @@
           <text wx:else>尚未绑定大屏</text>
         </view>
       </view>
-      <t-icon name="chevron-right" size="36rpx" color="#a9b6ae" />
+      <text class="chev">›</text>
     </view>
     <view class="class-foot">
       <text>最近心跳</text>
@@ -43,9 +44,10 @@
   </view>
 
   <view wx:if="{{ready && !classes.length}}" class="home-empty">
-    <t-empty icon="desktop" description="还没有可发布的班级，请联系管理员配置权限">
-      <t-button size="small" theme="light" variant="outline" bindtap="profile">前往我的</t-button>
-    </t-empty>
+    <view class="empty-symbol">▭</view>
+    <view class="empty-title">还没有可发布的班级</view>
+    <view class="empty-desc">请联系学校管理员配置班级与授权</view>
+    <view class="btn-ghost" bindtap="profile">前往我的</view>
   </view>
 
   <view class="home-foot">发布记录可以复制修改，再次使用</view>
