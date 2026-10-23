@@ -9,6 +9,8 @@ on:
       - "display/src-tauri/**"
       - "display/src/**"
       - "display/windows-tts/**"
+      - "display/package.json"
+      - "display/vite.config.ts"
       - ".github/workflows/tauri.yml"
 
 permissions:

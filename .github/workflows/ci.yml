@@ -3,6 +3,12 @@ name: Project checks
 on:
   push:
     branches: [main]
+    paths:
+      - "server/**"
+      - "miniapp/**"
+      - "display/**"
+      - "scripts/**"
+      - ".github/workflows/ci.yml"
   pull_request:
   workflow_dispatch:
 
