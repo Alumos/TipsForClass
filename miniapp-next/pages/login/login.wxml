@@ -1,0 +1,12 @@
+<view class="page login-page">
+  <view class="brand">告</view><view class="eyebrow">CLASS · CONNECTED</view>
+  <view class="title">一句提醒，<view></view>到达每个班级。</view>
+  <view class="subtitle">班级公告 · 教师工作台</view>
+  <view class="card">
+    <view class="card-title">进入工作台</view><view class="muted">真实微信登录后，需由学校管理员审批并授权。</view>
+    <button class="primary login-button" loading="{{busy}}" disabled="{{busy}}" bindtap="wxLogin">微信身份登录</button>
+    <block wx:if="{{demoEnabled}}"><view class="divider"></view><view class="badge offline">本地演示模式</view><view class="helper">使用服务端演示管理员，数据真实保存在本地。请勿用于真实学生资料。</view><button class="secondary login-button" loading="{{busy}}" disabled="{{busy}}" bindtap="demoLogin">进入本地演示</button></block>
+  </view>
+  <view wx:if="{{error}}" class="error pre">{{error}}</view>
+  <view class="footer-note">服务地址：{{apiBase}}<view></view>正式登录需配置学校的真实 AppID 与 HTTPS 服务。</view>
+</view>

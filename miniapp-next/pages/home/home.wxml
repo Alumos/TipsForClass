@@ -1,0 +1,52 @@
+<view class="page home-page">
+  <view class="hero">
+    <view class="hero-eyebrow">教师工作台</view>
+    <view class="hero-title">{{teacher.name || '老师'}}，你好</view>
+    <view class="hero-sub">选择一个班级，把下一条提醒送到大屏</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="home-state">
+    <t-loading theme="circular" size="44rpx" text="正在读取班级…" />
+  </view>
+
+  <view wx:if="{{error}}" class="home-state home-error">
+    <text class="home-error-text">{{error}}</text>
+    <t-button size="small" theme="light" variant="outline" bindtap="load">重新加载</t-button>
+  </view>
+
+  <view
+    wx:for="{{classes}}"
+    wx:key="id"
+    class="class-card"
+    hover-class="class-card-hover"
+    hover-stay-time="60"
+    data-id="{{item.id}}"
+    bindtap="publish"
+  >
+    <view class="class-card-top">
+      <view class="class-avatar">{{item.initial}}</view>
+      <view class="class-meta">
+        <view class="class-name">{{item.name}}</view>
+        <view class="class-status {{item.onlineDeviceCount ? 'is-online' : ''}}">
+          <view class="dot"></view>
+          <text wx:if="{{item.onlineDeviceCount}}">{{item.onlineDeviceCount}}/{{item.deviceCount}} 台设备在线</text>
+          <text wx:elif="{{item.deviceCount}}">设备离线，上线后自动同步</text>
+          <text wx:else>尚未绑定大屏</text>
+        </view>
+      </view>
+      <t-icon name="chevron-right" size="36rpx" color="#a9b6ae" />
+    </view>
+    <view class="class-foot">
+      <text>最近心跳</text>
+      <text>{{item.lastSeenLabel}}</text>
+    </view>
+  </view>
+
+  <view wx:if="{{ready && !classes.length}}" class="home-empty">
+    <t-empty icon="desktop" description="还没有可发布的班级，请联系管理员配置权限">
+      <t-button size="small" theme="light" variant="outline" bindtap="profile">前往我的</t-button>
+    </t-empty>
+  </view>
+
+  <view class="home-foot">发布记录可以复制修改，再次使用</view>
+</view>

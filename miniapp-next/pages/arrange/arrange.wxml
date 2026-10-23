@@ -1,0 +1,45 @@
+<view class="page arrange-page">
+  <view class="eyebrow">班级大屏</view>
+  <view class="title">安排展示顺序</view>
+  <view class="subtitle">置顶消息会显示在未置顶消息之前，并可调整彼此顺序；未置顶消息按发布时间自动排列。</view>
+
+  <view class="card">
+    <text class="label">班级</text>
+    <picker range="{{classes}}" range-key="name" value="{{classIndex}}" bindchange="classChange" disabled="{{busy || loading}}">
+      <view class="field picker-field">{{className || '正在读取班级'}} ▾</view>
+    </picker>
+    <view class="helper">排序设置按班级保存，同一班级的授权教师共享。</view>
+  </view>
+
+  <view class="card">
+    <view class="row arrange-heading"><view class="arrange-heading-copy"><view class="card-title">置顶顺序</view><view class="helper">已置顶 {{pinnedCount}} 条 · 共 {{messages.length}} 条</view></view><text wx:if="{{dirty}}" class="badge">待保存</text></view>
+    <view class="tip arrange-rule">仅置顶消息可以上移或下移。取消置顶后，消息会回到按发布时间从新到旧的自动顺序。</view>
+    <view wx:if="{{loading}}" class="loading">正在读取展示设置…</view>
+    <view wx:elif="{{error}}" class="error pre">{{error}}<button class="plain" bindtap="retry">重新加载</button></view>
+    <view wx:elif="{{!messages.length}}" class="empty">当前没有可排序的有效消息。</view>
+    <view wx:else class="arrange-list">
+      <view wx:for="{{messages}}" wx:key="id" class="arrange-item">
+        <view class="arrange-card-head">
+          <view class="order-number">{{index + 1}}</view>
+          <view class="arrange-title-row">
+            <view class="notice-title arrange-title">{{item.titleText}}</view>
+            <view class="arrange-tags"><text class="badge">{{item.typeLabel}}</text><text class="badge position-badge">{{item.displayPositionLabel}}</text></view>
+          </view>
+        </view>
+        <view class="muted arrange-body">{{item.bodyText}}</view>
+        <view class="helper arrange-meta">{{item.createdLabel}} · {{item.stateLabel}}</view>
+        <view class="helper arrange-order-hint {{item.pinned ? 'pinned' : ''}}">{{item.orderHint}}</view>
+        <view class="arrange-actions">
+          <button class="plain small-button pin-button {{item.pinned ? 'pinned' : ''}}" data-id="{{item.id}}" bindtap="togglePin">{{item.pinned ? '取消置顶' : '置顶'}}</button>
+          <button class="secondary small-button" data-index="{{index}}" bindtap="moveUp" disabled="{{busy || !item.pinned || !item.canMoveUp}}">上移</button>
+          <button class="secondary small-button" data-index="{{index}}" bindtap="moveDown" disabled="{{busy || !item.pinned || !item.canMoveDown}}">下移</button>
+        </view>
+      </view>
+    </view>
+  </view>
+
+  <view wx:if="{{notice}}" class="tip">{{notice}}</view>
+  <view wx:if="{{error && messages.length}}" class="error pre">{{error}}</view>
+  <button class="primary save-arrange" bindtap="saveSettings" loading="{{busy}}" disabled="{{busy || loading || !classId}}">保存置顶顺序</button>
+  <view class="footer-note">展示位置在发布时逐条选择；本页只保存置顶标记及置顶消息的先后顺序。</view>
+</view>

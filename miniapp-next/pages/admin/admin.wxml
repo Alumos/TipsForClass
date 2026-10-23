@@ -1,0 +1,156 @@
+<view class="page">
+  <view class="eyebrow">学校管理</view>
+  <view class="title">让每个班级准备就绪</view>
+  <view class="subtitle">绑定设备、维护班级与名册，并把共享权限交代清楚。</view>
+
+  <view class="scroll-tabs">
+    <view class="chip {{section === 'classes' ? 'active' : ''}}" data-section="classes" bindtap="section">班级与绑定</view>
+    <view class="chip {{section === 'roster' ? 'active' : ''}}" data-section="roster" bindtap="section">学生名册</view>
+    <view class="chip {{section === 'teachers' ? 'active' : ''}}" data-section="teachers" bindtap="section">教师权限</view>
+    <view class="chip {{section === 'devices' ? 'active' : ''}}" data-section="devices" bindtap="section">大屏设备</view>
+    <view class="chip {{section === 'settings' ? 'active' : ''}}" data-section="settings" bindtap="section">静默规则</view>
+  </view>
+
+  <view wx:if="{{loading}}" class="loading">正在读取管理数据…</view>
+  <view wx:if="{{error}}" class="error pre">{{error}}</view>
+  <view wx:if="{{notice}}" class="tip">{{notice}}</view>
+
+  <block wx:if="{{section === 'classes'}}">
+    <view class="card">
+      <view class="admin-card-head"><view class="admin-card-copy"><view class="card-title">绑定大屏</view><view class="helper">选择班级并生成一次性六位绑定码</view></view><text class="badge admin-head-badge">10 分钟有效</text></view>
+      <picker wx:if="{{classes.length}}" range="{{classes}}" range-key="name" value="{{classIndex}}" bindchange="bindClassChange"><view class="field picker-field">{{selectedClassName || '请选择班级'}} ▾</view></picker>
+      <view wx:else class="helper field-placeholder">还没有班级，请先在下方创建。</view>
+      <button class="primary" bindtap="generateCode" loading="{{busy}}" disabled="{{busy || !classes.length}}">生成大屏绑定码</button>
+      <view wx:if="{{bindCode}}" class="bind-code-panel">
+        <view class="helper">{{bindCode.className}} · 一次性绑定码</view>
+        <view class="mono numeric">{{bindCode.code}}</view>
+        <view class="helper">有效至 {{bindCode.expiresLabel}}（学校时区）</view>
+        <button class="plain" bindtap="copyCode">复制绑定码</button>
+      </view>
+    </view>
+
+    <view class="card">
+      <view class="admin-card-head"><view class="admin-card-copy"><view class="card-title">班级管理</view><view class="helper">新增、编辑名称或删除班级</view></view><text class="badge admin-head-badge">{{classes.length}} 个班级</text></view>
+      <view class="shared-note">
+        <view class="helper">同一班级的授权教师共享该班级与学生名册；管理员修改后会同步影响他们。</view>
+      </view>
+      <view wx:if="{{classes.length}}" class="class-list">
+        <view wx:for="{{classes}}" wx:key="id" class="class-manage-row">
+          <view class="class-manage-copy"><view class="class-name">{{item.name}}</view><view class="helper class-id">第 {{index + 1}} 个班级</view></view>
+          <view class="mini-actions"><button class="plain small-button" data-id="{{item.id}}" bindtap="editClass">编辑</button><button class="danger small-button" data-id="{{item.id}}" bindtap="deleteClass">删除</button></view>
+        </view>
+      </view>
+      <view wx:else class="empty compact-empty">还没有班级。</view>
+      <text class="label">新增班级</text>
+      <input class="field" placeholder="班级名称，例如：高三（2）班" value="{{className}}" data-field="className" bindinput="input" maxlength="60"/>
+      <button class="secondary" bindtap="createClass" disabled="{{busy}}">创建班级</button>
+    </view>
+  </block>
+
+  <block wx:if="{{section === 'roster'}}">
+    <view class="card roster-scope">
+      <view class="card-title">导入范围</view>
+      <text class="label">选择班级</text>
+      <picker range="{{classes}}" range-key="name" value="{{classIndex}}" bindchange="classChange"><view class="field picker-field">{{selectedClassName || '请先创建班级'}} ▾</view></picker>
+      <view class="helper">导入前会先预检；同学号更新姓名，不删除未出现的学生。</view>
+      <view class="helper">已授权教师共享所选班级与名册，本次导入会影响所有能看到该班级的教师。</view>
+    </view>
+
+    <view class="card upload-card">
+      <view class="admin-card-head"><view class="admin-card-copy"><view class="card-title">Excel 名册</view><view class="helper">选择聊天中的 .xlsx 文件，单批最多 1000 人</view></view><text class="file-badge admin-head-badge">XLSX</text></view>
+      <view class="file-picker" bindtap="chooseXlsx">
+        <view class="file-icon">表</view>
+        <view class="file-picker-copy"><view class="file-name">{{xlsxName || '选择 XLSX 文件'}}</view><view class="helper">{{xlsxName ? xlsxSizeLabel : '前两列应为学号、姓名，可带表头'}}</view></view>
+        <text class="link file-picker-action">选择 ›</text>
+      </view>
+      <button class="primary" bindtap="uploadXlsx" loading="{{busy}}" disabled="{{busy || !classes.length || !xlsxPath}}">上传并预检 XLSX</button>
+      <view class="helper">上传成功后会沿用现有预检结果，再由你确认导入；上传失败不会写入学生。</view>
+    </view>
+
+    <view class="divider-label"><text>或粘贴文本</text></view>
+    <view class="card">
+      <view class="card-title">CSV / 表格文本</view>
+      <view class="helper">支持两列 CSV 或从 Excel / WPS 复制的制表符文本。学号请保留前导零。</view>
+      <textarea class="field roster-textarea" placeholder="{{csvPlaceholder}}" value="{{csv}}" data-field="csv" bindinput="input" maxlength="200000" adjust-position="true" cursor-spacing="100"/>
+      <button class="secondary" bindtap="previewRoster" loading="{{busy}}" disabled="{{busy || !classes.length || !csvReady}}">预检粘贴名册</button>
+    </view>
+
+    <view wx:if="{{preview}}" class="card preview-card">
+      <view class="row"><view class="card-title">{{preview.valid ? '预检通过' : '预检发现错误'}}</view><text class="badge {{preview.valid ? '' : 'offline'}}">{{preview.valid ? '可导入' : '需修正'}}</text></view>
+      <view class="preview-stats"><view><strong>{{preview.newCount}}</strong><text>新增</text></view><view><strong>{{preview.updateCount}}</strong><text>更新</text></view><view><strong>{{preview.errors.length}}</strong><text>错误</text></view></view>
+      <view class="helper">预检凭证 24 小时内有效。确认导入前请核对人数。</view>
+      <view wx:for="{{preview.errors}}" wx:key="index" class="error">第 {{item.row}} 行：{{item.message}}</view>
+      <view wx:if="{{preview.displayRows.length}}" class="roster-preview-list">
+        <view class="roster-preview-head"><text>行号</text><text>学号（按文本）</text><text>姓名</text></view>
+        <view wx:for="{{preview.displayRows}}" wx:key="index" class="roster-preview-row">
+          <text class="roster-row-number">{{item.row}}</text>
+          <text class="roster-student-no">{{item.studentNo}}</text>
+          <text class="roster-student-name">{{item.name}}</text>
+        </view>
+      </view>
+      <view wx:if="{{preview.hiddenRowCount}}" class="helper">为保证页面流畅，仅展示前 100 行；其余 {{preview.hiddenRowCount}} 行仍会按预检结果导入。</view>
+      <view wx:elif="{{preview.valid && !preview.displayRows.length}}" class="helper">预检结果中没有可展示的学生行，请重新选择名册。</view>
+      <button class="primary" bindtap="commitRoster" disabled="{{busy || !preview.valid}}" loading="{{busy}}">确认导入本次预检结果</button>
+    </view>
+    <view class="tip">Excel 文件仅通过小程序上传接口发送到学校服务，不在本地伪造解析结果。导入完成前不会写入名册。</view>
+  </block>
+
+  <block wx:if="{{section === 'teachers'}}">
+    <view class="tip">教师先完成微信登录，再由管理员核验身份、审批并分配班级。管理员拥有全校管理权限。</view>
+    <view wx:for="{{teachers}}" wx:key="id" class="card">
+      <view class="admin-card-head teacher-card-head"><view class="admin-card-copy"><view class="card-title admin-name">{{item.name}}</view><view class="helper admin-meta">申请编号 {{item.id}} · {{item.roleLabel}} · {{item.statusLabel}}</view><view class="helper">授权 {{item.classIds.length}} 个班级</view></view><button class="secondary small-button admin-card-action" data-id="{{item.id}}" bindtap="editTeacher">编辑</button></view>
+    </view>
+  </block>
+
+  <block wx:if="{{section === 'devices'}}">
+    <view wx:if="{{hasRevoked}}" class="admin-card"><view class="card-title">历史记录</view><view class="helper">已吊销的设备会一直留在列表里，可以在这里清理。</view><button class="plain small-button" bindtap="clearRevoked" disabled="{{busy}}">清除已吊销记录</button></view>
+    <view wx:if="{{!devices.length}}" class="card empty">暂无大屏设备，请在「班级与绑定」生成绑定码。</view>
+    <view wx:for="{{devices}}" wx:key="id" class="card">
+      <view class="admin-card-head device-card-head"><view class="card-title admin-card-copy admin-name">{{item.label}}</view><text class="badge {{item.online ? '' : 'offline'}} admin-head-badge">{{item.revokedAt ? '已吊销' : item.online ? '在线' : '离线'}}</text></view>
+      <view class="muted admin-class-name">{{item.className}}</view>
+      <view class="helper">最近心跳 {{item.lastSeenLabel}}<view></view>语音能力 {{item.ttsStatus || '未报告'}}</view>
+      <button wx:if="{{!item.revokedAt}}" class="danger" data-id="{{item.id}}" bindtap="revokeDevice" disabled="{{busy}}">吊销此设备</button>
+    </view>
+  </block>
+
+  <block wx:if="{{section === 'settings'}}">
+    <view class="card"><view class="card-title">学校与静默时段</view><text class="label">学校名称</text><input class="field" value="{{settings.schoolName}}" bindinput="schoolInput" maxlength="60"/><view class="helper">时区固定 Asia/Shanghai（UTC+8）。静默仅停止语音，公告继续展示。</view></view>
+    <view wx:for="{{quietRules}}" wx:key="index" class="card">
+      <view class="admin-card-head"><view class="card-title admin-card-copy">静默规则 {{index + 1}}</view><button class="plain small-button admin-card-action" data-index="{{index}}" bindtap="removeRule">删除</button></view>
+      <text class="label">星期 · 周一为 1，周日为 7</text><input class="field" value="{{item.daysText}}" placeholder="例如：1,2,3,4,5" data-index="{{index}}" data-field="daysText" bindinput="ruleInput"/>
+      <text class="label">开始 / 结束</text><view class="date-row"><picker mode="time" value="{{item.start}}" data-index="{{index}}" data-field="start" bindchange="ruleInput"><view class="field">{{item.start}}</view></picker><picker mode="time" value="{{item.end}}" data-index="{{index}}" data-field="end" bindchange="ruleInput"><view class="field">{{item.end}}</view></picker></view>
+    </view>
+    <view class="buttons"><button class="secondary" bindtap="addRule">＋ 添加规则</button><button class="primary" bindtap="saveSettings" loading="{{busy}}" disabled="{{busy}}">保存设置</button></view>
+    <view class="helper">不默认启用任何学校作息。跨午夜规则需拆分成两段。</view>
+  </block>
+
+  <button class="plain refresh-admin" bindtap="load" loading="{{loading}}">刷新管理数据</button>
+</view>
+
+<view wx:if="{{editor}}" class="overlay" bindtap="closeEditor"><view class="drawer" catchtap="noop">
+  <view class="drawer-heading"><view class="card-title drawer-heading-copy">编辑教师 · {{editor.id}}</view><button class="plain small-button drawer-heading-action" bindtap="closeEditor">关闭</button></view>
+  <scroll-view class="drawer-scroll" scroll-y>
+    <text class="label">教师姓名</text><input class="field" value="{{editor.name}}" data-field="name" bindinput="editorInput" maxlength="40"/>
+    <text class="label">角色</text><picker range="{{roleOptions}}" value="{{editor.roleIndex}}" data-field="roleIndex" bindchange="editorChoice"><view class="field">{{roleOptions[editor.roleIndex]}} ▾</view></picker>
+    <text class="label">审核状态</text><picker range="{{statusOptions}}" value="{{editor.statusIndex}}" data-field="statusIndex" bindchange="editorChoice"><view class="field">{{statusOptions[editor.statusIndex]}} ▾</view></picker>
+    <text class="label">授权班级</text><view wx:for="{{teacherClasses}}" wx:key="id" class="student-row" data-id="{{item.id}}" bindtap="teacherClass"><view class="check {{item.checked ? 'checked' : ''}}">{{item.checked ? '✓' : ''}}</view><text class="admin-option-copy">{{item.name}}</text></view>
+    <view wx:if="{{error}}" class="error pre">{{error}}</view>
+  </scroll-view>
+  <button class="primary" bindtap="saveTeacher" loading="{{busy}}" disabled="{{busy}}">保存身份与班级权限</button>
+</view></view>
+
+<view wx:if="{{classEditor}}" class="overlay" bindtap="closeClassEditor"><view class="drawer drawer-compact" catchtap="noop">
+  <view class="drawer-heading"><view class="drawer-heading-copy"><view class="card-title">编辑班级</view><view class="helper">修改后该班级所有教师与名册同步更新</view></view><button class="plain small-button drawer-heading-action" bindtap="closeClassEditor">关闭</button></view>
+  <view class="editor-body">
+    <text class="label">班级名称</text>
+    <input class="field" value="{{classEditor.name}}" data-field="name" bindinput="classEditorInput" maxlength="60"/>
+    <view class="helper">修改后所有授权教师看到的班级名称会同步更新，历史公告不受影响。</view>
+  </view>
+  <button class="primary" bindtap="saveClass" loading="{{busy}}" disabled="{{busy}}">保存班级修改</button>
+</view></view>
+
+<view class="card" style="margin-top:18px">
+  <view class="card-title">危险操作</view>
+  <view class="helper">清空后公告、班级、名册、大屏设备与其他教师都会被删除，只保留当前管理员账号。适合学期切换或试点结束后重来。</view>
+  <button class="danger" bindtap="resetServerData" disabled="{{busy}}">清空服务端数据</button>
+</view>

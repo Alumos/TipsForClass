@@ -1,0 +1,61 @@
+.class-switch{display:flex;align-items:center;gap:18rpx}
+.class-icon.compact{width:68rpx;height:68rpx;border-radius:18rpx;font-size:30rpx}
+.class-switch-copy{flex:1;min-width:0}
+.class-current-name{margin-top:2rpx;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.class-switch-link{flex-shrink:0;white-space:nowrap}
+.class-switch.locked{background:#F4F8F5;border-color:#D9E7DE}
+.type-grid{display:flex;flex-wrap:wrap;gap:12rpx;margin-top:24rpx}
+.type-card{flex:1 1 190rpx;min-width:0;padding:20rpx 12rpx;border:1rpx solid #E0E8E2;border-radius:20rpx;background:#fff;text-align:center}
+.type-card.active{border-color:#0F6E56;background:#EAF3EE;box-shadow:0 6rpx 16rpx rgba(15,110,86,.08)}
+.type-mark{width:52rpx;height:52rpx;margin:0 auto 10rpx;border-radius:14rpx;background:#F0F4F1;color:#52635B;font-size:26rpx;font-weight:700;line-height:52rpx}
+.type-card.active .type-mark{background:#0F6E56;color:#fff}
+.type-name{font-size:26rpx;font-weight:600;line-height:1.35;white-space:nowrap}
+.type-desc{margin-top:4rpx;font-size:21rpx;line-height:1.35;color:#7C8F84;overflow-wrap:anywhere}
+.card-section-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12rpx 18rpx}
+.card-section-copy{flex:1;min-width:0}
+.card-section-head .badge{flex-shrink:0;margin-left:auto}
+.class-option-copy{flex:1;min-width:0}
+.class-option-name{font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.locked-class-names{padding:18rpx 20rpx;border-radius:14rpx;background:#F6F8F7;border:1rpx solid #DCE6DF;color:#335C4B;line-height:1.55;overflow-wrap:anywhere}
+.audience-banner{display:flex;align-items:flex-start;flex-wrap:wrap;gap:12rpx 18rpx;padding:20rpx;border-radius:16rpx;background:#F4F8F5}
+.audience-count{width:66rpx;height:66rpx;border-radius:18rpx;background:#0F6E56;color:#fff;font-size:32rpx;font-weight:700;line-height:66rpx;text-align:center;flex-shrink:0}
+.audience-copy{flex:1 1 300rpx;min-width:0;overflow-wrap:anywhere}
+.audience-banner .badge{flex-shrink:0;margin-left:auto}
+.selected-list{display:flex;flex-wrap:wrap;margin-top:18rpx}
+.selected-list .chip{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+.select-student-button{width:100%;margin-top:18rpx}
+.body-field{line-height:1.55}
+.more-toggle{width:100%;margin-top:18rpx}
+.position-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14rpx}
+.position-option{min-width:0;padding:16rpx;border:1rpx solid #E0E8E2;border-radius:18rpx;background:#fff}
+.position-option.active{border-color:#0F6E56;background:#F3F8F5;box-shadow:0 6rpx 16rpx rgba(15,110,86,.08)}
+.position-preview{position:relative;height:88rpx;border-radius:12rpx;background:#E8EEEA;overflow:hidden}
+.position-mini-window{position:absolute;width:44%;height:42rpx;border-radius:8rpx;background:#0F6E56;box-shadow:0 4rpx 10rpx rgba(15,110,86,.2)}
+.position-mini-window.top-right{top:10rpx;right:10rpx}
+.position-mini-window.centered{top:23rpx;left:28%;width:44%}
+.position-option-head{display:flex;align-items:center;justify-content:space-between;gap:10rpx;margin-top:14rpx}
+.position-name{min-width:0;font-size:26rpx;font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.position-check{width:34rpx;height:34rpx;border-radius:50%;background:#EAF3EE;color:#0F6E56;font-size:22rpx;font-weight:700;line-height:34rpx;text-align:center;flex-shrink:0}
+.position-option .helper{line-height:1.45;overflow-wrap:anywhere}
+.drawer-heading{display:flex;align-items:flex-start;gap:18rpx}
+.drawer-heading-copy{flex:1;min-width:0;overflow-wrap:anywhere}
+.drawer-close{flex-shrink:0;white-space:nowrap}
+.drawer-picker{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.search-field{margin-top:4rpx}
+.drawer-filter{display:flex;align-items:center;justify-content:space-between;gap:18rpx;margin-top:16rpx}
+.drawer-filter-count{min-width:0;margin-top:0;overflow-wrap:anywhere}
+.drawer-filter-action{flex-shrink:0;white-space:nowrap}
+.student-copy{flex:1;min-width:0}
+.student-name{font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.student-meta{overflow-wrap:anywhere}
+.page.with-bottom{padding-bottom:calc(220rpx + env(safe-area-inset-bottom))}
+.bottom-actions button{width:100%;min-width:0;white-space:normal;line-height:1.35;overflow-wrap:anywhere}
+@media (max-width:360px){
+  .position-grid{grid-template-columns:1fr}
+  .date-row{flex-wrap:wrap}
+  .date-row picker{flex:1 1 100%}
+  .type-card{flex-basis:100%}
+  .type-name{white-space:normal}
+  .drawer-filter{align-items:flex-start;flex-direction:column}
+  .drawer-filter-action{width:100%}
+}

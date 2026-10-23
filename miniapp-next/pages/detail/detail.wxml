@@ -1,0 +1,66 @@
+<view class="page detail-page">
+  <view class="eyebrow">投递详情</view>
+  <view class="title detail-page-title">{{message.status === 'revoked' ? '公告已删除' : '公告已保存'}}</view>
+  <view class="subtitle">{{message.stateLabel || '正在查询真实投递结果…'}}</view>
+
+  <view wx:if="{{delivery}}" class="tip detail-delivery-tip">
+    <view class="card-title">{{delivery.displayedDeviceCount}} / {{delivery.targetDeviceCount}} 台目标设备已显示提醒</view>
+    <view class="helper">电脑提醒短暂显示，不会打断课件；语音取决于设备设置。设备语音默认关闭，展示不代表学生已阅读。</view>
+  </view>
+  <view wx:if="{{waited && delivery && delivery.displayedDeviceCount < delivery.targetDeviceCount}}" class="tip">暂未确认所有设备显示提醒，可手动刷新。定时公告会在生效后参与展示。</view>
+
+  <view wx:if="{{message}}" class="card detail-message-card">
+    <view class="detail-message-meta">
+      <text class="badge">{{message.typeLabel}}</text>
+      <text class="muted detail-teacher">{{message.teacherName}}</text>
+    </view>
+    <view class="notice-title detail-title">{{message.title || message.targetNames || '学生提醒'}}</view>
+    <view class="pre detail-body">{{message.body}}</view>
+    <view wx:if="{{message.speechText}}" class="helper pre detail-speech">播报文本：{{message.speechText}}</view>
+    <view class="divider"></view>
+    <view class="detail-meta-grid">
+      <view class="detail-meta-item"><text class="detail-meta-label">服务器保存</text><text>{{message.createdLabel}}</text></view>
+      <view class="detail-meta-item"><text class="detail-meta-label">生效</text><text>{{message.startLabel}}</text></view>
+      <view class="detail-meta-item"><text class="detail-meta-label">到期</text><text>{{message.expireLabel}}</text></view>
+    </view>
+  </view>
+
+  <block wx:if="{{delivery}}">
+    <view wx:for="{{delivery.devices}}" wx:key="id" class="card detail-device-card">
+      <view class="detail-device-head">
+        <view class="card-title detail-device-name">{{item.label}}</view>
+        <text class="badge {{item.online ? '' : 'offline'}}">{{item.online ? '在线' : '离线'}}</text>
+      </view>
+      <view class="muted detail-device-class">{{item.className}}</view>
+      <view class="divider"></view>
+      <view class="detail-receipt-list">
+        <view class="detail-receipt"><text class="detail-receipt-label">设备接收</text><text>{{item.receivedAt ? item.receivedLabel : '等待确认'}}</text></view>
+        <view class="detail-receipt"><text class="detail-receipt-label">大屏弹出提醒</text><text>{{item.displayedAt ? item.displayedLabel : '等待设备回报'}}</text></view>
+        <view wx:if="{{item.revokedAt}}" class="detail-receipt"><text class="detail-receipt-label">删除确认</text><text>{{item.revokedLabel}}</text></view>
+        <view class="detail-receipt"><text class="detail-receipt-label">本次已播</text><text>{{item.playedRounds || 0}} 遍</text></view>
+      </view>
+      <view wx:for="{{item.broadcastReceipts}}" wx:for-item="receipt" wx:key="round" class="helper detail-broadcast-receipt">{{receipt.label}}</view>
+      <view class="helper detail-tts">语音状态：{{item.ttsLabel}}。实际播报仍以回执为准。</view>
+    </view>
+  </block>
+
+  <view wx:if="{{error}}" class="error pre">{{error}}</view>
+
+  <view wx:if="{{message}}" class="card detail-operation-card">
+    <view class="card-title">消息操作</view>
+    <view class="helper">编辑会更新原公告；复制会带入内容后创建新公告；删除会立即从目标班级撤下。</view>
+    <view class="detail-actions">
+      <button class="secondary" bindtap="manualRefresh" loading="{{loading}}">刷新状态</button>
+      <button class="secondary" bindtap="edit" disabled="{{busy || message.status === 'revoked'}}">编辑公告</button>
+      <button class="secondary" bindtap="copy" disabled="{{busy}}">复制再发</button>
+    </view>
+    <view wx:if="{{message.status !== 'revoked'}}" class="detail-danger-actions">
+      <button wx:if="{{message.type !== 'notice'}}" class="secondary" bindtap="replay" disabled="{{busy}}" loading="{{busy}}">重新播报</button>
+      <button wx:if="{{message.type !== 'notice' && message.broadcast && message.broadcast.times > 0}}" class="secondary" bindtap="cancelBroadcast" disabled="{{busy}}">停止播报</button>
+      <button class="danger detail-delete" bindtap="remove" disabled="{{busy}}">删除公告</button>
+    </view>
+  </view>
+
+  <button class="plain detail-home" bindtap="home">返回班级</button>
+  <view class="footer-note">{{pollEnded ? '自动查询已结束，点击刷新可继续查看。' : '每 2 秒自动查询，最长 30 秒。'}}</view>
+</view>
