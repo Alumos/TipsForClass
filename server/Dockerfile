@@ -1,6 +1,11 @@
 # syntax=docker/dockerfile:1
 FROM golang:1.27.3-alpine AS build
 
+# 国内 VPS 构建时默认走 Go 模块代理，避免 proxy.golang.org 超时。
+# 需要官方源时：docker compose build --build-arg GOPROXY=https://proxy.golang.org,direct
+ARG GOPROXY=https://goproxy.cn,direct
+ENV GOPROXY=${GOPROXY}
+
 WORKDIR /src
 COPY go.mod go.sum ./
 RUN go mod download

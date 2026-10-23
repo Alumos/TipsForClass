@@ -1,8 +1,16 @@
+# 独立运行 Caddy（不在 Docker Compose 内）的反代配置
+#
+# 用法：
+#   NOTICE_DOMAIN=notice.example.cn caddy run --config Caddyfile
+#
+# 域名必须已备案并解析到本机，80/443 空闲，否则 Let's Encrypt 验证会被阻断。
+# 上游默认是宿主机的 18080；若 Caddy 也在 Compose 里，用 NOTICE_UPSTREAM=api:8080 覆盖。
+
 {$NOTICE_DOMAIN} {
 	encode zstd gzip
 
 	@backend path /api/* /ws/* /healthz /readyz
-	reverse_proxy @backend api:8080
+	reverse_proxy @backend {$NOTICE_UPSTREAM:127.0.0.1:18080}
 
 	respond "Not Found" 404
 }

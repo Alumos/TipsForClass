@@ -28,3 +28,9 @@ project.private.config.json
 .DS_Store
 .idea/
 .vscode/
+
+# 含真实密钥的本地部署文件
+.local/
+
+# 编辑器与项目记忆
+.workbuddy/

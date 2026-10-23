@@ -4,6 +4,8 @@
 
 微信平台的控制台会随版本调整，下面的菜单名称以 2026 年常见界面为准；找不到时优先搜索“开发管理、开发设置、版本管理”。
 
+> 仅 3 人以内自用、不打算上架时，**不需要小程序备案**，按 [体验版自用指南](miniapp-trial.md) 操作即可。本文第 8 节之后的备案与审核只在上架时执行。
+
 ## 1. 先准备这些材料
 
 - 已注册并登录的微信小程序账号；
@@ -18,12 +20,13 @@
 
 ## 2. 配置生产服务端
 
-先按 [国内 VPS 部署](deployment.md) 启动生产服务，并在 `.env` 中填写：
+先按 [国内 VPS 部署](deployment.md) 启动生产服务，并在 `compose.yaml` 的 `environment` 中填写：
 
-```dotenv
-APP_MODE=production
-WECHAT_APP_ID=你的AppID
-WECHAT_APP_SECRET=你的AppSecret
+```yaml
+environment:
+  APP_MODE: production
+  WECHAT_APP_ID: wxa4083506823513ec
+  WECHAT_APP_SECRET: 你的AppSecret
 ```
 
 确认以下地址可以从公网访问：

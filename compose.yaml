@@ -1,20 +1,53 @@
+# 教室公告 API —— 单文件部署
+#
+# 使用 GitHub Actions 推送到 GHCR 的成品镜像，不在服务器上编译，
+# 不依赖 .env，不需要反向代理，直接用 http://服务器IP:18080 访问。
+#
+# 服务器上只需要这一个文件：
+#   docker compose up -d
+#   docker compose logs -f api
+#   docker compose ps
+#
+# 更新到新镜像：
+#   docker compose pull && docker compose up -d
+#
+# 注意：微信小程序的服务器域名不接受 IP 和 http，必须是 https + 已备案域名。
+# 端口是允许的：填 https://域名:端口 就只认这个完全一致的地址（不带端口时连 :443 都不能写），
+# 所以加了反代后要么用 443，要么把带端口的地址原样填进小程序后台。
+# 大屏端不受此限制，可以直接访问 http://服务器IP:18080。
+
 name: tipsforclass
 
 services:
   api:
-    image: ghcr.io/alumos/tipsforclass-api:${IMAGE_TAG:-latest}
-    build:
-      context: ./server
-      dockerfile: Dockerfile
+    # 固定版本便于回滚，例如 :v0.1.1 或某个提交 SHA；latest 跟随 main 最新构建。
+    image: ghcr.io/alumos/tipsforclass-api:latest
+    # 本地已有镜像就不联网拉取，方便用离线 tar 包导入后直接启动。
+    pull_policy: missing
     restart: unless-stopped
-    env_file:
-      - .env
     environment:
+      APP_MODE: production
       HTTP_ADDR: 0.0.0.0:8080
       DATABASE_PATH: /data/notice.db
       TZ: Asia/Shanghai
+
+      # 小程序 AppID 与 AppSecret。AppSecret 只能放在服务端，不能写进小程序代码。
+      WECHAT_APP_ID: wxa4083506823513ec
+      WECHAT_APP_SECRET: changeme
+
+      # openssl rand -hex 32；至少 32 字符，更换后现有教师会话和设备令牌全部失效。
+      TOKEN_PEPPER: changeme
+
+      # openssl rand -hex 16；至少 16 字符，只在首位管理员初始化时用一次。
+      BOOTSTRAP_CODE: changeme
+
+      # 浏览器 Web 前端允许的来源，原生小程序和 Windows 客户端不发送 Origin。
+      # 留空时仅允许本机 5173/4173 开发端口。需要浏览器访问时填完整 Origin，
+      # 非 443 端口必须带上端口，例如 https://notice.example.com:16666
+      ALLOWED_ORIGINS: ""
     ports:
-      - "127.0.0.1:${API_PORT:-8080}:8080"
+      # 左侧公网端口，右侧容器内固定 8080。只想本机访问就改成 127.0.0.1:18080:8080。
+      - "18080:8080"
     volumes:
       - notice-data:/data
     read_only: true
@@ -25,32 +58,12 @@ services:
     cap_drop:
       - ALL
     stop_grace_period: 15s
-
-  caddy:
-    image: caddy:2.10-alpine
-    profiles:
-      - proxy
-    restart: unless-stopped
-    environment:
-      NOTICE_DOMAIN: ${NOTICE_DOMAIN:-}
-    ports:
-      - "80:80"
-      - "443:443"
-      - "443:443/udp"
-    volumes:
-      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
-      - caddy-data:/data
-      - caddy-config:/config
-    depends_on:
-      api:
-        condition: service_healthy
-    security_opt:
-      - no-new-privileges:true
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   notice-data:
     name: tipsforclass-notice-data
-  caddy-data:
-    name: tipsforclass-caddy-data
-  caddy-config:
-    name: tipsforclass-caddy-config

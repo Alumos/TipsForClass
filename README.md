@@ -76,7 +76,7 @@ Get-FileHash .\Setup.0.1.1.exe -Algorithm SHA256
 
 v0.1.1 的 SHA-256 为 `b5e9df1bc80704f101cffa56194339ab9dbc5c11c762adb40310e715b13bd25a`。服务端镜像可固定使用 `ghcr.io/alumos/tipsforclass-api:v0.1.1`，也可用 `latest` 跟随主分支。v0.1.0 的 Windows 资产曾使用中文文件名，建议统一使用 v0.1.1 及以后版本。
 
-首次部署前复制 `.env.production.example` 为 `.env` 并填写密钥。不要提交 `.env`、AppSecret、学生名册或生产数据库。
+首次部署前把 `compose.yaml` 里三处 `changeme` 换成真实密钥。不要提交 AppSecret、`TOKEN_PEPPER`、`BOOTSTRAP_CODE`、学生名册或生产数据库。
 
 ## 已自动验证
 

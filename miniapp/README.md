@@ -2,7 +2,7 @@
 
 这是可以直接导入微信开发者工具的原生小程序，使用 JS、WXML、WXSS。**不需要安装 npm 依赖、不需要“构建 npm”**。界面使用服务端真实数据；初始示例名册也从 Go API 获取，没有假回执。
 
-正式上线流程见 [微信小程序发布教程](../docs/miniapp-release.md)，国内 VPS 与 HTTPS 域名配置见 [Docker Compose 部署](../docs/deployment.md)。
+正式上线流程见 [微信小程序发布教程](../docs/miniapp-release.md)，国内 VPS 与 HTTPS 域名配置见 [Docker Compose 部署](../docs/deployment.md)。仅在 3 人以内自用、不打算上架时，走 [体验版自用指南](../docs/miniapp-trial.md)，无需小程序备案。
 
 ## 第一次运行：照着做
 
