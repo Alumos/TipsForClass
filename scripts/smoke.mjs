@@ -83,31 +83,30 @@ try {
   await start();
   const login = await api('/auth/demo-login', { method: 'POST', body: {} });
   const teacher = login.token;
-  await api('/rooms', { status: 401 });
-  const rooms = (await api('/rooms', { token: teacher })).items;
-  assert(rooms.length >= 2);
-  assert.equal(rooms[0].deviceCount, 0);
+  await api('/classes', { status: 401 });
+  const classes = (await api('/classes', { token: teacher })).items;
+  assert(classes.length >= 2);
+  assert.equal(classes[0].deviceCount, 0);
   mark('演示登录有效；未登录读取被拒绝；不伪造已绑定设备');
 
-  async function bind(room, label) {
-    const code = await api(`/admin/rooms/${room.id}/bind-codes`, { method: 'POST', token: teacher, body: {}, status: 201 });
+  async function bind(item, label) {
+    const code = await api(`/admin/classes/${item.id}/bind-codes`, { method: 'POST', token: teacher, body: {}, status: 201 });
     const body = { bindCode: code.bindCode, installationId: randomUUID(), label };
     const bound = await api('/devices/bind', { method: 'POST', body });
     return { ...bound, body };
   }
-  const first = await bind(rooms[0], '自动验证屏一');
-  const second = await bind(rooms[1], '自动验证屏二');
+  const first = await bind(classes[0], '自动验证屏一');
+  const second = await bind(classes[1], '自动验证屏二');
   await api('/devices/bind', { method: 'POST', body: { ...first.body, installationId: randomUUID() }, status: 400 });
   const token = first.deviceToken;
   const connection = await connect(token);
   const snapshot = await api('/device/snapshot', { token });
-  assert.equal(snapshot.room.id, rooms[0].id);
+  assert.equal(snapshot.class.id, classes[0].id);
   assert.equal(snapshot.protocolVersion, 1);
-  mark('绑定码一次消费；WebSocket 票据连接；快照只返回绑定教室');
+  mark('绑定码一次消费；WebSocket 票据连接；快照只返回绑定班级');
 
-  const classes = (await api(`/classes?roomId=${rooms[0].id}`, { token: teacher })).items;
   const students = (await api(`/students?classId=${classes[0].id}`, { token: teacher })).items;
-  const body = { clientToken: randomUUID(), type: 'call', roomIds: [rooms[0].id], studentIds: [students[0].id], destination: '三楼办公室', body: '自动验证样例', broadcastTimes: 2, expireAt: new Date(Date.now() + 40 * 60000).toISOString() };
+  const body = { clientToken: randomUUID(), type: 'call', classIds: [classes[0].id], studentIds: [students[0].id], destination: '三楼办公室', body: '自动验证样例', broadcastTimes: 2, expireAt: new Date(Date.now() + 40 * 60000).toISOString() };
   const created = await api('/messages', { method: 'POST', token: teacher, body, status: 201 });
   const repeat = await api('/messages', { method: 'POST', token: teacher, body });
   assert.equal(repeat.id, created.id);
@@ -119,18 +118,18 @@ try {
   assert(event.data.speechText.includes(students[0].name));
   assert(!event.data.title.includes(students[0].name));
   assert(!(await api('/device/snapshot', { token: second.deviceToken })).messages.some(m => m.id === created.id));
-  mark('发布持久化、幂等重试、冲突拒绝、真实 WS 事件和教室数据隔离');
+  mark('发布持久化、幂等重试、冲突拒绝、真实 WS 事件和班级数据隔离');
 
-  const display = await api(`/rooms/${rooms[0].id}/display-settings`, { method: 'PUT', token: teacher, body: { roomId: rooms[0].id, position: 'center', pinnedMessageIds: [created.id] } });
+  const display = await api(`/classes/${classes[0].id}/display-settings`, { method: 'PUT', token: teacher, body: { classId: classes[0].id, position: 'center', pinnedMessageIds: [created.id] } });
   assert.equal(display.displayPosition, 'center');
   assert.deepEqual(display.pinnedMessageIds, [created.id]);
-  const displayEvent = await connection.wait(e => e.event === 'room.display' && e.data.displaySettings.revision === display.revision);
+  const displayEvent = await connection.wait(e => e.event === 'class.display' && e.data.displaySettings.revision === display.revision);
   assert.deepEqual(displayEvent.data.displaySettings.pinnedMessageIds, [created.id]);
   const pinnedSnapshot = await api('/device/snapshot', { token });
   assert.equal(pinnedSnapshot.displaySettings.displayPosition, 'center');
   assert.deepEqual(pinnedSnapshot.displaySettings.pinnedMessageIds, [created.id]);
   assert.equal(pinnedSnapshot.messages[0].id, created.id);
-  mark('共享屏幕位置与置顶顺序持久化，room.display 事件和快照同步');
+  mark('共享屏幕位置与置顶顺序持久化，class.display 事件和快照同步');
 
   const items = [{ messageId: created.id, revision: created.revision, kind: 'delivery', state: 'received' }, { messageId: created.id, revision: created.revision, kind: 'delivery', state: 'displayed' }, { messageId: created.id, generation: 0, round: 1, kind: 'broadcast', status: 'played' }];
   await api('/device/receipts', { method: 'POST', token, body: { syncEpoch: snapshot.syncEpoch, items } });
@@ -161,7 +160,7 @@ try {
   assert.equal((await api('/admin/rosters/commit', { method: 'POST', token: teacher, body: { importId: preview.importId } })).created, 1);
   mark('名册预检和幂等导入，保留学号前导零');
 
-  await runMiniapp({ base, roomId: rooms[0].id, teacherLogin: login, rawApi: api });
+  await runMiniapp({ base, classId: classes[0].id, teacherLogin: login, rawApi: api });
   mark('小程序原始 Page 方法真实调用 API：发布、投递详情、管理员 POST 修改');
 
   connection.ws.close();

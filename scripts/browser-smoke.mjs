@@ -27,24 +27,23 @@ try{
  run(process.execPath,[path.join(root,'display/node_modules/vite/bin/vite.js'),'preview','--host','127.0.0.1','--port','4173','--strictPort'],path.join(root,'display'));
  await Promise.all([ready(base+'/healthz'),ready(ui)]);
  const login=await api('/auth/demo-login',null,{});const token=login.token;
- const code=await api('/admin/rooms/1/bind-codes',token,{});
+ const code=await api('/admin/classes/1/bind-codes',token,{});
  browser=await chromium.launch({headless:true,...(process.env.CHROME_EXECUTABLE?{executablePath:process.env.CHROME_EXECUTABLE}:{})});
  const page=await browser.newPage({viewport:{width:1440,height:1000}});const errors=[];page.on('pageerror',error=>errors.push(error.message));
- await page.goto(ui);await page.getByRole('heading',{name:'绑定教室屏幕'}).waitFor();
+ await page.goto(ui);await page.getByRole('heading',{name:'绑定班级屏幕'}).waitFor();
  await page.getByLabel('API 服务地址').fill(base+'/api/v1');
- await page.getByLabel('设备名称').fill('自动验证教室屏');
+ await page.getByLabel('设备名称').fill('自动验证班级屏');
  await page.getByLabel('6 位绑定码').fill(code.bindCode);
  await page.getByLabel('设置维护 PIN').fill('123456');
- await page.getByRole('button',{name:'连接教室 →'}).click();
+ await page.getByRole('button',{name:'连接班级 →'}).click();
  await page.locator('.preview-device-status').getByText('后台待机',{exact:false}).waitFor({timeout:15000});
  assert.equal(await page.locator('.board,.notice-card,.cards').count(),0,'绑定后不应常驻公告墙');
  assert(await page.getByRole('button',{name:'设置与维护'}).isVisible());
  await page.screenshot({path:path.join(out,'display-idle-no-board.png'),fullPage:true});
  console.log('✓ 已绑定大屏保持后台待机，页面无常驻公告墙');
 
- const classes=(await api('/classes?roomId=1',token,undefined,'GET')).items;
- const students=(await api(`/students?classId=${classes[0].id}`,token,undefined,'GET')).items;
- const center=await api('/messages',token,{clientToken:randomUUID(),type:'call',displayPosition:'center',roomIds:['1'],studentIds:[students[0].id],destination:'三楼教师办公室',body:'请带上课本和练习册',broadcastTimes:0,expireAt:new Date(Date.now()+1800000).toISOString()});
+ const students=(await api('/students?classId=1',token,undefined,'GET')).items;
+  const center=await api('/messages',token,{clientToken:randomUUID(),type:'call',displayPosition:'center',classIds:['1'],studentIds:[students[0].id],destination:'三楼教师办公室',body:'请带上课本和练习册',broadcastTimes:0,expireAt:new Date(Date.now()+1800000).toISOString()});
  const centerCard=page.locator('.preview-overlay.center');await centerCard.waitFor({timeout:10000});
  const centerBox=await centerCard.boundingBox();assert(centerBox&&centerBox.width>=740&&centerBox.height>=460,'居中提醒应足够醒目');
  const centerFont=parseFloat(await centerCard.locator('.preview-info').evaluate(element=>getComputedStyle(element).fontSize));assert(centerFont>=29,'居中正文至少 29px');
@@ -54,7 +53,7 @@ try{
  await centerCard.waitFor({state:'hidden',timeout:17000});
  console.log('✓ 居中提醒为约 760×480 大窗、正文约 30px，约 15 秒自动消失并写展示回执');
 
- const right=await api('/messages',token,{clientToken:randomUUID(),type:'call',displayPosition:'top_right',roomIds:['1'],studentIds:[students[1].id,students[2].id],destination:'二楼会议室',body:'请两名同学下课后到场',broadcastTimes:0,expireAt:new Date(Date.now()+1800000).toISOString()});
+ const right=await api('/messages',token,{clientToken:randomUUID(),type:'call',displayPosition:'top_right',classIds:['1'],studentIds:[students[1].id,students[2].id],destination:'二楼会议室',body:'请两名同学下课后到场',broadcastTimes:0,expireAt:new Date(Date.now()+1800000).toISOString()});
  const rightCard=page.locator('.preview-overlay.top-right');await rightCard.waitFor({timeout:10000});
  const rightBox=await rightCard.boundingBox();assert(rightBox&&rightBox.width<centerBox.width&&rightBox.width<=470,'右上角提醒应明显小于居中窗');
  const rightFont=parseFloat(await rightCard.locator('.preview-info').evaluate(element=>getComputedStyle(element).fontSize));assert(rightFont>=21,'右上角正文至少 21px');

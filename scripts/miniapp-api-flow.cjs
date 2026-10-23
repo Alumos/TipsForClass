@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const path = require('node:path');
 const mini = path.resolve(__dirname, '../miniapp');
 /** Executes actual Page methods with minimal wx transport, not a substitute for WeChat UI compilation. */
-module.exports = async function run({ base, roomId, teacherLogin, rawApi }) {
+module.exports = async function run({ base, classId, teacherLogin, rawApi }) {
   const config = require(path.join(mini, 'config.js'));
   const previousBase = config.apiBase;
   config.apiBase = base + '/api/v1';
@@ -50,7 +50,7 @@ module.exports = async function run({ base, roomId, teacherLogin, rawApi }) {
     const session = require(path.join(mini, 'utils/session.js'));
     session.write(teacherLogin);
     const publish = page('publish');
-    await publish.onLoad({ roomId });
+    await publish.onLoad({ classId });
     assert.equal(publish.data.ready, true, publish.data.error);
     publish.chooseType({ currentTarget: { dataset: { type: 'notice' } } });
     publish.input({ currentTarget: { dataset: { field: 'title' } }, detail: { value: '小程序真实请求联调' } });
