@@ -35,7 +35,7 @@
       <view class="divider"></view>
       <view class="detail-receipt-list">
         <view class="detail-receipt"><text class="detail-receipt-label">设备接收</text><text>{{item.receivedAt ? item.receivedLabel : '等待确认'}}</text></view>
-        <view class="detail-receipt"><text class="detail-receipt-label">实际显示提醒</text><text>{{item.displayedAt ? item.displayedLabel : '等待确认'}}</text></view>
+        <view class="detail-receipt"><text class="detail-receipt-label">大屏弹出提醒</text><text>{{item.displayedAt ? item.displayedLabel : '等待设备回报'}}</text></view>
         <view wx:if="{{item.revokedAt}}" class="detail-receipt"><text class="detail-receipt-label">删除确认</text><text>{{item.revokedLabel}}</text></view>
         <view class="detail-receipt"><text class="detail-receipt-label">本次已播</text><text>{{item.playedRounds || 0}} 遍</text></view>
       </view>
