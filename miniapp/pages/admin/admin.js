@@ -207,24 +207,14 @@ Page({
     if (!cls) return;
     wx.showModal({
       title: '删除班级「' + cls.name + '」？',
-      content: '该班级的学生名册与教师授权会一并清除，且无法恢复。仍绑定大屏设备的班级不能删除。',
+      content: '该班级的大屏会立即解绑并回到待绑定状态，学生名册与教师授权一并清除，无法恢复。',
       confirmText: '删除',
       confirmColor: '#A93230',
       success: result => {
         if (!result.confirm) return;
         this.action(async () => {
-          const path = '/admin/classes/' + encodeURIComponent(cls.id);
-          try {
-            await api.request(path, { method: 'DELETE' });
-          } catch (err) {
-            // 名册还在时服务端会拒绝，用户已在上一步确认过一并删除。
-            if (err && err.code === 'CLASS_IN_USE' && String(err.message || '').indexOf('学生') >= 0) {
-              await api.request(path + '?force=1', { method: 'DELETE' });
-            } else {
-              throw err;
-            }
-          }
-          this.setData({ notice: '班级与名册已删除' });
+          await api.request('/admin/classes/' + encodeURIComponent(cls.id), { method: 'DELETE' });
+          this.setData({ notice: '班级已删除，大屏已解绑' });
           await this.loadClasses();
         });
       }

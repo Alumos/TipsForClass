@@ -75,6 +75,7 @@ class TauriBridge implements DisplayBridge {
   private listeners = new Set<(state: ViewState) => void>();
   private overlayId = '';
   private lastSerial = 0;
+  private wasBound = false;
   private paused = false;
   private timer: ReturnType<typeof setTimeout> | undefined;
 
@@ -134,6 +135,14 @@ class TauriBridge implements DisplayBridge {
   }
 
   private async drive(state: ViewState) {
+    // 班级被删除后设备令牌失效：把窗口弹出来，让老师知道需要重新绑定。
+    if (this.wasBound && !state.bound) {
+      this.wasBound = false;
+      trace('绑定已失效，弹出主窗口');
+      void api().core.invoke('show_main', {settings: false}).catch(() => undefined);
+    }
+    if (state.bound) this.wasBound = true;
+
     const fresh = state.alerts
       .filter(alert => alert.serial > this.lastSerial)
       .sort((left, right) => right.serial - left.serial);

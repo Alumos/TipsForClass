@@ -236,9 +236,13 @@ func TestDeleteClassSafetyAndPreviewCleanup(t *testing.T) {
 	if e := x.a.db.QueryRow("SELECT COUNT(*) FROM roster_previews WHERE class_id=?", classID).Scan(&previews); e != nil || previews != 0 {
 		t.Fatalf("preview cleanup count=%d err=%v", previews, e)
 	}
-	_, body = x.req("DELETE", "/admin/classes/1", x.token, nil, 409)
-	if body["code"] != "CLASS_IN_USE" {
-		t.Fatalf("class-in-use response=%#v", body)
+	// 删除班级会级联清理名册、设备与回执，不需要先手动吊销大屏。
+	x.req("DELETE", "/admin/classes/1", x.token, nil, 200)
+	for _, q := range []string{"SELECT COUNT(*) FROM students WHERE class_id=1", "SELECT COUNT(*) FROM devices WHERE class_id=1"} {
+		var left int
+		if e := x.a.db.QueryRow(q).Scan(&left); e != nil || left != 0 {
+			t.Fatalf("cascade cleanup failed for %q: left=%d err=%v", q, left, e)
+		}
 	}
 }
 

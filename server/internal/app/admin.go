@@ -378,22 +378,18 @@ func (a *App) deleteClass(w http.ResponseWriter, r *http.Request) error {
 	if n != 1 {
 		return fail(404, "NOT_FOUND", "班级不存在")
 	}
-	if e = tx.QueryRow("SELECT COUNT(*) FROM students WHERE class_id=?", classID).Scan(&n); e != nil {
-		return e
-	}
-	if n > 0 {
-		if r.URL.Query().Get("force") != "1" {
-			return fail(409, "CLASS_IN_USE", "班级仍有"+strconv.Itoa(n)+" 名学生，确认后可连同名册一起删除")
-		}
-		if _, e = tx.Exec("DELETE FROM students WHERE class_id=?", classID); e != nil {
+	// 删除班级即意味着这台屏不再服务该班：名册、设备与回执一并清理，
+	// 大屏下次心跳会拿到 401 并自动回到绑定页，管理员不需要先手动吊销。
+	for _, q := range []string{
+		"DELETE FROM delivery_receipts WHERE device_id IN (SELECT id FROM devices WHERE class_id=?)",
+		"DELETE FROM broadcast_receipts WHERE device_id IN (SELECT id FROM devices WHERE class_id=?)",
+		"DELETE FROM message_devices WHERE device_id IN (SELECT id FROM devices WHERE class_id=?)",
+		"DELETE FROM devices WHERE class_id=?",
+		"DELETE FROM students WHERE class_id=?",
+	} {
+		if _, e = tx.Exec(q, classID); e != nil {
 			return e
 		}
-	}
-	if e = tx.QueryRow("SELECT COUNT(*) FROM devices WHERE class_id=?", classID).Scan(&n); e != nil {
-		return e
-	}
-	if n > 0 {
-		return fail(409, "CLASS_IN_USE", "班级仍绑定大屏设备，不能删除")
 	}
 	for _, q := range []string{"DELETE FROM bind_codes WHERE class_id=?", "DELETE FROM teacher_classes WHERE class_id=?", "DELETE FROM message_classes WHERE class_id=?", "DELETE FROM events WHERE class_id=?", "DELETE FROM roster_previews WHERE class_id=?"} {
 		if _, e = tx.Exec(q, classID); e != nil {
