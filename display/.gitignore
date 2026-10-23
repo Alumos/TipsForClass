@@ -2,5 +2,8 @@ node_modules/
 dist/
 dist-electron/
 release/
-windows-tts/bin/
+windows-tts/bin/*
+!windows-tts/bin/publish/
+windows-tts/bin/publish/*
+!windows-tts/bin/publish/.gitkeep
 windows-tts/obj/

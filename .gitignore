@@ -34,3 +34,7 @@ project.private.config.json
 
 # 编辑器与项目记忆
 .workbuddy/
+
+# Tauri
+/display/src-tauri/target/
+/display/src-tauri/gen/
