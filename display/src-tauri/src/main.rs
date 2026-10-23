@@ -18,6 +18,29 @@ use tauri::{
     AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, WebviewUrl, WebviewWindowBuilder, Wry,
 };
 
+/// 轻量日志：只记窗口动作，不记公告内容。
+/// 位置：%APPDATA%\school.classroom.notice\overlay.log
+fn trace(message: &str) {
+    let Ok(appdata) = std::env::var("APPDATA") else {
+        return;
+    };
+    let dir = std::path::Path::new(&appdata).join("school.classroom.notice");
+    if std::fs::create_dir_all(&dir).is_err() {
+        return;
+    }
+    let stamp = std::time::SystemTime::now()
+        .duration_since(std::time::UNIX_EPOCH)
+        .map(|value| value.as_secs())
+        .unwrap_or(0);
+    if let Ok(mut file) = std::fs::OpenOptions::new()
+        .create(true)
+        .append(true)
+        .open(dir.join("overlay.log"))
+    {
+        let _ = writeln!(file, "{stamp} {message}");
+    }
+}
+
 /// 最近一次提醒载荷。提醒窗口可能在页面加载完成前就收到事件，
 /// 因此缓存一份，供窗口挂载后补拉。
 #[derive(Default)]
@@ -171,9 +194,10 @@ fn overlay_show(
     height: f64,
     payload: String,
 ) -> Result<(), String> {
-    let window = app
-        .get_webview_window("overlay")
-        .ok_or("提醒窗口不存在")?;
+    let window = app.get_webview_window("overlay").ok_or_else(|| {
+        trace("overlay_show: 找不到 overlay 窗口");
+        "提醒窗口不存在"
+    })?;
     window
         .set_position(LogicalPosition::new(x, y))
         .map_err(|error| error.to_string())?;
@@ -183,7 +207,11 @@ fn overlay_show(
     window
         .set_always_on_top(true)
         .map_err(|error| error.to_string())?;
-    window.show().map_err(|error| error.to_string())?;
+    window.show().map_err(|error| {
+        trace(&format!("overlay_show: show 失败 {error}"));
+        error.to_string()
+    })?;
+    trace(&format!("overlay_show: 已显示 {width}x{height} @ {x},{y}"));
     *cache.0.lock().unwrap() = Some(payload.clone());
     window
         .emit("overlay-payload", payload)
