@@ -4,7 +4,6 @@
   <view class="records-toolbar">
     <view class="subtitle records-intro">查看回执，或直接编辑、删除消息</view>
     <view class="record-actions">
-      <button class="plain small-button" bindtap="arrange">屏幕排序</button>
       <picker range="{{filters}}" value="{{filterIndex}}" bindchange="filterChange"><view class="chip active">{{filters[filterIndex]}} ▾</view></picker>
     </view>
   </view>

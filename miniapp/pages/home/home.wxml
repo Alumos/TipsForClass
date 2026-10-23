@@ -1,7 +1,6 @@
 <view class="page">
   <view class="row home-heading">
     <view class="home-heading-copy"><view class="eyebrow">教师工作台</view><view class="title">{{teacher.name || '老师'}}，你好</view></view>
-    <button class="plain small-button home-heading-button" bindtap="arrange">屏幕排序</button>
   </view>
   <view class="subtitle">选择班级，把下一条提醒送到大屏。</view>
   <view class="tip row"><view><view class="card-title">{{classes.length}} 个授权班级</view><view class="helper">最近使用的班级会优先显示</view></view><text>↗</text></view>

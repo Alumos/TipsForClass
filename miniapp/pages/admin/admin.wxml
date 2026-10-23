@@ -3,13 +3,13 @@
   <view class="title">让每个班级准备就绪</view>
   <view class="subtitle">绑定设备、维护班级与名册，并把共享权限交代清楚。</view>
 
-  <scroll-view scroll-x class="scroll-tabs">
+  <view class="scroll-tabs">
     <view class="chip {{section === 'classes' ? 'active' : ''}}" data-section="classes" bindtap="section">班级与绑定</view>
     <view class="chip {{section === 'roster' ? 'active' : ''}}" data-section="roster" bindtap="section">学生名册</view>
     <view class="chip {{section === 'teachers' ? 'active' : ''}}" data-section="teachers" bindtap="section">教师权限</view>
     <view class="chip {{section === 'devices' ? 'active' : ''}}" data-section="devices" bindtap="section">大屏设备</view>
     <view class="chip {{section === 'settings' ? 'active' : ''}}" data-section="settings" bindtap="section">静默规则</view>
-  </scroll-view>
+  </view>
 
   <view wx:if="{{loading}}" class="loading">正在读取管理数据…</view>
   <view wx:if="{{error}}" class="error pre">{{error}}</view>
@@ -36,7 +36,7 @@
       </view>
       <view wx:if="{{classes.length}}" class="class-list">
         <view wx:for="{{classes}}" wx:key="id" class="class-manage-row">
-          <view class="class-manage-copy"><view class="class-name">{{item.name}}</view><view class="helper class-id">班级编号 {{item.id}}</view></view>
+          <view class="class-manage-copy"><view class="class-name">{{item.name}}</view><view class="helper class-id">第 {{index + 1}} 个班级</view></view>
           <view class="mini-actions"><button class="plain small-button" data-id="{{item.id}}" bindtap="editClass">编辑</button><button class="danger small-button" data-id="{{item.id}}" bindtap="deleteClass">删除</button></view>
         </view>
       </view>
@@ -71,7 +71,7 @@
     <view class="card">
       <view class="card-title">CSV / 表格文本</view>
       <view class="helper">支持两列 CSV 或从 Excel / WPS 复制的制表符文本。学号请保留前导零。</view>
-      <textarea class="field roster-textarea" placeholder="学号,姓名&#10;2026001,陈小禾&#10;2026002,林一诺" value="{{csv}}" data-field="csv" bindinput="input" maxlength="200000" adjust-position="true" cursor-spacing="100"/>
+      <textarea class="field roster-textarea" placeholder="{{csvPlaceholder}}" value="{{csv}}" data-field="csv" bindinput="input" maxlength="200000" adjust-position="true" cursor-spacing="100"/>
       <button class="secondary" bindtap="previewRoster" loading="{{busy}}" disabled="{{busy || !classes.length || !csvReady}}">预检粘贴名册</button>
     </view>
 
@@ -140,7 +140,7 @@
 </view></view>
 
 <view wx:if="{{classEditor}}" class="overlay" bindtap="closeClassEditor"><view class="drawer drawer-compact" catchtap="noop">
-  <view class="drawer-heading"><view class="drawer-heading-copy"><view class="card-title">编辑班级</view><view class="helper">班级编号 {{classEditor.id}}</view></view><button class="plain small-button drawer-heading-action" bindtap="closeClassEditor">关闭</button></view>
+  <view class="drawer-heading"><view class="drawer-heading-copy"><view class="card-title">编辑班级</view><view class="helper">修改后该班级所有教师与名册同步更新</view></view><button class="plain small-button drawer-heading-action" bindtap="closeClassEditor">关闭</button></view>
   <view class="editor-body">
     <text class="label">班级名称</text>
     <input class="field" value="{{classEditor.name}}" data-field="name" bindinput="classEditorInput" maxlength="60"/>

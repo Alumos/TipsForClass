@@ -41,6 +41,7 @@ Page({
     classes: [],
     teachers: [],
     devices: [], hasRevoked: false,
+    csvPlaceholder: '学号,姓名\n2026001,陈小禾\n2026002,林一诺',
     classIndex: 0,
     selectedClassName: '',
     className: '',

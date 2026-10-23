@@ -47,3 +47,6 @@
 .editor-body{padding:4rpx 0 20rpx}
 .refresh-admin{margin-top:28rpx}
 .picker-field{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+.scroll-tabs{display:flex;flex-wrap:wrap;gap:12rpx;margin-bottom:18rpx}
+.scroll-tabs .chip{flex:0 0 auto}
