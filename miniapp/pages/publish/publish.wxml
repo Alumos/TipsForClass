@@ -66,7 +66,7 @@
   </view>
 
   <view class="card">
-    <view class="card-section-head"><view class="card-section-copy"><view class="card-title">展示与到期</view><view class="helper">学校时区 UTC+8</view></view><text class="badge">默认不播报</text></view>
+    <view class="card-section-head"><view class="card-section-copy"><view class="card-title">展示与到期</view><view class="helper">弹窗一定会显示，语音默认关闭</view></view><text class="badge">语音默认关</text></view>
     <text class="label">展示位置</text>
     <view class="position-grid">
       <view class="position-option {{displayPosition === 'top_right' ? 'active' : ''}}" data-value="top_right" bindtap="choosePosition">
@@ -80,6 +80,7 @@
         <view class="helper">在屏幕中央突出显示</view>
       </view>
     </view>
+    <view class="helper">这里的「不播报」只影响教室电脑是否朗读，大屏弹窗照常出现。</view>
     <view wx:if="{{type !== 'notice'}}" class="divider"></view>
     <view wx:if="{{type !== 'notice'}}" class="row">
       <text>语音播报</text>
