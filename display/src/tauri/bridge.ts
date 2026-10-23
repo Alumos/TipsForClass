@@ -96,7 +96,11 @@ class TauriBridge implements DisplayBridge {
       window.dispatchEvent(new Event('classroom-settings'));
     });
     void api().event.listen<string[]>('overlay-displayed', event => {
-      if (this.overlayId) void this.engine.displayed(event.payload).catch(() => undefined);
+      if (!this.overlayId) return;
+      void this.engine.displayed(event.payload).catch(() => undefined);
+      // 学生点了「已读」，窗口已被收起；这里必须清掉状态，否则再也不会弹。
+      this.overlayId = '';
+      clearTimeout(this.timer);
     });
   }
 
@@ -130,13 +134,27 @@ class TauriBridge implements DisplayBridge {
   }
 
   private async drive(state: ViewState) {
-    const current = state.messages.find(message => message.id === this.overlayId);
-    if (this.overlayId && !current) return this.hide();
-    if (this.overlayId || this.paused || state.paused) return;
-
     const fresh = state.alerts
       .filter(alert => alert.serial > this.lastSerial)
       .sort((left, right) => right.serial - left.serial);
+
+    if (this.overlayId) {
+      const current = state.messages.find(message => message.id === this.overlayId);
+      if (!current) {
+        await this.hide();
+      } else if (!fresh.length) {
+        return;
+      } else {
+        // 窗口可能已经被「已读」或系统收起，但状态没来得及清。以真实可见性为准。
+        const shown = await api().core.invoke<boolean>('overlay_visible').catch(() => false);
+        if (shown) return;
+        trace('状态与窗口不一致，重置');
+        this.overlayId = '';
+        clearTimeout(this.timer);
+      }
+    }
+
+    if (this.paused || state.paused) return;
     if (!fresh.length) return;
     const message = state.messages.find(item => item.id === fresh[0].id);
     if (!message) {
