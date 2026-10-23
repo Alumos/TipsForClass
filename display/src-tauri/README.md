@@ -33,7 +33,9 @@ Windows 打包走 `.github/workflows/tauri.yml`，手动触发，产物在 Actio
 
 ## 已知风险
 
-- 极少数精简版 Win10 没有 WebView2 运行时，安装器已配置 `downloadBootstrapper` 兜底，但会多一次联网安装。
+- WebView2 运行时：安装器用 `embedBootstrapper`，引导程序（约 1.8 MB）已内嵌，但运行时本身仍要从微软 CDN 下载。
+  Win11 与装了新 Edge 的 Win10 一般已自带；机房断网时用 `.github/workflows/webview2-offline.yml`
+  导出官方离线运行时，U 盘拷过去手工装一次即可。
 - 隐藏到托盘后 WebView2 可能节流定时器，影响心跳；上线前要设置
   `WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS=--disable-background-timer-throttling` 并实测。
 - 透明窗口在 Windows 上首帧可能闪烁，需要真机调。

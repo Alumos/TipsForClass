@@ -1,0 +1,36 @@
+name: WebView2 offline runtime
+
+# 学校机房无法直连微软 CDN 时用这个：把官方离线运行时下载下来，
+# 拷到 U 盘，在目标电脑上手动装一次即可。Tauri 安装包本身仍保持小体积。
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  fetch:
+    runs-on: windows-2022
+    timeout-minutes: 20
+    steps:
+      - name: Download Evergreen Standalone Installer (x64)
+        shell: pwsh
+        run: |
+          $url = 'https://go.microsoft.com/fwlink/?linkid=2124701'
+          $out = 'MicrosoftEdgeWebView2RuntimeInstallerX64.exe'
+          Invoke-WebRequest -Uri $url -OutFile $out -MaximumRedirection 5
+          $size = (Get-Item $out).Length
+          if ($size -lt 50MB) { throw "下载内容异常，只有 $([math]::Round($size/1MB,1)) MB" }
+          Get-FileHash $out -Algorithm SHA256 | ForEach-Object { "$($_.Hash.ToLowerInvariant())  $out" } | Set-Content SHA256SUMS.txt
+          Get-Content SHA256SUMS.txt
+          Write-Host "大小：$([math]::Round($size/1MB,1)) MB"
+
+      - name: Upload runtime installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: webview2-offline-runtime-x64
+          path: |
+            MicrosoftEdgeWebView2RuntimeInstallerX64.exe
+            SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
