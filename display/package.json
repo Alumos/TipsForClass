@@ -31,6 +31,11 @@
     "appId": "school.classroom.notice",
     "productName": "教室公告大屏",
     "artifactName": "Setup.${version}.${ext}",
+    "compression": "maximum",
+    "electronLanguages": [
+      "zh-CN",
+      "en-US"
+    ],
     "files": [
       "dist/**",
       "dist-electron/**",

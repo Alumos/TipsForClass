@@ -16,13 +16,13 @@
 .shared-meta-note{flex:1;min-width:0;margin-top:0;text-align:right}
 .shared-names{font-size:27rpx;font-weight:600;color:#24483A;margin-top:10rpx}
 .class-list{margin-top:18rpx}
-.class-manage-row{display:flex;align-items:center;gap:18rpx;padding:20rpx 0;border-bottom:1rpx solid #E8EDE9}
+.class-manage-row{display:flex;align-items:center;gap:16rpx;padding:20rpx 0;border-bottom:1rpx solid #E8EDE9;overflow:hidden}
 .class-manage-row:last-child{border-bottom:0}
-.class-manage-copy{flex:1;min-width:0}
+.class-manage-copy{flex:1 1 auto;min-width:0}
 .class-name{font-weight:600;line-height:1.4;overflow-wrap:anywhere;word-break:break-word}
 .class-id{overflow-wrap:anywhere}
-.mini-actions{display:flex;gap:10rpx;flex-shrink:0}
-.mini-actions .small-button{min-height:40px;padding:10rpx 14rpx}
+.mini-actions{display:flex;align-items:center;gap:10rpx;flex:0 0 auto}
+.mini-actions .small-button{width:auto;flex:0 0 auto;min-width:0;min-height:0;height:72rpx;line-height:72rpx;padding:0 22rpx;font-size:25rpx;white-space:nowrap}
 .compact-empty{padding:24rpx 12rpx}
 .upload-card{border-color:#CFE0D6}
 .file-badge{font-size:22rpx;font-weight:700;letter-spacing:2rpx;color:#0F6E56;background:#EAF3EE;padding:6rpx 12rpx;border-radius:8rpx}
