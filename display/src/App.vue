@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import {computed,nextTick,onMounted,onUnmounted,ref,shallowRef,watch} from 'vue';
 import {bridge,initialState} from './platform';
+import {DEFAULT_API_BASE} from './core/engine';
 import type {DisplayBridge,Message} from './core/types';
 import {displayPositionFor,legacyDestination,textPages} from './core/rules';
 
@@ -13,7 +14,7 @@ const busy=ref(false);
 const settings=ref(false);
 const unlocked=ref(false);
 const pin=ref('');
-const form=ref({apiBase:'http://127.0.0.1:8080/api/v1',bindCode:'',label:'教室屏幕 A',pin:''});
+const form=ref({apiBase:DEFAULT_API_BASE,bindCode:'',label:'教室屏幕 A',pin:''});
 const elapsed=ref(0),previewId=ref(''),overlayId=ref(''),overlayShown=ref(false),lastSerial=ref(0),showPreview=ref(false);
 
 const visible=computed(()=>{
@@ -45,6 +46,8 @@ function overlayNoticeTitle(message:Message){const limit=positionFor(message)===
 function overlayTitlePageCount(message:Message){return textPages(message.title||'班级通知',positionFor(message)==='center'?56:40).length;}
 
 let unsubscribe:(()=>void)|undefined,timer:ReturnType<typeof setInterval>,hideTimer:ReturnType<typeof setTimeout>,idleTimer:ReturnType<typeof setTimeout>;
+// 引擎每秒推送状态，API 地址只在首次同步时回填一次；否则用户输入会被立刻覆盖回旧值。
+let apiSeeded=false;
 async function attempt(action:()=>Promise<unknown>){busy.value=true;error.value='';try{await action();}catch(e){error.value=(e as Error).message;}finally{busy.value=false;}}
 async function bindNow(){await attempt(async()=>{await api.value?.bind({...form.value});form.value.pin='';form.value.bindCode='';});}
 async function unlock(){await attempt(async()=>{if(!await api.value?.unlock(pin.value))throw Error('PIN 不正确');unlocked.value=true;pin.value='';activity();});}
@@ -68,7 +71,7 @@ onMounted(async()=>{
   api.value=await bridge();
   unsubscribe=api.value.subscribe(next=>{
     state.value=next;
-    form.value.apiBase=next.apiBase;
+    if(!apiSeeded){apiSeeded=true;form.value.apiBase=next.apiBase;}
     if(!native){
       const fresh=next.alerts.filter(alert=>alert.serial>lastSerial.value).sort((a,b)=>b.serial-a.serial);
       if(fresh.length){
@@ -106,7 +109,7 @@ onUnmounted(()=>{unsubscribe?.();clearInterval(timer);clearTimeout(hideTimer);cl
 
  <main v-else-if="!state.bound" class="bind-screen">
   <div class="bind-story"><div class="brand-mark">告</div><span class="eyebrow">CLASSROOM NOTICE</span><h1>每一条消息，<br>都被好好看见。</h1><p>日常保持安静，需要时轻轻提醒。<br>连接教师与教室，课件与课堂照常进行。</p><div class="quiet-promise">○ 后台托盘　○ 默认静音　○ 不抢课件焦点</div></div>
-  <form class="bind-form" @submit.prevent="bindNow"><span class="eyebrow">CONNECT YOUR CLASSROOM</span><h2>绑定教室屏幕</h2><p>请管理员在小程序「管理」中生成一次性绑定码。</p><label>API 服务地址<input v-model="form.apiBase" type="url" required placeholder="http://127.0.0.1:8080/api/v1"></label><label>设备名称<input v-model="form.label" maxlength="40" required></label><label>6 位绑定码<input v-model="form.bindCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="code-input" required placeholder="000000"></label><label>设置维护 PIN<input v-model="form.pin" type="password" inputmode="numeric" pattern="[0-9]{6,12}" minlength="6" maxlength="12" required placeholder="6–12 位数字，请妥善保存"></label><p v-if="error" class="error" role="alert">{{error}}</p><button class="primary" :disabled="busy">{{busy?'正在连接…':'连接教室 →'}}</button><small>{{native?'设备凭据由桌面安全存储保护。':'浏览器预览将设备凭据存入本机 localStorage；请仅用于本机试点。'}}</small><small>{{state.capability}}</small></form>
+  <form class="bind-form" @submit.prevent="bindNow"><span class="eyebrow">CONNECT YOUR CLASSROOM</span><h2>绑定教室屏幕</h2><p>请管理员在小程序「管理」中生成一次性绑定码。</p><label>API 服务地址<input v-model="form.apiBase" type="url" required placeholder="https://notice.alomos.cn/api/v1"></label><label>设备名称<input v-model="form.label" maxlength="40" required></label><label>6 位绑定码<input v-model="form.bindCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="code-input" required placeholder="000000"></label><label>设置维护 PIN<input v-model="form.pin" type="password" inputmode="numeric" pattern="[0-9]{6,12}" minlength="6" maxlength="12" required placeholder="6–12 位数字，请妥善保存"></label><p v-if="error" class="error" role="alert">{{error}}</p><button class="primary" :disabled="busy">{{busy?'正在连接…':'连接教室 →'}}</button><small>{{native?'设备凭据由桌面安全存储保护。':'浏览器预览将设备凭据存入本机 localStorage；请仅用于本机试点。'}}</small><small>{{state.capability}}</small></form>
  </main>
 
  <main v-else class="preview-stage">

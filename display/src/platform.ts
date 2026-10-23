@@ -1,4 +1,4 @@
-import {Engine} from './core/engine';
+import {DEFAULT_API_BASE,Engine} from './core/engine';
 import type {DisplayBridge,Saved,Speech,ViewState} from './core/types';
 declare global {interface Window {classroom?:DisplayBridge; overlayVisible?:boolean}}
 class BrowserSpeech implements Speech {
@@ -8,4 +8,4 @@ class BrowserSpeech implements Speech {
  stop(){speechSynthesis?.cancel();this.reject?.(Error('interrupted'));this.reject=undefined;}
 }
 export async function bridge():Promise<DisplayBridge>{if(window.classroom)return window.classroom;const store={async load(){try{return JSON.parse(localStorage.getItem('classroom-display-v1')||'null') as Saved|null;}catch{return null;}},async save(s:Saved){localStorage.setItem('classroom-display-v1',JSON.stringify(s));}};return Engine.create(store,new BrowserSpeech(),'浏览器预览 · 中文 Web Speech 回退，无法验证 Windows 焦点与语音');}
-export const initialState:ViewState={bound:false,room:'等待绑定教室',label:'教室屏幕 A',online:false,live:false,syncing:false,lastSync:'',error:'',ttsStatus:'unknown',capability:'正在初始化',messages:[],now:Date.now(),quiet:false,paused:false,muted:true,alerts:[],speaking:null,lastAppliedSeq:'0',syncEpoch:'',apiBase:'http://127.0.0.1:8080/api/v1',pinSet:false,displayPosition:'top_right',pinnedMessageIds:[]};
+export const initialState:ViewState={bound:false,room:'等待绑定教室',label:'教室屏幕 A',online:false,live:false,syncing:false,lastSync:'',error:'',ttsStatus:'unknown',capability:'正在初始化',messages:[],now:Date.now(),quiet:false,paused:false,muted:true,alerts:[],speaking:null,lastAppliedSeq:'0',syncEpoch:'',apiBase:DEFAULT_API_BASE,pinSet:false,displayPosition:'top_right',pinnedMessageIds:[]};
