@@ -67,6 +67,7 @@ async function reportVisible(){
   await new Promise<void>(resolve=>requestAnimationFrame(()=>requestAnimationFrame(()=>resolve())));
   if(document.visibilityState==='visible'&&(!overlay||overlayShown.value)&&(overlay||showPreview.value))try{await api.value?.displayed(visible.value.map(message=>message.id));}catch(e){error.value=(e as Error).message;}
 }
+async function testOverlay(){await attempt(async()=>{if(!api.value?.preview)throw Error('当前外壳不支持自检');await api.value.preview();});}
 async function markRead(){
   const message=visible.value[0];
   if(!message)return;
@@ -158,6 +159,7 @@ onUnmounted(()=>{unsubscribe?.();clearInterval(timer);clearTimeout(hideTimer);cl
       <div class="setting-row"><span>开机自启<small>重启后自动回到托盘待机</small></span><button type="button" @click="toggleAutoStart">{{autoStart?'已开启':'已关闭'}}</button></div>
       <div class="setting-row"><span>暂停提醒</span><button type="button" @click="action('pause',!state.paused)">{{state.paused?'恢复':'暂停'}}</button></div>
       <div class="setting-row"><span>语音状态<small>{{state.ttsStatus}}</small></span><button type="button" @click="action('test')">测试声音</button></div>
+      <div v-if="api?.preview" class="setting-row"><span>提醒窗口<small>不上服务器，直接弹一张测试卡片</small></span><button type="button" @click="testOverlay">测试提醒</button></div>
       <div class="setting-row"><span>重新同步公告</span><button type="button" @click="action('resync')">立即同步</button></div>
       <p class="muted">服务：{{state.apiBase}}<br>同步水位：{{state.lastAppliedSeq}}</p>
       <button class="danger" type="button" @click="unbind">解绑此设备</button><small>5 分钟无操作自动退出维护。试点版尚未提供签名自动更新。</small>

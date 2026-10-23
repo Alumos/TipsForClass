@@ -138,25 +138,22 @@ class TauriBridge implements DisplayBridge {
       .filter(alert => alert.serial > this.lastSerial)
       .sort((left, right) => right.serial - left.serial);
     if (!fresh.length) return;
-    this.lastSerial = Math.max(...fresh.map(alert => alert.serial));
     const message = state.messages.find(item => item.id === fresh[0].id);
-    if (!message) return;
-
-    // 用户正在看设置页时不打断；托盘待机时才弹。
-    const mainVisible = await api().core.invoke<boolean>('main_visible').catch(() => false);
-    if (mainVisible) {
-      trace(`skip: 主窗口可见 ${message.id}`);
+    if (!message) {
+      this.lastSerial = Math.max(...fresh.map(alert => alert.serial));
       return;
     }
 
+    // 大屏就是用来显示提醒的，主窗口开着也照样弹；
+    // 只有真正弹出来了才推进 serial，失败要能重试。
     const bounds = overlayBounds(
       {x: 0, y: 0, width: window.screen.availWidth, height: window.screen.availHeight},
       displayPositionFor(message, state.displayPosition),
     );
     this.overlayId = message.id;
     trace(`show ${message.id}`);
-    await api().core
-      .invoke('overlay_show', {
+    try {
+      await api().core.invoke('overlay_show', {
         x: bounds.x,
         y: bounds.y,
         width: bounds.width,
@@ -166,13 +163,43 @@ class TauriBridge implements DisplayBridge {
           displayPosition: state.displayPosition,
           className: state.className,
         } satisfies OverlayPayload),
-      })
-      .catch(error => {
-        trace(`show 失败 ${String(error)}`);
-        this.overlayId = '';
       });
-    clearTimeout(this.timer);
-    this.timer = setTimeout(() => void this.hide(), OVERLAY_MS);
+      this.lastSerial = Math.max(...fresh.map(alert => alert.serial));
+      clearTimeout(this.timer);
+      this.timer = setTimeout(() => void this.hide(), OVERLAY_MS);
+    } catch (error) {
+      trace(`show 失败 ${String(error)}`);
+      this.overlayId = '';
+    }
+  }
+
+  /** 设置页的“测试提醒窗口”，不依赖真实公告，用来单独验证窗口链路。 */
+  async preview() {
+    const message = {
+      id: 'preview',
+      revision: 1,
+      type: 'notice',
+      title: '提醒窗口自检',
+      body: '看到这张卡片说明窗口正常。',
+      displayPosition: 'center',
+      targets: [],
+      classIds: [],
+      teacherName: '系统',
+      speechText: '',
+      priority: 0,
+      startAt: new Date().toISOString(),
+      expireAt: new Date(Date.now() + 600000).toISOString(),
+      createdAt: new Date().toISOString(),
+      status: 'active',
+      broadcast: null,
+    } as unknown as Message;
+    await api().core.invoke('overlay_show', {
+      x: 120,
+      y: 120,
+      width: 760,
+      height: 480,
+      payload: JSON.stringify({message, displayPosition: 'center', className: '自检'}),
+    });
   }
 
   private async hide() {

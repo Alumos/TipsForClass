@@ -70,4 +70,6 @@ export interface DisplayBridge {
   displayed(ids: string[]): Promise<void>;
   /** 学生点“已读”后收起提醒，只有桌面外壳实现。 */
   dismiss?(ids: string[]): Promise<void>;
+  /** 弹一个自检提醒，用来单独验证提醒窗口链路。 */
+  preview?(): Promise<void>;
 }
