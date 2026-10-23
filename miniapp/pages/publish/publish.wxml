@@ -1,15 +1,15 @@
 <view class="page with-bottom">
   <view class="eyebrow">{{editing ? '编辑提醒' : '新建提醒'}}</view>
-  <view class="title">{{editing ? '更新这条教室提醒' : '把提醒送到教室'}}</view>
-  <view class="subtitle">{{editing ? '目标教室保持锁定，可修改类型、内容、展示位置与到期时间。' : '呼叫、作业和通知使用同一套目标教室与名册流程。'}}</view>
+  <view class="title">{{editing ? '更新这条班级提醒' : '把提醒送到班级'}}</view>
+  <view class="subtitle">{{editing ? '目标班级保持锁定，可修改类型、内容、展示位置与到期时间。' : '呼叫、作业和通知使用同一套目标班级与名册流程。'}}</view>
 
   <view wx:if="{{loading}}" class="loading">正在验证权限与获取名册…</view>
-  <view wx:if="{{restored}}" class="tip">已恢复本账号在此教室的草稿，并重新核验学生及教室权限。请确认日期与时间。</view>
+  <view wx:if="{{restored}}" class="tip">已恢复本账号在此班级的草稿，并重新核验学生及班级权限。请确认日期与时间。</view>
 
-  <view class="card room-switch {{editing ? 'locked' : ''}}" bindtap="switchRoom">
-    <view class="room-icon compact">教</view>
-    <view class="room-switch-copy"><view class="muted">{{editing ? '目标教室（已锁定）' : '发送到'}}</view><view class="card-title room-current-name">{{roomName}}</view></view>
-    <text class="{{editing ? 'muted room-switch-link' : 'link room-switch-link'}}">{{editing ? '已锁定' : '切换 ›'}}</text>
+  <view class="card class-switch {{editing ? 'locked' : ''}}" bindtap="switchClass">
+    <view class="class-icon compact">班</view>
+    <view class="class-switch-copy"><view class="muted">{{editing ? '目标班级（已锁定）' : '发送到'}}</view><view class="card-title class-current-name">{{className}}</view></view>
+    <text class="{{editing ? 'muted class-switch-link' : 'link class-switch-link'}}">{{editing ? '已锁定' : '切换 ›'}}</text>
   </view>
 
   <view class="type-grid">
@@ -20,29 +20,29 @@
       <view class="type-mark">作</view><view class="type-name">作业布置</view><view class="type-desc">通知作业内容</view>
     </view>
     <view class="type-card {{type === 'notice' ? 'active' : ''}}" data-type="notice" bindtap="chooseType">
-      <view class="type-mark">通</view><view class="type-name">普通通知</view><view class="type-desc">可发多间教室</view>
+      <view class="type-mark">通</view><view class="type-name">普通通知</view><view class="type-desc">可发多个班级</view>
     </view>
   </view>
 
   <view class="card">
     <block wx:if="{{type === 'notice'}}">
       <view class="card-section-head">
-        <view class="card-section-copy"><view class="card-title">追加其他教室</view><view class="helper">当前教室会固定发送，无需再次勾选。普通通知最多发送到 20 间教室。</view></view>
-        <text class="badge">已选 {{roomIds.length}} 间</text>
+        <view class="card-section-copy"><view class="card-title">追加其他班级</view><view class="helper">当前班级会固定发送，无需再次勾选。普通通知最多发送到 20 个班级。</view></view>
+        <text class="badge">已选 {{classIds.length}} 个</text>
       </view>
       <block wx:if="{{editing}}">
-        <text class="label">其他目标教室</text>
-        <view class="locked-room-names">{{lockedRoomNames || '无，仅发送到上方当前教室'}}</view>
+        <text class="label">其他目标班级</text>
+        <view class="locked-class-names">{{lockedClassNames || '无，仅发送到上方当前班级'}}</view>
       </block>
       <block wx:else>
-        <block wx:if="{{otherRooms.length}}">
-          <text class="label">其他教室（可选）</text>
-          <view wx:for="{{otherRooms}}" wx:key="id" class="student-row room-check-row" data-id="{{item.id}}" bindtap="toggleRoom">
+        <block wx:if="{{otherClasses.length}}">
+          <text class="label">其他班级（可选）</text>
+          <view wx:for="{{otherClasses}}" wx:key="id" class="student-row class-check-row" data-id="{{item.id}}" bindtap="toggleClass">
             <view class="check {{item.checked ? 'checked' : ''}}">{{item.checked ? '✓' : ''}}</view>
-            <view class="room-option-copy"><view class="room-option-name">{{item.name}}</view><view class="helper">{{item.deviceCount}} 台设备 · {{item.onlineDeviceCount}} 台在线</view></view>
+            <view class="class-option-copy"><view class="class-option-name">{{item.name}}</view><view class="helper">{{item.deviceCount}} 台设备 · {{item.onlineDeviceCount}} 台在线</view></view>
           </view>
         </block>
-        <view wx:else class="helper">无需再选择，本条通知只发送到上方当前教室。</view>
+        <view wx:else class="helper">无需再选择，本条通知只发送到上方当前班级。</view>
       </block>
       <text class="label"><text class="required">*</text> 通知标题</text>
       <input class="field" placeholder="例如：周五 15:00 家长会" value="{{title}}" maxlength="60" data-field="title" bindinput="input"/>
@@ -97,7 +97,7 @@
   </view>
 
   <view wx:if="{{error}}" class="error pre">{{error}}</view>
-  <view class="bottom-actions"><button class="primary" loading="{{busy}}" disabled="{{busy || !ready || loading}}" bindtap="submit">{{busy ? '正在保存，请稍候' : editing ? '保存修改' : type === 'notice' ? '发布到 ' + roomIds.length + ' 间教室' : '发布到 ' + roomName}}</button></view>
+  <view class="bottom-actions"><button class="primary" loading="{{busy}}" disabled="{{busy || !ready || loading}}" bindtap="submit">{{busy ? '正在保存，请稍候' : editing ? '保存修改' : type === 'notice' ? '发布到 ' + classIds.length + ' 个班级' : '发布到 ' + className}}</button></view>
 </view>
 
 <view wx:if="{{drawer}}" class="overlay" bindtap="closeDrawer">

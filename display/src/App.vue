@@ -14,7 +14,7 @@ const busy=ref(false);
 const settings=ref(false);
 const unlocked=ref(false);
 const pin=ref('');
-const form=ref({apiBase:DEFAULT_API_BASE,bindCode:'',label:'教室屏幕 A',pin:''});
+const form=ref({apiBase:DEFAULT_API_BASE,bindCode:'',label:'班级屏幕 A',pin:''});
 const elapsed=ref(0),previewId=ref(''),overlayId=ref(''),overlayShown=ref(false),lastSerial=ref(0),showPreview=ref(false);
 
 const visible=computed(()=>{
@@ -96,7 +96,7 @@ onUnmounted(()=>{unsubscribe?.();clearInterval(timer);clearTimeout(hideTimer);cl
 <template>
  <section v-if="overlay" class="native-overlay" :class="[overlayClass,{hidden:!overlayShown}]" aria-live="polite">
   <template v-if="visible[0]">
-   <div class="overlay-top"><span class="pulse"></span><b>{{typeLabel(visible[0])}}</b><span>{{state.room}}</span></div>
+   <div class="overlay-top"><span class="pulse"></span><b>{{typeLabel(visible[0])}}</b><span>{{state.className}}</span></div>
    <h2 v-if="visible[0].type==='notice'" class="overlay-title">{{overlayNoticeTitle(visible[0])}}</h2>
    <div v-if="visible[0].type!=='notice'" class="overlay-person-list">
     <div v-for="target in shownNames(visible[0])" :key="target.studentId" class="overlay-person">{{target.name}}</div>
@@ -108,14 +108,14 @@ onUnmounted(()=>{unsubscribe?.();clearInterval(timer);clearTimeout(hideTimer);cl
  </section>
 
  <main v-else-if="!state.bound" class="bind-screen">
-  <div class="bind-story"><div class="brand-mark">告</div><span class="eyebrow">CLASSROOM NOTICE</span><h1>每一条消息，<br>都被好好看见。</h1><p>日常保持安静，需要时轻轻提醒。<br>连接教师与教室，课件与课堂照常进行。</p><div class="quiet-promise">○ 后台托盘　○ 默认静音　○ 不抢课件焦点</div></div>
-  <form class="bind-form" @submit.prevent="bindNow"><span class="eyebrow">CONNECT YOUR CLASSROOM</span><h2>绑定教室屏幕</h2><p>请管理员在小程序「管理」中生成一次性绑定码。</p><label>API 服务地址<input v-model="form.apiBase" type="url" required placeholder="https://notice.alumos.cn/api/v1"></label><label>设备名称<input v-model="form.label" maxlength="40" required></label><label>6 位绑定码<input v-model="form.bindCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="code-input" required placeholder="000000"></label><label>设置维护 PIN<input v-model="form.pin" type="password" inputmode="numeric" pattern="[0-9]{6,12}" minlength="6" maxlength="12" required placeholder="6–12 位数字，请妥善保存"></label><p v-if="error" class="error" role="alert">{{error}}</p><button class="primary" :disabled="busy">{{busy?'正在连接…':'连接教室 →'}}</button><small>{{native?'设备凭据由桌面安全存储保护。':'浏览器预览将设备凭据存入本机 localStorage；请仅用于本机试点。'}}</small><small>{{state.capability}}</small></form>
+  <div class="bind-story"><div class="brand-mark">告</div><span class="eyebrow">CLASSROOM NOTICE</span><h1>每一条消息，<br>都被好好看见。</h1><p>日常保持安静，需要时轻轻提醒。<br>连接教师与班级，课件与课堂照常进行。</p><div class="quiet-promise">○ 后台托盘　○ 默认静音　○ 不抢课件焦点</div></div>
+  <form class="bind-form" @submit.prevent="bindNow"><span class="eyebrow">CONNECT YOUR CLASSROOM</span><h2>绑定班级屏幕</h2><p>请管理员在小程序「管理」中生成一次性绑定码。</p><label>API 服务地址<input v-model="form.apiBase" type="url" required placeholder="https://notice.alumos.cn/api/v1"></label><label>设备名称<input v-model="form.label" maxlength="40" required></label><label>6 位绑定码<input v-model="form.bindCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="code-input" required placeholder="000000"></label><label>设置维护 PIN<input v-model="form.pin" type="password" inputmode="numeric" pattern="[0-9]{6,12}" minlength="6" maxlength="12" required placeholder="6–12 位数字，请妥善保存"></label><p v-if="error" class="error" role="alert">{{error}}</p><button class="primary" :disabled="busy">{{busy?'正在连接…':'连接班级 →'}}</button><small>{{native?'设备凭据由桌面安全存储保护。':'浏览器预览将设备凭据存入本机 localStorage；请仅用于本机试点。'}}</small><small>{{state.capability}}</small></form>
  </main>
 
  <main v-else class="preview-stage">
   <div class="preview-device-status" :class="{offline:!state.online}">
    <span class="pulse"></span>
-   <span>{{state.room}} · {{state.paused?'提醒已暂停':state.online?'后台待机':'网络异常'}}</span>
+   <span>{{state.className}} · {{state.paused?'提醒已暂停':state.online?'后台待机':'网络异常'}}</span>
   </div>
   <button class="preview-settings" type="button" @click="settings=true">设置与维护</button>
   <p v-if="state.error" class="error preview-error" role="status">{{state.error}}</p>

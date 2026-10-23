@@ -25,7 +25,7 @@
     </view>
   </view>
   <view wx:if="{{loading}}" class="loading">正在加载记录…</view>
-  <view wx:if="{{!loading && !items.length && !error}}" class="card empty">还没有发布记录<view class="helper">前往班级选择教室，发布第一条公告。</view></view>
+  <view wx:if="{{!loading && !items.length && !error}}" class="card empty">还没有发布记录<view class="helper">前往班级，发布第一条公告。</view></view>
   <button wx:if="{{hasMore && !loading}}" class="plain" bindtap="more">加载更多</button>
   <view wx:if="{{items.length && !hasMore}}" class="footer-note">已显示全部记录</view>
 </view>

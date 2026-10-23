@@ -73,6 +73,24 @@ curl -fsS http://127.0.0.1:18080/healthz
 
 服务端只提供 API，没有首页：浏览器直接打开 `http://IP:18080/` 会看到纯文本 `404 page not found`，这是正常的，说明容器已经在响应请求。判断是否健康请看 `/healthz`，不要看根路径。
 
+### 4.0 从 0.1.x 升级到 0.2 必须清空数据
+
+0.2 去掉了「教室」实体，班级直接归属学校，数据库结构 `user_version` 从 2 变成 3。`schema.sql` 只做 `CREATE TABLE IF NOT EXISTS`，**不会改造旧表**。用旧库启动会被拦下并报：
+
+```
+数据库结构版本为 2，当前程序需要版本 3；请清空数据后重启
+```
+
+确认可以丢弃数据后执行（`-v` 会删除命名卷，公告、教师、设备、名册全部清空）：
+
+```sh
+docker compose down -v
+docker compose pull
+docker compose up -d
+```
+
+清空后需要重新走一次首次初始化：微信登录 → 用 `BOOTSTRAP_CODE` 激活管理员 → 建班级 → 导名册 → 生成绑定码。旧版 Windows 大屏和体验版小程序也必须一起升级，否则字段对不上。
+
 拉取 GHCR 慢或超时，改用 Actions 运行记录底部下载的离线镜像包：
 
 ```sh

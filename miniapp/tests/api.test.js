@@ -15,7 +15,7 @@ const api = require('../utils/api');
 test('native wrapper sends supported GET/POST/PUT methods, bearer auth and JSON', async () => {
   await api.request('/me');
   await api.request('/admin/teachers/1/update', { method: 'POST', data: { status: 'active' } });
-  await api.request('/admin/teachers/1/rooms', { method: 'PUT', data: { roomIds: ['1'] } });
+  await api.request('/admin/teachers/1/classes', { method: 'PUT', data: { classIds: ['1'] } });
   assert.deepEqual(requests.map(r => r.method), ['GET', 'POST', 'PUT']);
   assert.equal(requests[0].header.Authorization, 'Bearer teacher-test-token');
   assert.equal(requests[1].header['Content-Type'], 'application/json');

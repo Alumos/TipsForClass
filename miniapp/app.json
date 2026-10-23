@@ -10,7 +10,7 @@
     "pages/admin/admin"
   ],
   "window": {
-    "navigationBarTitleText": "教室公告",
+    "navigationBarTitleText": "班级公告",
     "navigationBarBackgroundColor": "#F6F8F7",
     "navigationBarTextStyle": "black",
     "backgroundColor": "#F6F8F7",

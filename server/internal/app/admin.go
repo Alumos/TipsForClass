@@ -51,10 +51,10 @@ func currentTeacher(q queryer, id string) (Teacher, error) {
 	if t.Status != "active" {
 		return t, fail(403, "FORBIDDEN", "账号权限已经变化，请刷新登录状态")
 	}
-	t.RoomIDs = []string{}
-	qry := "SELECT tr.room_id FROM teacher_rooms tr JOIN rooms r ON r.id=tr.room_id WHERE tr.teacher_id=? AND r.status='active'"
+	t.ClassIDs = []string{}
+	qry := "SELECT tc.class_id FROM teacher_classes tc JOIN classes c ON c.id=tc.class_id WHERE tc.teacher_id=? AND c.status='active'"
 	if t.Role == "admin" {
-		qry = "SELECT id FROM rooms WHERE status='active' AND ? IS NOT NULL"
+		qry = "SELECT id FROM classes WHERE status='active' AND ? IS NOT NULL"
 	}
 	rows, e := q.Query(qry, id)
 	if e != nil {
@@ -62,11 +62,11 @@ func currentTeacher(q queryer, id string) (Teacher, error) {
 	}
 	defer rows.Close()
 	for rows.Next() {
-		var rid string
-		if e = rows.Scan(&rid); e != nil {
+		var cid string
+		if e = rows.Scan(&cid); e != nil {
 			return t, e
 		}
-		t.RoomIDs = append(t.RoomIDs, rid)
+		t.ClassIDs = append(t.ClassIDs, cid)
 	}
 	return t, rows.Err()
 }
@@ -100,7 +100,7 @@ func (a *App) adminTeachers(w http.ResponseWriter, r *http.Request) error {
 	items := []Teacher{}
 	for rows.Next() {
 		var t Teacher
-		t.RoomIDs = []string{}
+		t.ClassIDs = []string{}
 		if e = rows.Scan(&t.ID, &t.Name, &t.Role, &t.Status); e != nil {
 			rows.Close()
 			return e
@@ -113,7 +113,7 @@ func (a *App) adminTeachers(w http.ResponseWriter, r *http.Request) error {
 		return e
 	}
 	for i := range items {
-		rows, e = a.db.Query("SELECT room_id FROM teacher_rooms WHERE teacher_id=? ORDER BY room_id", items[i].ID)
+		rows, e = a.db.Query("SELECT class_id FROM teacher_classes WHERE teacher_id=? ORDER BY class_id", items[i].ID)
 		if e != nil {
 			return e
 		}
@@ -123,7 +123,7 @@ func (a *App) adminTeachers(w http.ResponseWriter, r *http.Request) error {
 				rows.Close()
 				return e
 			}
-			items[i].RoomIDs = append(items[i].RoomIDs, id)
+			items[i].ClassIDs = append(items[i].ClassIDs, id)
 		}
 		e = rows.Err()
 		rows.Close()
@@ -217,22 +217,22 @@ func (a *App) updateTeacher(w http.ResponseWriter, r *http.Request, approve bool
 	if e = tx.Commit(); e != nil {
 		return e
 	}
-	t.RoomIDs = []string{}
+	t.ClassIDs = []string{}
 	ok(w, 200, t)
 	return nil
 }
-func (a *App) teacherRooms(w http.ResponseWriter, r *http.Request) error {
+func (a *App) teacherClasses(w http.ResponseWriter, r *http.Request) error {
 	actor, e := a.admin(r)
 	if e != nil {
 		return e
 	}
 	var in struct {
-		RoomIDs []string `json:"roomIds"`
+		ClassIDs []string `json:"classIds"`
 	}
 	if e = readJSON(w, r, &in); e != nil {
 		return e
 	}
-	in.RoomIDs, e = uniqIDs(in.RoomIDs)
+	in.ClassIDs, e = uniqIDs(in.ClassIDs)
 	if e != nil {
 		return e
 	}
@@ -253,23 +253,23 @@ func (a *App) teacherRooms(w http.ResponseWriter, r *http.Request) error {
 	if n != 1 {
 		return fail(404, "NOT_FOUND", "教师不存在")
 	}
-	for _, rid := range in.RoomIDs {
-		if e = tx.QueryRow("SELECT COUNT(*) FROM rooms WHERE id=? AND status='active'", rid).Scan(&n); e != nil {
+	for _, cid := range in.ClassIDs {
+		if e = tx.QueryRow("SELECT COUNT(*) FROM classes WHERE id=? AND status='active'", cid).Scan(&n); e != nil {
 			return e
 		}
 		if n != 1 {
-			return bad("roomIds", "教室不存在或已停用")
+			return bad("classIds", "班级不存在或已停用")
 		}
 	}
-	if _, e = tx.Exec("DELETE FROM teacher_rooms WHERE teacher_id=?", r.PathValue("id")); e != nil {
+	if _, e = tx.Exec("DELETE FROM teacher_classes WHERE teacher_id=?", r.PathValue("id")); e != nil {
 		return e
 	}
-	for _, rid := range in.RoomIDs {
-		if _, e = tx.Exec("INSERT INTO teacher_rooms VALUES(?,?)", r.PathValue("id"), rid); e != nil {
+	for _, cid := range in.ClassIDs {
+		if _, e = tx.Exec("INSERT INTO teacher_classes VALUES(?,?)", r.PathValue("id"), cid); e != nil {
 			return e
 		}
 	}
-	if e = audit(tx, actor.ID, "teacher.rooms", r.PathValue("id")); e != nil {
+	if e = audit(tx, actor.ID, "teacher.classes", r.PathValue("id")); e != nil {
 		return e
 	}
 	if e = tx.Commit(); e != nil {
@@ -278,126 +278,35 @@ func (a *App) teacherRooms(w http.ResponseWriter, r *http.Request) error {
 	ok(w, 200, obj{})
 	return nil
 }
-func (a *App) addRoom(w http.ResponseWriter, r *http.Request) error {
-	actor, e := a.admin(r)
+func (a *App) adminClasses(w http.ResponseWriter, r *http.Request) error {
+	if _, e := a.admin(r); e != nil {
+		return e
+	}
+	rows, e := a.db.Query("SELECT id,name,status,display_position,pinned_message_ids_json,display_revision FROM classes ORDER BY id")
 	if e != nil {
 		return e
 	}
-	var in struct {
-		Name string `json:"name"`
-	}
-	if e = readJSON(w, r, &in); e != nil {
-		return e
-	}
-	in.Name = strings.TrimSpace(in.Name)
-	if count(in.Name) < 1 || count(in.Name) > 60 {
-		return bad("name", "教室名称需为1–60字")
-	}
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	if e = activeAdmin(a.db, actor.ID); e != nil {
-		return e
-	}
-	var n int
-	if e = a.db.QueryRow("SELECT COUNT(*) FROM rooms WHERE name=?", in.Name).Scan(&n); e != nil {
-		return e
-	}
-	if n > 0 {
-		return bad("name", "教室名称已存在")
-	}
-	res, e := a.db.Exec("INSERT INTO rooms(school_id,name) VALUES(1,?)", in.Name)
-	if e != nil {
-		return e
-	}
-	id, e := res.LastInsertId()
-	if e != nil {
-		return e
-	}
-	ok(w, 201, obj{"id": sid(id), "name": in.Name, "status": "active"})
-	return nil
-}
-func (a *App) patchRoom(w http.ResponseWriter, r *http.Request) error {
-	actor, e := a.admin(r)
-	if e != nil {
-		return e
-	}
-	var in struct {
-		Name          *string `json:"name"`
-		Status        *string `json:"status"`
-		ConfirmImpact bool    `json:"confirmImpact"`
-	}
-	if e = readJSON(w, r, &in); e != nil {
-		return e
-	}
-	if in.Name != nil {
-		v := strings.TrimSpace(*in.Name)
-		in.Name = &v
-		if count(v) < 1 || count(v) > 60 {
-			return bad("name", "教室名称需为1–60字")
-		}
-	}
-	if in.Status != nil && *in.Status != "active" && *in.Status != "disabled" {
-		return bad("status", "教室状态无效")
-	}
-	a.mu.Lock()
-	defer a.mu.Unlock()
-	tx, e := a.db.Begin()
-	if e != nil {
-		return e
-	}
-	defer tx.Rollback()
-	if e = activeAdmin(tx, actor.ID); e != nil {
-		return e
-	}
-	var name, status string
-	e = tx.QueryRow("SELECT name,status FROM rooms WHERE id=?", r.PathValue("id")).Scan(&name, &status)
-	if errors.Is(e, sql.ErrNoRows) {
-		return fail(404, "NOT_FOUND", "教室不存在")
-	}
-	if e != nil {
-		return e
-	}
-	if in.Name != nil {
-		name = *in.Name
-	}
-	if in.Status != nil {
-		status = *in.Status
-	}
-	if status == "disabled" {
-		var n int
-		if e = tx.QueryRow("SELECT COUNT(*) FROM devices WHERE room_id=? AND revoked_at IS NULL", r.PathValue("id")).Scan(&n); e != nil {
+	defer rows.Close()
+	items := []obj{}
+	for rows.Next() {
+		var id, name, status string
+		var settings DisplaySettings
+		var raw string
+		if e = rows.Scan(&id, &name, &status, &settings.DisplayPosition, &raw, &settings.Revision); e != nil {
 			return e
 		}
-		var msgs int
-		if e = tx.QueryRow("SELECT COUNT(*) FROM messages m JOIN message_rooms mr ON mr.message_id=m.id WHERE mr.room_id=? AND m.status='active' AND m.expire_at>?", r.PathValue("id"), time.Now().UnixMilli()).Scan(&msgs); e != nil {
+		if e = json.Unmarshal([]byte(raw), &settings.PinnedMessageIDs); e != nil {
 			return e
 		}
-		if (n > 0 || msgs > 0) && !in.ConfirmImpact {
-			return bad("confirmImpact", "此教室仍有设备或有效公告，需明确确认停用影响")
+		if settings.PinnedMessageIDs == nil {
+			settings.PinnedMessageIDs = []string{}
 		}
-		if _, e = tx.Exec("UPDATE devices SET revoked_at=? WHERE room_id=? AND revoked_at IS NULL", time.Now().UnixMilli(), r.PathValue("id")); e != nil {
-			return e
-		}
+		items = append(items, obj{"id": id, "name": name, "status": status, "displaySettings": settings})
 	}
-	if _, e = tx.Exec("UPDATE rooms SET name=?,status=? WHERE id=?", name, status, r.PathValue("id")); e != nil {
+	if e = rows.Err(); e != nil {
 		return e
 	}
-	if e = audit(tx, actor.ID, "room.update", r.PathValue("id")); e != nil {
-		return e
-	}
-	if e = tx.Commit(); e != nil {
-		return e
-	}
-	if status == "disabled" {
-		a.hubMu.Lock()
-		for _, p := range a.peers {
-			if p.device.RoomID == r.PathValue("id") {
-				p.cancel()
-			}
-		}
-		a.hubMu.Unlock()
-	}
-	ok(w, 200, obj{"id": r.PathValue("id"), "name": name, "status": status})
+	ok(w, 200, obj{"items": items})
 	return nil
 }
 func (a *App) addClass(w http.ResponseWriter, r *http.Request) error {
@@ -406,15 +315,22 @@ func (a *App) addClass(w http.ResponseWriter, r *http.Request) error {
 		return e
 	}
 	var in struct {
-		Name   string `json:"name"`
-		RoomID string `json:"roomId"`
+		Name   string  `json:"name"`
+		Status *string `json:"status"`
 	}
 	if e = readJSON(w, r, &in); e != nil {
 		return e
 	}
 	in.Name = strings.TrimSpace(in.Name)
-	if count(in.Name) < 1 || count(in.Name) > 60 || !validID(in.RoomID) {
-		return bad("name", "请输入有效班级名称和教室")
+	if count(in.Name) < 1 || count(in.Name) > 60 {
+		return bad("name", "班级名称需为1–60字")
+	}
+	status := "active"
+	if in.Status != nil {
+		if *in.Status != "active" && *in.Status != "disabled" {
+			return bad("status", "班级状态无效")
+		}
+		status = *in.Status
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -422,19 +338,13 @@ func (a *App) addClass(w http.ResponseWriter, r *http.Request) error {
 		return e
 	}
 	var n int
-	if e = a.db.QueryRow("SELECT COUNT(*) FROM rooms WHERE id=? AND status='active'", in.RoomID).Scan(&n); e != nil {
-		return e
-	}
-	if n != 1 {
-		return bad("roomId", "教室不存在")
-	}
 	if e = a.db.QueryRow("SELECT COUNT(*) FROM classes WHERE name=?", in.Name).Scan(&n); e != nil {
 		return e
 	}
 	if n > 0 {
 		return bad("name", "班级名称已存在")
 	}
-	res, e := a.db.Exec("INSERT INTO classes(room_id,name) VALUES(?,?)", in.RoomID, in.Name)
+	res, e := a.db.Exec("INSERT INTO classes(school_id,name,status) VALUES(1,?,?)", in.Name, status)
 	if e != nil {
 		return e
 	}
@@ -442,7 +352,7 @@ func (a *App) addClass(w http.ResponseWriter, r *http.Request) error {
 	if e != nil {
 		return e
 	}
-	ok(w, 201, obj{"id": sid(id), "name": in.Name, "roomId": in.RoomID})
+	ok(w, 201, obj{"id": sid(id), "name": in.Name, "status": status})
 	return nil
 }
 func (a *App) deleteClass(w http.ResponseWriter, r *http.Request) error {
@@ -474,8 +384,16 @@ func (a *App) deleteClass(w http.ResponseWriter, r *http.Request) error {
 	if n > 0 {
 		return fail(409, "CLASS_IN_USE", "班级仍有学生，不能删除")
 	}
-	if _, e = tx.Exec("DELETE FROM roster_previews WHERE class_id=?", classID); e != nil {
+	if e = tx.QueryRow("SELECT COUNT(*) FROM devices WHERE class_id=?", classID).Scan(&n); e != nil {
 		return e
+	}
+	if n > 0 {
+		return fail(409, "CLASS_IN_USE", "班级仍绑定大屏设备，不能删除")
+	}
+	for _, q := range []string{"DELETE FROM bind_codes WHERE class_id=?", "DELETE FROM teacher_classes WHERE class_id=?", "DELETE FROM message_classes WHERE class_id=?", "DELETE FROM events WHERE class_id=?", "DELETE FROM roster_previews WHERE class_id=?"} {
+		if _, e = tx.Exec(q, classID); e != nil {
+			return e
+		}
 	}
 	if _, e = tx.Exec("DELETE FROM classes WHERE id=?", classID); e != nil {
 		return e
@@ -496,11 +414,21 @@ func (a *App) patchClass(w http.ResponseWriter, r *http.Request) error {
 	}
 	var in struct {
 		Name          *string `json:"name"`
-		RoomID        *string `json:"roomId"`
+		Status        *string `json:"status"`
 		ConfirmImpact bool    `json:"confirmImpact"`
 	}
 	if e = readJSON(w, r, &in); e != nil {
 		return e
+	}
+	if in.Name != nil {
+		v := strings.TrimSpace(*in.Name)
+		in.Name = &v
+		if count(v) < 1 || count(v) > 60 {
+			return bad("name", "班级名称需为1–60字")
+		}
+	}
+	if in.Status != nil && *in.Status != "active" && *in.Status != "disabled" {
+		return bad("status", "班级状态无效")
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -512,34 +440,44 @@ func (a *App) patchClass(w http.ResponseWriter, r *http.Request) error {
 	if e = activeAdmin(tx, actor.ID); e != nil {
 		return e
 	}
-	var name, rid string
-	e = tx.QueryRow("SELECT name,room_id FROM classes WHERE id=?", r.PathValue("id")).Scan(&name, &rid)
+	var name, status string
+	e = tx.QueryRow("SELECT name,status FROM classes WHERE id=?", r.PathValue("id")).Scan(&name, &status)
 	if errors.Is(e, sql.ErrNoRows) {
 		return fail(404, "NOT_FOUND", "班级不存在")
 	}
 	if e != nil {
 		return e
 	}
-	if in.Name != nil {
-		name = strings.TrimSpace(*in.Name)
-	}
-	if count(name) < 1 || count(name) > 60 {
-		return bad("name", "班级名称需为1–60字")
-	}
-	if in.RoomID != nil && *in.RoomID != rid {
+	if in.Name != nil && *in.Name != name {
 		var n int
-		if e = tx.QueryRow("SELECT COUNT(*) FROM rooms WHERE id=? AND status='active'", *in.RoomID).Scan(&n); e != nil {
+		if e = tx.QueryRow("SELECT COUNT(*) FROM classes WHERE name=?", *in.Name).Scan(&n); e != nil {
 			return e
 		}
-		if n != 1 {
-			return bad("roomId", "教室不存在")
+		if n > 0 {
+			return bad("name", "班级名称已存在")
 		}
-		if !in.ConfirmImpact {
-			return bad("confirmImpact", "班级换教室不会迁移现有公告，请确认并处理原教室公告")
-		}
-		rid = *in.RoomID
+		name = *in.Name
 	}
-	if _, e = tx.Exec("UPDATE classes SET name=?,room_id=? WHERE id=?", name, rid, r.PathValue("id")); e != nil {
+	if in.Status != nil {
+		status = *in.Status
+	}
+	if status == "disabled" {
+		var n int
+		if e = tx.QueryRow("SELECT COUNT(*) FROM devices WHERE class_id=? AND revoked_at IS NULL", r.PathValue("id")).Scan(&n); e != nil {
+			return e
+		}
+		var msgs int
+		if e = tx.QueryRow("SELECT COUNT(*) FROM messages m JOIN message_classes mc ON mc.message_id=m.id WHERE mc.class_id=? AND m.status='active' AND m.expire_at>?", r.PathValue("id"), time.Now().UnixMilli()).Scan(&msgs); e != nil {
+			return e
+		}
+		if (n > 0 || msgs > 0) && !in.ConfirmImpact {
+			return bad("confirmImpact", "此班级仍有设备或有效公告，需明确确认停用影响")
+		}
+		if _, e = tx.Exec("UPDATE devices SET revoked_at=? WHERE class_id=? AND revoked_at IS NULL", time.Now().UnixMilli(), r.PathValue("id")); e != nil {
+			return e
+		}
+	}
+	if _, e = tx.Exec("UPDATE classes SET name=?,status=? WHERE id=?", name, status, r.PathValue("id")); e != nil {
 		return e
 	}
 	if e = audit(tx, actor.ID, "class.update", r.PathValue("id")); e != nil {
@@ -548,24 +486,33 @@ func (a *App) patchClass(w http.ResponseWriter, r *http.Request) error {
 	if e = tx.Commit(); e != nil {
 		return e
 	}
-	ok(w, 200, obj{"id": r.PathValue("id"), "name": name, "roomId": rid})
+	if status == "disabled" {
+		a.hubMu.Lock()
+		for _, p := range a.peers {
+			if p.device.ClassID == r.PathValue("id") {
+				p.cancel()
+			}
+		}
+		a.hubMu.Unlock()
+	}
+	ok(w, 200, obj{"id": r.PathValue("id"), "name": name, "status": status})
 	return nil
 }
 func (a *App) adminDevices(w http.ResponseWriter, r *http.Request) error {
 	if _, e := a.admin(r); e != nil {
 		return e
 	}
-	rows, e := a.db.Query("SELECT d.id,d.label,d.room_id,r.name,d.last_seen_at,d.tts_status,d.revoked_at,d.token_expires_at,d.app_version FROM devices d JOIN rooms r ON r.id=d.room_id ORDER BY d.id")
+	rows, e := a.db.Query("SELECT d.id,d.label,d.class_id,c.name,d.last_seen_at,d.tts_status,d.revoked_at,d.token_expires_at,d.app_version FROM devices d JOIN classes c ON c.id=d.class_id ORDER BY d.id")
 	if e != nil {
 		return e
 	}
 	defer rows.Close()
 	items := []obj{}
 	for rows.Next() {
-		var id, label, rid, rn, tts, version string
+		var id, label, cid, cn, tts, version string
 		var last, rev sql.NullInt64
 		var expiry int64
-		if e = rows.Scan(&id, &label, &rid, &rn, &last, &tts, &rev, &expiry, &version); e != nil {
+		if e = rows.Scan(&id, &label, &cid, &cn, &last, &tts, &rev, &expiry, &version); e != nil {
 			return e
 		}
 		var ls, rv any
@@ -575,7 +522,7 @@ func (a *App) adminDevices(w http.ResponseWriter, r *http.Request) error {
 		if rev.Valid {
 			rv = msstamp(rev.Int64)
 		}
-		items = append(items, obj{"id": id, "label": label, "roomId": rid, "roomName": rn, "lastSeenAt": ls, "online": last.Valid && time.Now().UnixMilli()-last.Int64 < 90000 && !rev.Valid && expiry > time.Now().UnixMilli(), "ttsStatus": tts, "revokedAt": rv, "tokenExpiresAt": msstamp(expiry), "appVersion": version})
+		items = append(items, obj{"id": id, "label": label, "classId": cid, "className": cn, "lastSeenAt": ls, "online": last.Valid && time.Now().UnixMilli()-last.Int64 < 90000 && !rev.Valid && expiry > time.Now().UnixMilli(), "ttsStatus": tts, "revokedAt": rv, "tokenExpiresAt": msstamp(expiry), "appVersion": version})
 	}
 	if e = rows.Err(); e != nil {
 		return e
@@ -685,7 +632,7 @@ func (a *App) putSettings(w http.ResponseWriter, r *http.Request) error {
 	if e != nil {
 		return e
 	}
-	rows, e := tx.Query("SELECT id FROM rooms WHERE status='active'")
+	rows, e := tx.Query("SELECT id FROM classes WHERE status='active'")
 	if e != nil {
 		return e
 	}
@@ -704,7 +651,7 @@ func (a *App) putSettings(w http.ResponseWriter, r *http.Request) error {
 		return e
 	}
 	for _, id := range ids {
-		if e = appendEvent(tx, id, "room.config", s); e != nil {
+		if e = appendEvent(tx, id, "class.config", s); e != nil {
 			return e
 		}
 	}

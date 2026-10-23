@@ -16,20 +16,20 @@ function rule(source, selector) {
   return match[1];
 }
 
-test('home room cards stack title, status and heartbeat without horizontal squeeze', () => {
+test('home class cards stack title, status and heartbeat without horizontal squeeze', () => {
   const wxml = read('pages/home/home.wxml');
   const wxss = read('pages/home/home.wxss');
-  const head = wxml.indexOf('class="room-card-head"');
-  const status = wxml.indexOf('class="room-device-status');
-  const heartbeat = wxml.indexOf('class="room-heartbeat"');
+  const head = wxml.indexOf('class="class-card-head"');
+  const status = wxml.indexOf('class="class-device-status');
+  const heartbeat = wxml.indexOf('class="class-heartbeat"');
 
-  assert(head >= 0 && head < status && status < heartbeat, 'room card sections must stack in visual order');
-  assert.doesNotMatch(wxml, /class="card row room-card"/, 'room card must not use the old three-column row');
-  assert.match(rule(wxss, '.room-name'), /white-space:nowrap/);
-  assert.match(rule(wxss, '.room-name'), /text-overflow:ellipsis/);
-  assert.match(rule(wxss, '.room-identity'), /min-width:0/);
-  assert.match(rule(wxss, '.room-actions'), /flex-shrink:0/);
-  assert.match(rule(wxss, '.room-heartbeat'), /border-top:/);
+  assert(head >= 0 && head < status && status < heartbeat, 'class card sections must stack in visual order');
+  assert.doesNotMatch(wxml, /class="card row class-card"/, 'class card must not use the old three-column row');
+  assert.match(rule(wxss, '.class-name'), /white-space:nowrap/);
+  assert.match(rule(wxss, '.class-name'), /text-overflow:ellipsis/);
+  assert.match(rule(wxss, '.class-identity'), /min-width:0/);
+  assert.match(rule(wxss, '.class-actions'), /flex-shrink:0/);
+  assert.match(rule(wxss, '.class-heartbeat'), /border-top:/);
 });
 
 test('long-name layouts keep actions visible and text containers shrinkable', () => {
@@ -44,12 +44,12 @@ test('long-name layouts keep actions visible and text containers shrinkable', ()
   assert.match(rule(records, '.record-action-row button'), /white-space:nowrap/);
   assert.match(rule(records, '.record-detail'), /flex-shrink:0/);
 
-  assert.match(rule(publish, '.room-switch'), /display:flex/);
-  assert.match(rule(publish, '.room-current-name'), /text-overflow:ellipsis/);
-  assert.match(rule(publish, '.room-switch-copy'), /min-width:0/);
-  assert.match(rule(publish, '.room-switch-link'), /flex-shrink:0/);
+  assert.match(rule(publish, '.class-switch'), /display:flex/);
+  assert.match(rule(publish, '.class-current-name'), /text-overflow:ellipsis/);
+  assert.match(rule(publish, '.class-switch-copy'), /min-width:0/);
+  assert.match(rule(publish, '.class-switch-link'), /flex-shrink:0/);
   assert.match(rule(publish, '.student-copy'), /min-width:0/);
-  assert.doesNotMatch(publish, /\.current-room-lock/);
+  assert.doesNotMatch(publish, /\.current-class-lock/);
 
   assert.match(rule(admin, '.admin-card-copy'), /min-width:0/);
   assert.match(rule(admin, '.admin-head-badge'), /flex-shrink:0/);

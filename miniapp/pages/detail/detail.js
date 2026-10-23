@@ -32,12 +32,12 @@ Page({
   manualRefresh() { this.refresh(); },
   edit() {
     const message = this.data.message;
-    if (!message || !message.roomIds || !message.roomIds.length) return;
-    wx.navigateTo({ url: '/pages/publish/publish?roomId=' + encodeURIComponent(message.roomIds[0]) + '&editId=' + encodeURIComponent(message.id) });
+    if (!message || !message.classIds || !message.classIds.length) return;
+    wx.navigateTo({ url: '/pages/publish/publish?classId=' + encodeURIComponent(message.classIds[0]) + '&editId=' + encodeURIComponent(message.id) });
   },
   remove() {
     if (this.data.busy) return;
-    wx.showModal({ title: '删除这条公告？', content: '公告会立即从教室大屏移除，发布记录与投递回执仍会保留。', confirmText: '删除', confirmColor: '#A93230', success: async r => {
+    wx.showModal({ title: '删除这条公告？', content: '公告会立即从班级大屏移除，发布记录与投递回执仍会保留。', confirmText: '删除', confirmColor: '#A93230', success: async r => {
       if (!r.confirm) return; this.setData({ busy: true, error: '' });
       try { await api.request('/messages/' + this.data.id, { method: 'DELETE', scope: this.scope }); await this.refresh(); }
       catch (e) { if (!e.aborted) this.setData({ error: api.errorText(e) }); } finally { this.setData({ busy: false }); }
@@ -54,6 +54,6 @@ Page({
     catch (e) { if (!e.aborted) this.setData({ error: api.errorText(e) + '\n再次点击重播将原样重试同一任务。' }); }
     finally { this.setData({ busy: false }); }
   },
-  copy() { const message = this.data.message; if (!message || !message.roomIds.length) return; getApp().globalData.copyMessage = message; wx.navigateTo({ url: '/pages/publish/publish?roomId=' + encodeURIComponent(message.roomIds[0]) }); },
+  copy() { const message = this.data.message; if (!message || !Array.isArray(message.classIds) || !message.classIds.length) return; getApp().globalData.copyMessage = message; wx.navigateTo({ url: '/pages/publish/publish?classId=' + encodeURIComponent(message.classIds[0]) }); },
   home() { wx.switchTab({ url: '/pages/home/home' }); }
 });

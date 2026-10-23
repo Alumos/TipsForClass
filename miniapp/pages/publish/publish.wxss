@@ -1,9 +1,9 @@
-.room-switch{display:flex;align-items:center;gap:18rpx}
-.room-icon.compact{width:68rpx;height:68rpx;border-radius:18rpx;font-size:30rpx}
-.room-switch-copy{flex:1;min-width:0}
-.room-current-name{margin-top:2rpx;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.room-switch-link{flex-shrink:0;white-space:nowrap}
-.room-switch.locked{background:#F4F8F5;border-color:#D9E7DE}
+.class-switch{display:flex;align-items:center;gap:18rpx}
+.class-icon.compact{width:68rpx;height:68rpx;border-radius:18rpx;font-size:30rpx}
+.class-switch-copy{flex:1;min-width:0}
+.class-current-name{margin-top:2rpx;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.class-switch-link{flex-shrink:0;white-space:nowrap}
+.class-switch.locked{background:#F4F8F5;border-color:#D9E7DE}
 .type-grid{display:flex;flex-wrap:wrap;gap:12rpx;margin-top:24rpx}
 .type-card{flex:1 1 190rpx;min-width:0;padding:20rpx 12rpx;border:1rpx solid #E0E8E2;border-radius:20rpx;background:#fff;text-align:center}
 .type-card.active{border-color:#0F6E56;background:#EAF3EE;box-shadow:0 6rpx 16rpx rgba(15,110,86,.08)}
@@ -14,9 +14,9 @@
 .card-section-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12rpx 18rpx}
 .card-section-copy{flex:1;min-width:0}
 .card-section-head .badge{flex-shrink:0;margin-left:auto}
-.room-option-copy{flex:1;min-width:0}
-.room-option-name{font-weight:600;line-height:1.4;overflow-wrap:anywhere}
-.locked-room-names{padding:18rpx 20rpx;border-radius:14rpx;background:#F6F8F7;border:1rpx solid #DCE6DF;color:#335C4B;line-height:1.55;overflow-wrap:anywhere}
+.class-option-copy{flex:1;min-width:0}
+.class-option-name{font-weight:600;line-height:1.4;overflow-wrap:anywhere}
+.locked-class-names{padding:18rpx 20rpx;border-radius:14rpx;background:#F6F8F7;border:1rpx solid #DCE6DF;color:#335C4B;line-height:1.55;overflow-wrap:anywhere}
 .audience-banner{display:flex;align-items:flex-start;flex-wrap:wrap;gap:12rpx 18rpx;padding:20rpx;border-radius:16rpx;background:#F4F8F5}
 .audience-count{width:66rpx;height:66rpx;border-radius:18rpx;background:#0F6E56;color:#fff;font-size:32rpx;font-weight:700;line-height:66rpx;text-align:center;flex-shrink:0}
 .audience-copy{flex:1 1 300rpx;min-width:0;overflow-wrap:anywhere}

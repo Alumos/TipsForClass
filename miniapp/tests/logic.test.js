@@ -28,11 +28,11 @@ test('voice defaults to zero and notice rolls to the next day after 22:00', () =
   assert.deepEqual(logic.defaults('notice', Date.parse('2026-10-22T14:00:00Z')), { broadcastTimes: 0, expireDate: '2026-10-23', expireTime: '22:00' });
 });
 const now = Date.parse('2026-10-22T02:00:00Z');
-const base = { type: 'call', roomIds: ['1'], studentIds: ['1'], title: '', body: '', destination: '办公室', broadcastTimes: 2, startAt: new Date(now).toISOString(), expireAt: new Date(now + 40 * 60000).toISOString() };
+const base = { type: 'call', classIds: ['1'], studentIds: ['1'], title: '', body: '', destination: '办公室', broadcastTimes: 2, startAt: new Date(now).toISOString(), expireAt: new Date(now + 40 * 60000).toISOString() };
 test('message validation supports empty notice body, forbids wrong type combinations', () => {
   assert.deepEqual(logic.validateMessage(base, now), []);
   assert.deepEqual(logic.validateMessage(Object.assign({}, base, { type: 'notice', title: '通知', destination: '', studentIds: [], broadcastTimes: 0 }), now), []);
-  assert(logic.validateMessage(Object.assign({}, base, { roomIds: ['1', '2'] }), now).length);
+  assert(logic.validateMessage(Object.assign({}, base, { classIds: ['1', '2'] }), now).length);
   assert(logic.validateMessage(Object.assign({}, base, { studentIds: ['1', '2', '3', '4'] }), now).length);
   assert(logic.validateMessage(Object.assign({}, base, { expireAt: new Date(now - 1).toISOString() }), now).length);
   assert(logic.validateMessage(Object.assign({}, base, { expireAt: new Date(now + 8 * 86400000).toISOString() }), now).length);
@@ -86,11 +86,11 @@ test('display settings normalize target fields and preserve explicit message ord
   assert.equal(ordered[1].pinned, false);
 });
 test('display settings PUT payload carries position, pins and current order', () => {
-  assert.deepEqual(logic.displaySettingsPayload('room-9', 'center', [
+  assert.deepEqual(logic.displaySettingsPayload('class-9', 'center', [
     { id: '2', pinned: true },
     { id: '1', pinned: false }
   ]), {
-    roomId: 'room-9',
+    classId: 'class-9',
     displayPosition: 'center',
     pinnedMessageIds: ['2'],
     messageOrder: ['2', '1']

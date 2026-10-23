@@ -12,17 +12,17 @@ import (
 const maxPinnedMessages = 50
 
 type displaySettingsRequest struct {
-	RoomID           string    `json:"roomId,omitempty"`
+	ClassID          string    `json:"classId,omitempty"`
 	DisplayPosition  *string   `json:"displayPosition,omitempty"`
 	Position         *string   `json:"position,omitempty"`
 	PinnedMessageIDs *[]string `json:"pinnedMessageIds,omitempty"`
 	MessageOrder     []string  `json:"messageOrder,omitempty"`
 }
 
-func loadRoomDisplaySettings(q queryer, roomID string) (DisplaySettings, error) {
+func loadClassDisplaySettings(q queryer, classID string) (DisplaySettings, error) {
 	s := DisplaySettings{DisplayPosition: "top_right", PinnedMessageIDs: []string{}, Revision: 1}
 	var raw string
-	e := q.QueryRow("SELECT display_position,pinned_message_ids_json,revision FROM room_display_settings WHERE room_id=?", roomID).Scan(&s.DisplayPosition, &raw, &s.Revision)
+	e := q.QueryRow("SELECT display_position,pinned_message_ids_json,display_revision FROM classes WHERE id=?", classID).Scan(&s.DisplayPosition, &raw, &s.Revision)
 	if errors.Is(e, sql.ErrNoRows) {
 		return s, nil
 	}
@@ -34,17 +34,6 @@ func loadRoomDisplaySettings(q queryer, roomID string) (DisplaySettings, error) 
 	}
 	if s.PinnedMessageIDs == nil {
 		s.PinnedMessageIDs = []string{}
-	}
-	return s, nil
-}
-
-func ensureRoomDisplaySettings(tx *sql.Tx, roomID string) (DisplaySettings, error) {
-	s, e := loadRoomDisplaySettings(tx, roomID)
-	if e != nil {
-		return s, e
-	}
-	if _, e = tx.Exec("INSERT OR IGNORE INTO room_display_settings(room_id) VALUES(?)", roomID); e != nil {
-		return s, e
 	}
 	return s, nil
 }
@@ -61,27 +50,27 @@ func sameStrings(a, b []string) bool {
 	return true
 }
 
-func saveRoomDisplaySettings(tx *sql.Tx, roomID string, s DisplaySettings) error {
+func saveClassDisplaySettings(tx *sql.Tx, classID string, s DisplaySettings) error {
 	if s.PinnedMessageIDs == nil {
 		s.PinnedMessageIDs = []string{}
 	}
-	_, e := tx.Exec("UPDATE room_display_settings SET display_position=?,pinned_message_ids_json=?,revision=? WHERE room_id=?", s.DisplayPosition, jsonText(s.PinnedMessageIDs), s.Revision, roomID)
+	_, e := tx.Exec("UPDATE classes SET display_position=?,pinned_message_ids_json=?,display_revision=? WHERE id=?", s.DisplayPosition, jsonText(s.PinnedMessageIDs), s.Revision, classID)
 	return e
 }
 
-func appendRoomDisplayEvent(tx *sql.Tx, roomID string, settings DisplaySettings) error {
-	return appendEvent(tx, roomID, "room.display", obj{"displaySettings": settings})
+func appendClassDisplayEvent(tx *sql.Tx, classID string, settings DisplaySettings) error {
+	return appendEvent(tx, classID, "class.display", obj{"displaySettings": settings})
 }
 
-func pruneRoomDisplayPins(tx *sql.Tx, roomID string, now time.Time) (DisplaySettings, bool, error) {
-	s, e := ensureRoomDisplaySettings(tx, roomID)
+func pruneClassDisplayPins(tx *sql.Tx, classID string, now time.Time) (DisplaySettings, bool, error) {
+	s, e := loadClassDisplaySettings(tx, classID)
 	if e != nil {
 		return s, false, e
 	}
 	kept := make([]string, 0, len(s.PinnedMessageIDs))
 	for _, id := range s.PinnedMessageIDs {
 		var valid int
-		if e = tx.QueryRow("SELECT COUNT(*) FROM messages m JOIN message_rooms mr ON mr.message_id=m.id WHERE m.id=? AND mr.room_id=? AND m.status='active' AND m.expire_at>?", id, roomID, now.UnixMilli()).Scan(&valid); e != nil {
+		if e = tx.QueryRow("SELECT COUNT(*) FROM messages m JOIN message_classes mc ON mc.message_id=m.id WHERE m.id=? AND mc.class_id=? AND m.status='active' AND m.expire_at>?", id, classID, now.UnixMilli()).Scan(&valid); e != nil {
 			return s, false, e
 		}
 		if valid == 1 {
@@ -93,17 +82,17 @@ func pruneRoomDisplayPins(tx *sql.Tx, roomID string, now time.Time) (DisplaySett
 	}
 	s.PinnedMessageIDs = kept
 	s.Revision++
-	if e = saveRoomDisplaySettings(tx, roomID, s); e != nil {
+	if e = saveClassDisplaySettings(tx, classID, s); e != nil {
 		return s, false, e
 	}
-	if e = appendRoomDisplayEvent(tx, roomID, s); e != nil {
+	if e = appendClassDisplayEvent(tx, classID, s); e != nil {
 		return s, false, e
 	}
 	return s, true, nil
 }
 
-func removeRoomDisplayPin(tx *sql.Tx, roomID, messageID string) (DisplaySettings, bool, error) {
-	s, e := ensureRoomDisplaySettings(tx, roomID)
+func removeClassDisplayPin(tx *sql.Tx, classID, messageID string) (DisplaySettings, bool, error) {
+	s, e := loadClassDisplaySettings(tx, classID)
 	if e != nil {
 		return s, false, e
 	}
@@ -118,17 +107,17 @@ func removeRoomDisplayPin(tx *sql.Tx, roomID, messageID string) (DisplaySettings
 	}
 	s.PinnedMessageIDs = kept
 	s.Revision++
-	if e = saveRoomDisplaySettings(tx, roomID, s); e != nil {
+	if e = saveClassDisplaySettings(tx, classID, s); e != nil {
 		return s, false, e
 	}
-	if e = appendRoomDisplayEvent(tx, roomID, s); e != nil {
+	if e = appendClassDisplayEvent(tx, classID, s); e != nil {
 		return s, false, e
 	}
 	return s, true, nil
 }
 
-func readRoomDisplayMessages(q queryer, roomID string, pins []string, now time.Time) ([]Message, error) {
-	rows, e := q.Query("SELECT m.payload_json,m.id FROM messages m JOIN message_rooms mr ON mr.message_id=m.id WHERE mr.room_id=? AND m.status='active' AND m.expire_at>? ORDER BY m.created_at DESC,m.id DESC", roomID, now.UnixMilli())
+func readClassDisplayMessages(q queryer, classID string, pins []string, now time.Time) ([]Message, error) {
+	rows, e := q.Query("SELECT m.payload_json,m.id FROM messages m JOIN message_classes mc ON mc.message_id=m.id WHERE mc.class_id=? AND m.status='active' AND m.expire_at>? ORDER BY m.created_at DESC,m.id DESC", classID, now.UnixMilli())
 	if e != nil {
 		return nil, e
 	}
@@ -165,13 +154,13 @@ func readRoomDisplayMessages(q queryer, roomID string, pins []string, now time.T
 	return append(items, rest...), nil
 }
 
-func displaySettingsEnvelope(roomID string, settings DisplaySettings, messages []Message) obj {
+func displaySettingsEnvelope(classID string, settings DisplaySettings, messages []Message) obj {
 	order := make([]string, 0, len(messages))
 	for _, m := range messages {
 		order = append(order, m.ID)
 	}
 	return obj{
-		"roomId":           roomID,
+		"classId":          classID,
 		"displayPosition":  settings.DisplayPosition,
 		"position":         settings.DisplayPosition,
 		"pinnedMessageIds": settings.PinnedMessageIDs,
@@ -186,9 +175,9 @@ func (a *App) getDisplaySettings(w http.ResponseWriter, r *http.Request) error {
 	if e != nil {
 		return e
 	}
-	roomID := r.PathValue("id")
-	if !ownsRoom(t, roomID) {
-		return fail(403, "FORBIDDEN", "无权查看该教室的屏幕设置")
+	classID := r.PathValue("id")
+	if !ownsClass(t, classID) {
+		return fail(403, "FORBIDDEN", "无权查看该班级的屏幕设置")
 	}
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -201,22 +190,22 @@ func (a *App) getDisplaySettings(w http.ResponseWriter, r *http.Request) error {
 	if e != nil {
 		return e
 	}
-	if !ownsRoom(t, roomID) {
-		return fail(403, "FORBIDDEN", "教室权限已变化")
+	if !ownsClass(t, classID) {
+		return fail(403, "FORBIDDEN", "班级权限已变化")
 	}
 	now := time.Now()
-	settings, _, e := pruneRoomDisplayPins(tx, roomID, now)
+	settings, _, e := pruneClassDisplayPins(tx, classID, now)
 	if e != nil {
 		return e
 	}
-	messages, e := readRoomDisplayMessages(tx, roomID, settings.PinnedMessageIDs, now)
+	messages, e := readClassDisplayMessages(tx, classID, settings.PinnedMessageIDs, now)
 	if e != nil {
 		return e
 	}
 	if e = tx.Commit(); e != nil {
 		return e
 	}
-	ok(w, 200, displaySettingsEnvelope(roomID, settings, messages))
+	ok(w, 200, displaySettingsEnvelope(classID, settings, messages))
 	return nil
 }
 
@@ -261,17 +250,17 @@ func (a *App) putDisplaySettings(w http.ResponseWriter, r *http.Request) error {
 	if e != nil {
 		return e
 	}
-	roomID := r.PathValue("id")
-	if !ownsRoom(t, roomID) {
-		return fail(403, "FORBIDDEN", "无权修改该教室的屏幕设置")
+	classID := r.PathValue("id")
+	if !ownsClass(t, classID) {
+		return fail(403, "FORBIDDEN", "无权修改该班级的屏幕设置")
 	}
 	var in displaySettingsRequest
 	if e = readJSON(w, r, &in); e != nil {
 		return e
 	}
-	in.RoomID = strings.TrimSpace(in.RoomID)
-	if in.RoomID != "" && in.RoomID != roomID {
-		return bad("roomId", "请求教室与路径不一致")
+	in.ClassID = strings.TrimSpace(in.ClassID)
+	if in.ClassID != "" && in.ClassID != classID {
+		return bad("classId", "请求班级与路径不一致")
 	}
 	position, e := requestedDisplayPosition(in)
 	if e != nil {
@@ -296,11 +285,11 @@ func (a *App) putDisplaySettings(w http.ResponseWriter, r *http.Request) error {
 	if e != nil {
 		return e
 	}
-	if !ownsRoom(t, roomID) {
-		return fail(403, "FORBIDDEN", "教室权限已变化")
+	if !ownsClass(t, classID) {
+		return fail(403, "FORBIDDEN", "班级权限已变化")
 	}
 	now := time.Now()
-	settings, _, e := pruneRoomDisplayPins(tx, roomID, now)
+	settings, _, e := pruneClassDisplayPins(tx, classID, now)
 	if e != nil {
 		return e
 	}
@@ -311,33 +300,33 @@ func (a *App) putDisplaySettings(w http.ResponseWriter, r *http.Request) error {
 		pins := append([]string{}, (*in.PinnedMessageIDs)...)
 		for _, id := range pins {
 			var valid int
-			if e = tx.QueryRow("SELECT COUNT(*) FROM messages m JOIN message_rooms mr ON mr.message_id=m.id WHERE m.id=? AND mr.room_id=? AND m.status='active' AND m.expire_at>?", id, roomID, now.UnixMilli()).Scan(&valid); e != nil {
+			if e = tx.QueryRow("SELECT COUNT(*) FROM messages m JOIN message_classes mc ON mc.message_id=m.id WHERE m.id=? AND mc.class_id=? AND m.status='active' AND m.expire_at>?", id, classID, now.UnixMilli()).Scan(&valid); e != nil {
 				return e
 			}
 			if valid != 1 {
-				return bad("pinnedMessageIds", "只能置顶该教室当前或未来有效且未撤回的公告")
+				return bad("pinnedMessageIds", "只能置顶该班级当前或未来有效且未撤回的公告")
 			}
 		}
 		settings.PinnedMessageIDs = pins
 	}
 	settings.Revision++
-	if e = saveRoomDisplaySettings(tx, roomID, settings); e != nil {
+	if e = saveClassDisplaySettings(tx, classID, settings); e != nil {
 		return e
 	}
-	if e = appendRoomDisplayEvent(tx, roomID, settings); e != nil {
+	if e = appendClassDisplayEvent(tx, classID, settings); e != nil {
 		return e
 	}
-	if e = audit(tx, t.ID, "display-settings.update", roomID); e != nil {
+	if e = audit(tx, t.ID, "display-settings.update", classID); e != nil {
 		return e
 	}
-	messages, e := readRoomDisplayMessages(tx, roomID, settings.PinnedMessageIDs, now)
+	messages, e := readClassDisplayMessages(tx, classID, settings.PinnedMessageIDs, now)
 	if e != nil {
 		return e
 	}
 	if e = tx.Commit(); e != nil {
 		return e
 	}
-	ok(w, 200, displaySettingsEnvelope(roomID, settings, messages))
+	ok(w, 200, displaySettingsEnvelope(classID, settings, messages))
 	return nil
 }
 
@@ -349,7 +338,7 @@ func (a *App) pruneExpiredDisplayPins() error {
 		return e
 	}
 	defer tx.Rollback()
-	rows, e := tx.Query("SELECT id FROM rooms")
+	rows, e := tx.Query("SELECT id FROM classes")
 	if e != nil {
 		return e
 	}
@@ -369,7 +358,7 @@ func (a *App) pruneExpiredDisplayPins() error {
 	}
 	now := time.Now()
 	for _, id := range ids {
-		if _, _, e = pruneRoomDisplayPins(tx, id, now); e != nil {
+		if _, _, e = pruneClassDisplayPins(tx, id, now); e != nil {
 			return e
 		}
 	}

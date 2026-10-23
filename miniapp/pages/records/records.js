@@ -31,8 +31,8 @@ Page({
   edit(e) {
     const id = String(e.currentTarget.dataset.id || '');
     const item = this.data.items.find(message => message.id === id);
-    const roomId = item && Array.isArray(item.roomIds) && item.roomIds.length ? item.roomIds[0] : '';
-    const query = 'editId=' + encodeURIComponent(id) + (roomId ? '&roomId=' + encodeURIComponent(roomId) : '');
+    const classId = item && Array.isArray(item.classIds) && item.classIds.length ? item.classIds[0] : '';
+    const query = 'editId=' + encodeURIComponent(id) + (classId ? '&classId=' + encodeURIComponent(classId) : '');
     wx.navigateTo({ url: '/pages/publish/publish?' + query });
   },
   remove(e) {
@@ -41,7 +41,7 @@ Page({
     return new Promise(resolve => {
       wx.showModal({
         title: '删除这条公告？',
-        content: '删除后会立即从所有目标教室大屏撤下，并在“已撤回”记录中保留审计信息，且无法恢复。',
+        content: '删除后会立即从所有目标班级大屏撤下，并在“已撤回”记录中保留审计信息，且无法恢复。',
         confirmText: '删除',
         confirmColor: '#A93230',
         success: async result => {

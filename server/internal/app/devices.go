@@ -33,7 +33,7 @@ func (a *App) device(r *http.Request) (Device, error) {
 	if !strings.HasPrefix(token, "d_") {
 		return d, fail(401, "AUTH_EXPIRED", "大屏凭据失效，请重新绑定")
 	}
-	e := a.db.QueryRow("SELECT d.id,d.room_id,d.label,d.token_expires_at FROM devices d JOIN rooms r ON r.id=d.room_id WHERE d.token_hash=? AND d.revoked_at IS NULL AND d.token_expires_at>? AND r.status='active'", a.tokenHash(token), time.Now().UnixMilli()).Scan(&d.ID, &d.RoomID, &d.Label, &d.ExpiresAt)
+	e := a.db.QueryRow("SELECT d.id,d.class_id,d.label,d.token_expires_at FROM devices d JOIN classes c ON c.id=d.class_id WHERE d.token_hash=? AND d.revoked_at IS NULL AND d.token_expires_at>? AND c.status='active'", a.tokenHash(token), time.Now().UnixMilli()).Scan(&d.ID, &d.ClassID, &d.Label, &d.ExpiresAt)
 	if errors.Is(e, sql.ErrNoRows) {
 		return d, fail(401, "AUTH_EXPIRED", "大屏授权已失效，请联系管理员重新绑定")
 	}
@@ -70,8 +70,8 @@ func (a *App) bindDevice(w http.ResponseWriter, r *http.Request) error {
 		return e
 	}
 	defer tx.Rollback()
-	var codeID, rid, rname string
-	e = tx.QueryRow("SELECT b.id,b.room_id,r.name FROM bind_codes b JOIN rooms r ON r.id=b.room_id WHERE b.code_hash=? AND b.consumed_at IS NULL AND b.expires_at>? AND r.status='active'", a.bindHash(in.BindCode), time.Now().UnixMilli()).Scan(&codeID, &rid, &rname)
+	var codeID, cid, cname string
+	e = tx.QueryRow("SELECT b.id,b.class_id,c.name FROM bind_codes b JOIN classes c ON c.id=b.class_id WHERE b.code_hash=? AND b.consumed_at IS NULL AND b.expires_at>? AND c.status='active'", a.bindHash(in.BindCode), time.Now().UnixMilli()).Scan(&codeID, &cid, &cname)
 	if errors.Is(e, sql.ErrNoRows) {
 		return bad("bindCode", "绑定码无效、已使用或已过期")
 	}
@@ -87,10 +87,10 @@ func (a *App) bindDevice(w http.ResponseWriter, r *http.Request) error {
 	expiry := time.Now().Add(90 * 24 * time.Hour)
 	var did string
 	if existing != "" {
-		_, e = tx.Exec("UPDATE devices SET room_id=?,label=?,token_hash=?,token_expires_at=?,revoked_at=NULL,last_seen_at=?,tts_status='unknown' WHERE id=?", rid, in.Label, a.tokenHash(token), expiry.UnixMilli(), time.Now().UnixMilli(), existing)
+		_, e = tx.Exec("UPDATE devices SET class_id=?,label=?,token_hash=?,token_expires_at=?,revoked_at=NULL,last_seen_at=?,tts_status='unknown' WHERE id=?", cid, in.Label, a.tokenHash(token), expiry.UnixMilli(), time.Now().UnixMilli(), existing)
 		did = existing
 	} else {
-		res, er := tx.Exec("INSERT INTO devices(room_id,installation_id,label,token_hash,token_expires_at,last_seen_at) VALUES(?,?,?,?,?,?)", rid, in.InstallationID, in.Label, a.tokenHash(token), expiry.UnixMilli(), time.Now().UnixMilli())
+		res, er := tx.Exec("INSERT INTO devices(class_id,installation_id,label,token_hash,token_expires_at,last_seen_at) VALUES(?,?,?,?,?,?)", cid, in.InstallationID, in.Label, a.tokenHash(token), expiry.UnixMilli(), time.Now().UnixMilli())
 		e = er
 		if e == nil {
 			id, er := res.LastInsertId()
@@ -108,7 +108,7 @@ func (a *App) bindDevice(w http.ResponseWriter, r *http.Request) error {
 		return e
 	}
 	a.disconnect(did)
-	ok(w, 200, obj{"deviceToken": token, "device": obj{"id": did, "label": in.Label}, "room": obj{"id": rid, "name": rname}, "tokenExpiresAt": stamp(expiry)})
+	ok(w, 200, obj{"deviceToken": token, "device": obj{"id": did, "label": in.Label, "classId": cid, "className": cname}, "classId": cid, "className": cname, "tokenExpiresAt": stamp(expiry)})
 	return nil
 }
 func (a *App) bindCode(w http.ResponseWriter, r *http.Request) error {
@@ -116,18 +116,18 @@ func (a *App) bindCode(w http.ResponseWriter, r *http.Request) error {
 	if e != nil {
 		return e
 	}
-	rid := r.PathValue("id")
+	cid := r.PathValue("id")
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	if e = activeAdmin(a.db, t.ID); e != nil {
 		return e
 	}
 	var n int
-	if e = a.db.QueryRow("SELECT COUNT(*) FROM rooms WHERE id=? AND status='active'", rid).Scan(&n); e != nil {
+	if e = a.db.QueryRow("SELECT COUNT(*) FROM classes WHERE id=? AND status='active'", cid).Scan(&n); e != nil {
 		return e
 	}
 	if n != 1 {
-		return fail(404, "NOT_FOUND", "教室不存在")
+		return fail(404, "NOT_FOUND", "班级不存在")
 	}
 	for i := 0; i < 10; i++ {
 		n, e := rand.Int(rand.Reader, big.NewInt(1000000))
@@ -136,7 +136,7 @@ func (a *App) bindCode(w http.ResponseWriter, r *http.Request) error {
 		}
 		code := strconv.FormatInt(n.Int64()+1000000, 10)[1:]
 		expiry := time.Now().Add(10 * time.Minute)
-		_, e = a.db.Exec("INSERT INTO bind_codes(room_id,code_hash,expires_at,created_by) VALUES(?,?,?,?)", rid, a.bindHash(code), expiry.UnixMilli(), t.ID)
+		_, e = a.db.Exec("INSERT INTO bind_codes(class_id,code_hash,expires_at,created_by) VALUES(?,?,?,?)", cid, a.bindHash(code), expiry.UnixMilli(), t.ID)
 		if e == nil {
 			ok(w, 201, obj{"bindCode": code, "expiresAt": stamp(expiry)})
 			return nil
@@ -157,11 +157,11 @@ func (a *App) snapshot(w http.ResponseWriter, r *http.Request) error {
 	}
 	defer tx.Rollback()
 	now := time.Now()
-	displaySettings, _, e := pruneRoomDisplayPins(tx, d.RoomID, now)
+	displaySettings, _, e := pruneClassDisplayPins(tx, d.ClassID, now)
 	if e != nil {
 		return e
 	}
-	messages, e := readRoomDisplayMessages(tx, d.RoomID, displaySettings.PinnedMessageIDs, now)
+	messages, e := readClassDisplayMessages(tx, d.ClassID, displaySettings.PinnedMessageIDs, now)
 	if e != nil {
 		return e
 	}
@@ -173,14 +173,14 @@ func (a *App) snapshot(w http.ResponseWriter, r *http.Request) error {
 	if e != nil {
 		return e
 	}
-	var rname string
-	if e = tx.QueryRow("SELECT name FROM rooms WHERE id=?", d.RoomID).Scan(&rname); e != nil {
+	var cname string
+	if e = tx.QueryRow("SELECT name FROM classes WHERE id=?", d.ClassID).Scan(&cname); e != nil {
 		return e
 	}
 	if e = tx.Commit(); e != nil {
 		return e
 	}
-	ok(w, 200, obj{"syncEpoch": a.epoch, "protocolVersion": 1, "watermark": sid(watermark), "serverTime": stamp(now), "room": obj{"id": d.RoomID, "name": rname}, "settings": settings, "displaySettings": displaySettings, "messages": messages})
+	ok(w, 200, obj{"syncEpoch": a.epoch, "protocolVersion": 1, "watermark": sid(watermark), "serverTime": stamp(now), "class": obj{"id": d.ClassID, "name": cname}, "settings": settings, "displaySettings": displaySettings, "messages": messages})
 	return nil
 }
 func (a *App) heartbeat(w http.ResponseWriter, r *http.Request) error {
@@ -209,7 +209,7 @@ func (a *App) heartbeat(w http.ResponseWriter, r *http.Request) error {
 		return e
 	}
 	var latest int64
-	if e = a.db.QueryRow("SELECT COALESCE(MAX(seq),0) FROM events WHERE room_id=?", d.RoomID).Scan(&latest); e != nil {
+	if e = a.db.QueryRow("SELECT COALESCE(MAX(seq),0) FROM events WHERE class_id=?", d.ClassID).Scan(&latest); e != nil {
 		return e
 	}
 	ok(w, 200, obj{"serverTime": stamp(now), "needResync": in.SyncEpoch != a.epoch || seq < latest, "syncEpoch": a.epoch, "protocolVersion": 1})
@@ -255,11 +255,11 @@ func (a *App) receipts(w http.ResponseWriter, r *http.Request) error {
 	defer tx.Rollback()
 	for _, item := range in.Items {
 		var n int
-		if e = tx.QueryRow("SELECT COUNT(*) FROM message_rooms WHERE message_id=? AND room_id=?", item.MessageID, d.RoomID).Scan(&n); e != nil {
+		if e = tx.QueryRow("SELECT COUNT(*) FROM message_classes WHERE message_id=? AND class_id=?", item.MessageID, d.ClassID).Scan(&n); e != nil {
 			return e
 		}
 		if n != 1 {
-			return fail(403, "FORBIDDEN", "回执公告不属于该设备教室")
+			return fail(403, "FORBIDDEN", "回执公告不属于该设备班级")
 		}
 		m, _, e := loadMessage(tx, item.MessageID)
 		if e != nil {
@@ -353,7 +353,7 @@ func (a *App) websocket(w http.ResponseWriter, r *http.Request) error {
 		return fail(401, "AUTH_EXPIRED", "连接票据已失效，请重新获取")
 	}
 	var valid int
-	if e := a.db.QueryRow("SELECT COUNT(*) FROM devices d JOIN rooms r ON r.id=d.room_id WHERE d.id=? AND d.revoked_at IS NULL AND d.token_expires_at>? AND r.status='active'", t.Device.ID, time.Now().UnixMilli()).Scan(&valid); e != nil {
+	if e := a.db.QueryRow("SELECT COUNT(*) FROM devices d JOIN classes c ON c.id=d.class_id WHERE d.id=? AND d.revoked_at IS NULL AND d.token_expires_at>? AND c.status='active'", t.Device.ID, time.Now().UnixMilli()).Scan(&valid); e != nil {
 		return e
 	}
 	if valid != 1 {
@@ -417,7 +417,7 @@ func (a *App) websocket(w http.ResponseWriter, r *http.Request) error {
 			}
 		case <-ticker.C:
 			var valid int
-			if er := a.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM devices d JOIN rooms r ON r.id=d.room_id WHERE d.id=? AND d.room_id=? AND d.revoked_at IS NULL AND d.token_expires_at>? AND r.status='active'", p.device.ID, p.device.RoomID, time.Now().UnixMilli()).Scan(&valid); er != nil || valid != 1 {
+			if er := a.db.QueryRowContext(ctx, "SELECT COUNT(*) FROM devices d JOIN classes c ON c.id=d.class_id WHERE d.id=? AND d.class_id=? AND d.revoked_at IS NULL AND d.token_expires_at>? AND c.status='active'", p.device.ID, p.device.ClassID, time.Now().UnixMilli()).Scan(&valid); er != nil || valid != 1 {
 				return nil
 			}
 			pc, stop := context.WithTimeout(ctx, 10*time.Second)
@@ -462,7 +462,7 @@ func (a *App) dispatch(ctx context.Context) {
 			}
 			continue
 		}
-		rows, e := a.db.QueryContext(ctx, "SELECT seq,room_id,event_type,payload_json,created_at FROM events WHERE seq>? ORDER BY seq LIMIT 256", cursor)
+		rows, e := a.db.QueryContext(ctx, "SELECT seq,class_id,event_type,payload_json,created_at FROM events WHERE seq>? ORDER BY seq LIMIT 256", cursor)
 		if e != nil {
 			if ctx.Err() != nil {
 				return
@@ -470,14 +470,15 @@ func (a *App) dispatch(ctx context.Context) {
 			panic("event dispatcher database failure")
 		}
 		type evt struct {
-			seq              int64
-			room, event, raw string
-			created          int64
+			seq          int64
+			class, event string
+			raw          string
+			created      int64
 		}
 		events := []evt{}
 		for rows.Next() {
 			var v evt
-			if e = rows.Scan(&v.seq, &v.room, &v.event, &v.raw, &v.created); e != nil {
+			if e = rows.Scan(&v.seq, &v.class, &v.event, &v.raw, &v.created); e != nil {
 				rows.Close()
 				panic("event dispatcher scan failure")
 			}
@@ -495,7 +496,7 @@ func (a *App) dispatch(ctx context.Context) {
 		for _, v := range events {
 			raw := []byte(jsonText(obj{"seq": sid(v.seq), "event": v.event, "syncEpoch": a.epoch, "protocolVersion": 1, "serverTime": msstamp(v.created), "data": json.RawMessage(v.raw)}))
 			for _, p := range a.peers {
-				if p.device.RoomID == v.room {
+				if p.device.ClassID == v.class {
 					if len(raw) > 64<<10 || len(p.send) >= 32 {
 						p.cancel()
 						continue

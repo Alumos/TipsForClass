@@ -1,14 +1,14 @@
 <view class="page arrange-page">
-  <view class="eyebrow">教室大屏</view>
+  <view class="eyebrow">班级大屏</view>
   <view class="title">安排展示顺序</view>
   <view class="subtitle">置顶消息会显示在未置顶消息之前，并可调整彼此顺序；未置顶消息按发布时间自动排列。</view>
 
   <view class="card">
-    <text class="label">教室</text>
-    <picker range="{{rooms}}" range-key="name" value="{{roomIndex}}" bindchange="roomChange" disabled="{{busy || loading}}">
-      <view class="field picker-field">{{roomName || '正在读取教室'}} ▾</view>
+    <text class="label">班级</text>
+    <picker range="{{classes}}" range-key="name" value="{{classIndex}}" bindchange="classChange" disabled="{{busy || loading}}">
+      <view class="field picker-field">{{className || '正在读取班级'}} ▾</view>
     </picker>
-    <view class="helper">排序设置按教室保存，同一教室的授权教师共享。</view>
+    <view class="helper">排序设置按班级保存，同一班级的授权教师共享。</view>
   </view>
 
   <view class="card">
@@ -40,6 +40,6 @@
 
   <view wx:if="{{notice}}" class="tip">{{notice}}</view>
   <view wx:if="{{error && messages.length}}" class="error pre">{{error}}</view>
-  <button class="primary save-arrange" bindtap="saveSettings" loading="{{busy}}" disabled="{{busy || loading || !roomId}}">保存置顶顺序</button>
+  <button class="primary save-arrange" bindtap="saveSettings" loading="{{busy}}" disabled="{{busy || loading || !classId}}">保存置顶顺序</button>
   <view class="footer-note">展示位置在发布时逐条选择；本页只保存置顶标记及置顶消息的先后顺序。</view>
 </view>

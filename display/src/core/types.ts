@@ -25,7 +25,7 @@ export interface Snapshot {
   protocolVersion: number;
   watermark: string;
   serverTime: string;
-  room: { id: string; name: string };
+  class: { id: string; name: string };
   settings: Settings;
   displaySettings?: DisplaySettings;
   messages: Message[];
@@ -38,7 +38,7 @@ export interface Store { load(): Promise<Saved | null>; save(value: Saved): Prom
 export interface Speech { status(): string; play(text: string): Promise<void>; stop(): void }
 export interface ViewState {
   bound: boolean;
-  room: string;
+  className: string;
   label: string;
   online: boolean;
   live: boolean;

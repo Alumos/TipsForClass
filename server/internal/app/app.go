@@ -72,6 +72,17 @@ func New(cfg Config) (*App, error) {
 		}
 	}()
 	db.SetMaxOpenConns(1)
+	// schema 只做 CREATE TABLE IF NOT EXISTS，不会改造已有表。
+	// 旧版本（教室+班级两张表）的库直接跑会报列不存在，这里提前拦下并说明怎么处理。
+	var dbVersion int
+	if e = db.QueryRow("PRAGMA user_version").Scan(&dbVersion); e != nil {
+		db.Close()
+		return nil, e
+	}
+	if dbVersion != 0 && dbVersion != 3 {
+		db.Close()
+		return nil, fmt.Errorf("数据库结构版本为 %d，当前程序需要版本 3；请清空数据后重启：docker compose down -v && docker compose up -d", dbVersion)
+	}
 	for _, s := range []string{"PRAGMA foreign_keys=ON", "PRAGMA journal_mode=WAL", "PRAGMA busy_timeout=5000", schema} {
 		if _, e = db.Exec(s); e != nil {
 			db.Close()
@@ -85,7 +96,7 @@ func New(cfg Config) (*App, error) {
 		return nil, e
 	}
 	defer tx.Rollback()
-	if _, e = tx.Exec("INSERT OR IGNORE INTO schools(id,name) VALUES(1,?)", "教室公告示范学校"); e != nil {
+	if _, e = tx.Exec("INSERT OR IGNORE INTO schools(id,name) VALUES(1,?)", "班级公告示范学校"); e != nil {
 		return nil, e
 	}
 	a.epoch = uuid()
@@ -126,14 +137,11 @@ func New(cfg Config) (*App, error) {
 		a.cfg.BindSecret = sec
 	}
 	if cfg.Mode == "demo" {
-		for _, q := range []string{"INSERT OR IGNORE INTO rooms(id,school_id,name) VALUES(1,1,'高三（2）班教室'),(2,1,'高三（5）班教室')", "INSERT OR IGNORE INTO classes(id,room_id,name) VALUES(1,1,'高三（2）班'),(2,2,'高三（5）班')", "INSERT OR IGNORE INTO teachers(id,openid,name,role,status) VALUES(1,'demo-admin','演示管理员','admin','active')", "INSERT OR IGNORE INTO teacher_rooms VALUES(1,1),(1,2)", "INSERT OR IGNORE INTO students(id,class_id,student_no,name) VALUES(1,1,'00321','李明（示例）'),(2,1,'00322','王小雨（示例）'),(3,1,'00323','陈晨（示例）'),(4,2,'00501','张晓（示例）')"} {
+		for _, q := range []string{"INSERT OR IGNORE INTO classes(id,school_id,name) VALUES(1,1,'高三（2）班'),(2,1,'高三（5）班')", "INSERT OR IGNORE INTO teachers(id,openid,name,role,status) VALUES(1,'demo-admin','演示管理员','admin','active')", "INSERT OR IGNORE INTO teacher_classes VALUES(1,1),(1,2)", "INSERT OR IGNORE INTO students(id,class_id,student_no,name) VALUES(1,1,'00321','李明（示例）'),(2,1,'00322','王小雨（示例）'),(3,1,'00323','陈晨（示例）'),(4,2,'00501','张晓（示例）')"} {
 			if _, e = tx.Exec(q); e != nil {
 				return nil, e
 			}
 		}
-	}
-	if _, e = tx.Exec("INSERT OR IGNORE INTO room_display_settings(room_id) SELECT id FROM rooms"); e != nil {
-		return nil, e
 	}
 	if e = tx.Commit(); e != nil {
 		return nil, e
@@ -196,10 +204,10 @@ func (a *App) Handler() http.Handler {
 	mux := http.NewServeMux()
 	for p, f := range map[string]endpoint{
 		"GET /healthz": a.health, "GET /readyz": a.health, "POST /api/v1/auth/demo-login": a.demoLogin, "POST /api/v1/auth/wx-login": a.wxLogin, "POST /api/v1/auth/logout": a.logout, "POST /api/v1/admin/setup": a.setup, "POST /api/v1/auth/activate-admin": a.setup, "GET /api/v1/me": a.me,
-		"GET /api/v1/rooms": a.rooms, "GET /api/v1/rooms/{id}/display-settings": a.getDisplaySettings, "PUT /api/v1/rooms/{id}/display-settings": a.putDisplaySettings, "GET /api/v1/classes": a.classes, "GET /api/v1/students": a.students, "POST /api/v1/messages": a.createMessage, "GET /api/v1/messages": a.listMessages, "GET /api/v1/messages/{id}": a.messageDetail, "GET /api/v1/messages/{id}/delivery": a.delivery, "POST /api/v1/messages/{id}/update": a.updateMessage, "POST /api/v1/messages/{id}/revoke": a.revokeMessage, "DELETE /api/v1/messages/{id}": a.revokeMessage, "POST /api/v1/messages/{id}/delete": a.revokeMessage, "POST /api/v1/messages/{id}/rebroadcast": a.rebroadcast,
+		"GET /api/v1/classes": a.classes, "GET /api/v1/classes/{id}/display-settings": a.getDisplaySettings, "PUT /api/v1/classes/{id}/display-settings": a.putDisplaySettings, "GET /api/v1/students": a.students, "POST /api/v1/messages": a.createMessage, "GET /api/v1/messages": a.listMessages, "GET /api/v1/messages/{id}": a.messageDetail, "GET /api/v1/messages/{id}/delivery": a.delivery, "POST /api/v1/messages/{id}/update": a.updateMessage, "POST /api/v1/messages/{id}/revoke": a.revokeMessage, "DELETE /api/v1/messages/{id}": a.revokeMessage, "POST /api/v1/messages/{id}/delete": a.revokeMessage, "POST /api/v1/messages/{id}/rebroadcast": a.rebroadcast,
 		"POST /api/v1/devices/bind": a.bindDevice, "GET /api/v1/device/snapshot": a.snapshot, "POST /api/v1/device/heartbeat": a.heartbeat, "POST /api/v1/device/ws-ticket": a.wsTicket, "POST /api/v1/device/receipts": a.receipts, "GET /ws/device": a.websocket,
-		"GET /api/v1/admin/teachers": a.adminTeachers, "GET /api/v1/admin/teacher-requests": a.adminTeachers, "PATCH /api/v1/admin/teachers/{id}": a.patchTeacher, "POST /api/v1/admin/teachers/{id}/update": a.patchTeacher, "POST /api/v1/admin/teachers/{id}/approve": a.approveTeacher, "PUT /api/v1/admin/teachers/{id}/rooms": a.teacherRooms,
-		"POST /api/v1/admin/rooms": a.addRoom, "PATCH /api/v1/admin/rooms/{id}": a.patchRoom, "POST /api/v1/admin/rooms/{id}/update": a.patchRoom, "POST /api/v1/admin/classes": a.addClass, "DELETE /api/v1/admin/classes/{id}": a.deleteClass, "PATCH /api/v1/admin/classes/{id}": a.patchClass, "POST /api/v1/admin/classes/{id}/update": a.patchClass, "POST /api/v1/admin/rooms/{id}/bind-codes": a.bindCode,
+		"GET /api/v1/admin/teachers": a.adminTeachers, "GET /api/v1/admin/teacher-requests": a.adminTeachers, "PATCH /api/v1/admin/teachers/{id}": a.patchTeacher, "POST /api/v1/admin/teachers/{id}/update": a.patchTeacher, "POST /api/v1/admin/teachers/{id}/approve": a.approveTeacher, "PUT /api/v1/admin/teachers/{id}/classes": a.teacherClasses,
+		"GET /api/v1/admin/classes": a.adminClasses, "POST /api/v1/admin/classes": a.addClass, "DELETE /api/v1/admin/classes/{id}": a.deleteClass, "PATCH /api/v1/admin/classes/{id}": a.patchClass, "POST /api/v1/admin/classes/{id}/update": a.patchClass, "POST /api/v1/admin/classes/{id}/bind-codes": a.bindCode,
 		"GET /api/v1/admin/devices": a.adminDevices, "POST /api/v1/admin/devices/{id}/revoke": a.revokeDevice, "GET /api/v1/admin/settings": a.getSettings, "PUT /api/v1/admin/settings": a.putSettings, "POST /api/v1/admin/rosters/preview": a.rosterPreview, "POST /api/v1/admin/rosters/xlsx": a.rosterXLSX, "POST /api/v1/admin/rosters/commit": a.rosterCommit, "GET /api/v1/admin/messages": a.listMessages, "POST /api/v1/admin/messages/{id}/revoke": a.revokeMessage,
 	} {
 		mux.HandleFunc(p, a.wrap(f))
@@ -235,7 +243,7 @@ func (a *App) health(w http.ResponseWriter, r *http.Request) error {
 	if e := a.db.PingContext(r.Context()); e != nil {
 		return e
 	}
-	ok(w, 200, obj{"mode": a.cfg.Mode, "version": "0.1.3", "ready": true})
+	ok(w, 200, obj{"mode": a.cfg.Mode, "version": "0.2.0", "ready": true})
 	return nil
 }
 func (a *App) allow(key string, max int, d time.Duration) bool {

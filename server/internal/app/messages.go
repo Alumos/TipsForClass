@@ -15,7 +15,7 @@ import (
 type createRequest struct {
 	ClientToken     string   `json:"clientToken"`
 	Type            string   `json:"type"`
-	RoomIDs         []string `json:"roomIds"`
+	ClassIDs        []string `json:"classIds"`
 	StudentIDs      []string `json:"studentIds"`
 	Title           string   `json:"title,omitempty"`
 	Destination     string   `json:"destination,omitempty"`
@@ -34,7 +34,7 @@ type updateRequest struct {
 	Content         *string         `json:"content,omitempty"`
 	Body            *string         `json:"body,omitempty"`
 	Destination     *string         `json:"destination,omitempty"`
-	RoomIDs         *[]string       `json:"roomIds,omitempty"`
+	ClassIDs        *[]string       `json:"classIds,omitempty"`
 	StudentIDs      *[]string       `json:"studentIds,omitempty"`
 	Broadcast       json.RawMessage `json:"broadcast,omitempty"`
 	BroadcastTimes  *int            `json:"broadcastTimes,omitempty"`
@@ -166,7 +166,7 @@ func normalizeCreate(in *createRequest) error {
 	if e != nil {
 		return e
 	}
-	in.RoomIDs, e = uniqIDs(in.RoomIDs)
+	in.ClassIDs, e = uniqIDs(in.ClassIDs)
 	if e != nil {
 		return e
 	}
@@ -183,8 +183,8 @@ func normalizeCreate(in *createRequest) error {
 	if count(in.Destination) > 40 {
 		return bad("destination", "地点最多40字")
 	}
-	if len(in.RoomIDs) == 0 || len(in.RoomIDs) > 20 {
-		return bad("roomIds", "请选择1–20间教室")
+	if len(in.ClassIDs) == 0 || len(in.ClassIDs) > 20 {
+		return bad("classIds", "请选择1–20个班级")
 	}
 	if in.BroadcastTimes < 0 || in.BroadcastTimes > 2 {
 		return bad("broadcastTimes", "播报次数只能为0、1或2")
@@ -202,8 +202,8 @@ func normalizeCreate(in *createRequest) error {
 		if in.Type == "call" {
 			max = 3
 		}
-		if len(in.RoomIDs) != 1 || len(in.StudentIDs) < 1 || len(in.StudentIDs) > max {
-			return bad("studentIds", "呼叫和作业仅限同一教室，学生数量不符合该类型限制")
+		if len(in.ClassIDs) != 1 || len(in.StudentIDs) < 1 || len(in.StudentIDs) > max {
+			return bad("studentIds", "呼叫和作业仅限同一班级，学生数量不符合该类型限制")
 		}
 		if in.Destination == "" {
 			return bad("destination", "请填写地点")
@@ -239,7 +239,7 @@ type assembleOptions struct {
 }
 
 func (a *App) assembleWithOptions(q queryer, t Teacher, in createRequest, now time.Time, options assembleOptions) (Message, []string, error) {
-	m := Message{Revision: 1, Type: in.Type, Body: in.Body, Destination: in.Destination, DisplayPosition: in.DisplayPosition, Targets: []Target{}, RoomIDs: in.RoomIDs, TeacherName: t.Name, Status: "active", CreatedAt: stamp(now)}
+	m := Message{Revision: 1, Type: in.Type, Body: in.Body, Destination: in.Destination, DisplayPosition: in.DisplayPosition, Targets: []Target{}, ClassIDs: in.ClassIDs, TeacherName: t.Name, Status: "active", CreatedAt: stamp(now)}
 	var status, role string
 	if e := q.QueryRow("SELECT status,role FROM teachers WHERE id=?", t.ID).Scan(&status, &role); e != nil {
 		return m, nil, e
@@ -248,20 +248,20 @@ func (a *App) assembleWithOptions(q queryer, t Teacher, in createRequest, now ti
 		return m, nil, fail(403, "FORBIDDEN", "账号权限已经变化")
 	}
 	devices := []string{}
-	for _, rid := range in.RoomIDs {
+	for _, cid := range in.ClassIDs {
 		var n int
-		e := q.QueryRow("SELECT COUNT(*) FROM rooms r WHERE r.id=? AND r.status='active' AND (?='admin' OR EXISTS(SELECT 1 FROM teacher_rooms tr WHERE tr.teacher_id=? AND tr.room_id=r.id))", rid, role, t.ID).Scan(&n)
+		e := q.QueryRow("SELECT COUNT(*) FROM classes c WHERE c.id=? AND c.status='active' AND (?='admin' OR EXISTS(SELECT 1 FROM teacher_classes tc WHERE tc.teacher_id=? AND tc.class_id=c.id))", cid, role, t.ID).Scan(&n)
 		if e != nil {
 			return m, nil, e
 		}
 		if n != 1 {
-			return m, nil, fail(403, "FORBIDDEN", "没有目标教室发布权限")
+			return m, nil, fail(403, "FORBIDDEN", "没有目标班级发布权限")
 		}
-		rows, e := q.Query("SELECT id FROM devices WHERE room_id=? AND revoked_at IS NULL AND token_expires_at>?", rid, now.UnixMilli())
+		rows, e := q.Query("SELECT id FROM devices WHERE class_id=? AND revoked_at IS NULL AND token_expires_at>?", cid, now.UnixMilli())
 		if e != nil {
 			return m, nil, e
 		}
-		roomDevices := 0
+		classDevices := 0
 		for rows.Next() {
 			var id string
 			if e = rows.Scan(&id); e != nil {
@@ -269,18 +269,18 @@ func (a *App) assembleWithOptions(q queryer, t Teacher, in createRequest, now ti
 				return m, nil, e
 			}
 			devices = append(devices, id)
-			roomDevices++
+			classDevices++
 		}
 		e = rows.Err()
 		rows.Close()
 		if e != nil {
 			return m, nil, e
 		}
-		if roomDevices == 0 {
-			return m, nil, bad("roomIds", "目标教室尚未绑定有效设备，请先绑定大屏或移除此教室")
+		if classDevices == 0 {
+			return m, nil, bad("classIds", "目标班级尚未绑定有效设备，请先绑定大屏或移除该班级")
 		}
-		activeQuery := "SELECT COUNT(*) FROM messages m JOIN message_rooms mr ON mr.message_id=m.id WHERE mr.room_id=? AND m.status='active' AND m.expire_at>?"
-		activeArgs := []any{rid, now.UnixMilli()}
+		activeQuery := "SELECT COUNT(*) FROM messages m JOIN message_classes mc ON mc.message_id=m.id WHERE mc.class_id=? AND m.status='active' AND m.expire_at>?"
+		activeArgs := []any{cid, now.UnixMilli()}
 		if options.excludeMessageID != "" {
 			activeQuery += " AND m.id<>?"
 			activeArgs = append(activeArgs, options.excludeMessageID)
@@ -290,7 +290,7 @@ func (a *App) assembleWithOptions(q queryer, t Teacher, in createRequest, now ti
 			return m, nil, e
 		}
 		if active >= 50 {
-			return m, nil, bad("roomIds", "目标教室已达50条有效或未来公告，请先撤回部分公告")
+			return m, nil, bad("classIds", "目标班级已达50条有效或未来公告，请先撤回部分公告")
 		}
 	}
 	start := now
@@ -315,9 +315,9 @@ func (a *App) assembleWithOptions(q queryer, t Teacher, in createRequest, now ti
 			var target Target
 			var no string
 			target.StudentID = id
-			e := q.QueryRow("SELECT s.name,c.name,s.student_no FROM students s JOIN classes c ON c.id=s.class_id WHERE s.id=? AND s.active=1 AND c.room_id=?", id, in.RoomIDs[0]).Scan(&target.Name, &target.ClassName, &no)
+			e := q.QueryRow("SELECT s.name,c.name,s.student_no FROM students s JOIN classes c ON c.id=s.class_id WHERE s.id=? AND s.active=1 AND c.id=?", id, in.ClassIDs[0]).Scan(&target.Name, &target.ClassName, &no)
 			if errors.Is(e, sql.ErrNoRows) {
-				return m, nil, bad("studentIds", "学生已停用或不属于目标教室，请重新选择")
+				return m, nil, bad("studentIds", "学生已停用或不属于目标班级，请重新选择")
 			}
 			if e != nil {
 				return m, nil, e
@@ -350,8 +350,8 @@ func (a *App) assembleWithOptions(q queryer, t Teacher, in createRequest, now ti
 	}
 	return m, devices, nil
 }
-func appendEvent(tx *sql.Tx, room, event string, data any) error {
-	_, e := tx.Exec("INSERT INTO events(room_id,event_type,payload_json,created_at) VALUES(?,?,?,?)", room, event, jsonText(data), time.Now().UnixMilli())
+func appendEvent(tx *sql.Tx, classID, event string, data any) error {
+	_, e := tx.Exec("INSERT INTO events(class_id,event_type,payload_json,created_at) VALUES(?,?,?,?)", classID, event, jsonText(data), time.Now().UnixMilli())
 	return e
 }
 func loadMessageState(q queryer, id string) (Message, string, int, error) {
@@ -447,11 +447,11 @@ func (a *App) createMessage(w http.ResponseWriter, r *http.Request) error {
 	if _, e = tx.Exec("UPDATE messages SET payload_json=? WHERE id=?", jsonText(m), m.ID); e != nil {
 		return e
 	}
-	for _, rid := range m.RoomIDs {
-		if _, e = tx.Exec("INSERT INTO message_rooms VALUES(?,?)", m.ID, rid); e != nil {
+	for _, cid := range m.ClassIDs {
+		if _, e = tx.Exec("INSERT INTO message_classes VALUES(?,?)", m.ID, cid); e != nil {
 			return e
 		}
-		if e = appendEvent(tx, rid, "message.upsert", m); e != nil {
+		if e = appendEvent(tx, cid, "message.upsert", m); e != nil {
 			return e
 		}
 	}
@@ -543,7 +543,7 @@ func messageUpdateFingerprint(m Message) string {
 		"destination":     m.Destination,
 		"displayPosition": m.DisplayPosition,
 		"targets":         m.Targets,
-		"roomIds":         m.RoomIDs,
+		"classIds":        m.ClassIDs,
 		"speechText":      m.SpeechText,
 		"priority":        m.Priority,
 		"startAt":         m.StartAt,
@@ -604,13 +604,13 @@ func (a *App) buildMessageUpdate(q queryer, t Teacher, old Message, in updateReq
 	if e != nil {
 		return Message{}, false, e
 	}
-	if in.RoomIDs != nil {
-		roomIDs, e := uniqIDs(*in.RoomIDs)
+	if in.ClassIDs != nil {
+		classIDs, e := uniqIDs(*in.ClassIDs)
 		if e != nil {
-			return Message{}, false, bad("roomIds", "目标教室必须为不重复的正整数编号")
+			return Message{}, false, bad("classIds", "目标班级必须为不重复的正整数编号")
 		}
-		if !sameStrings(roomIDs, old.RoomIDs) {
-			return Message{}, false, bad("roomIds", "编辑公告时不能更改目标教室")
+		if !sameStrings(classIDs, old.ClassIDs) {
+			return Message{}, false, bad("classIds", "编辑公告时不能更改目标班级")
 		}
 	}
 
@@ -675,7 +675,7 @@ func (a *App) buildMessageUpdate(q queryer, t Teacher, old Message, in updateReq
 	input := createRequest{
 		ClientToken:     uuid(),
 		Type:            kindValue,
-		RoomIDs:         append([]string(nil), old.RoomIDs...),
+		ClassIDs:        append([]string(nil), old.ClassIDs...),
 		StudentIDs:      studentIDs,
 		Title:           assembledTitle,
 		Destination:     destination,
@@ -846,8 +846,8 @@ func (a *App) updateMessage(w http.ResponseWriter, r *http.Request) error {
 			}
 		}
 	}
-	for _, rid := range updated.RoomIDs {
-		if e = appendEvent(tx, rid, "message.upsert", updated); e != nil {
+	for _, cid := range updated.ClassIDs {
+		if e = appendEvent(tx, cid, "message.upsert", updated); e != nil {
 			return e
 		}
 	}
@@ -914,9 +914,9 @@ func (a *App) listMessages(w http.ResponseWriter, r *http.Request) error {
 			return bad("status", "状态筛选无效")
 		}
 	}
-	if rid := r.URL.Query().Get("roomId"); rid != "" {
-		q += " AND EXISTS(SELECT 1 FROM message_rooms mr WHERE mr.message_id=m.id AND mr.room_id=?)"
-		args = append(args, rid)
+	if cid := r.URL.Query().Get("classId"); cid != "" {
+		q += " AND EXISTS(SELECT 1 FROM message_classes mc WHERE mc.message_id=m.id AND mc.class_id=?)"
+		args = append(args, cid)
 	}
 	if cursor := r.URL.Query().Get("cursor"); cursor != "" {
 		raw, e := base64.RawURLEncoding.DecodeString(cursor)
@@ -995,9 +995,9 @@ func (a *App) revokeMessage(w http.ResponseWriter, r *http.Request) error {
 	}
 	if m.Status != "revoked" {
 		if !strings.HasPrefix(r.URL.Path, "/api/v1/admin/") {
-			for _, rid := range m.RoomIDs {
-				if !ownsRoom(t, rid) {
-					return fail(403, "FORBIDDEN", "教室权限已变化，请由学校管理员撤回")
+			for _, cid := range m.ClassIDs {
+				if !ownsClass(t, cid) {
+					return fail(403, "FORBIDDEN", "班级权限已变化，请由学校管理员撤回")
 				}
 			}
 		}
@@ -1006,11 +1006,11 @@ func (a *App) revokeMessage(w http.ResponseWriter, r *http.Request) error {
 		if _, e = tx.Exec("UPDATE messages SET status='revoked',revision=?,payload_json=? WHERE id=?", m.Revision, jsonText(m), m.ID); e != nil {
 			return e
 		}
-		for _, rid := range m.RoomIDs {
-			if _, _, e = removeRoomDisplayPin(tx, rid, m.ID); e != nil {
+		for _, cid := range m.ClassIDs {
+			if _, _, e = removeClassDisplayPin(tx, cid, m.ID); e != nil {
 				return e
 			}
-			if e = appendEvent(tx, rid, "message.revoked", obj{"id": m.ID, "revision": m.Revision}); e != nil {
+			if e = appendEvent(tx, cid, "message.revoked", obj{"id": m.ID, "revision": m.Revision}); e != nil {
 				return e
 			}
 		}
@@ -1083,9 +1083,9 @@ func (a *App) rebroadcast(w http.ResponseWriter, r *http.Request) error {
 	if m.Type == "notice" || m.Status != "active" || now.Before(start) || !now.Before(expire) {
 		return bad("message", "仅当前有效呼叫或作业公告可重播")
 	}
-	for _, rid := range m.RoomIDs {
-		if !ownsRoom(t, rid) {
-			return fail(403, "FORBIDDEN", "目标教室权限已变化")
+	for _, cid := range m.ClassIDs {
+		if !ownsClass(t, cid) {
+			return fail(403, "FORBIDDEN", "目标班级权限已变化")
 		}
 	}
 	settings, e := readSettings(tx)
@@ -1115,8 +1115,8 @@ func (a *App) rebroadcast(w http.ResponseWriter, r *http.Request) error {
 	if _, e = tx.Exec("INSERT INTO broadcast_jobs VALUES(?,?,?,?,?)", m.ID, generation, in.Times, now.UnixMilli(), deadline.UnixMilli()); e != nil {
 		return e
 	}
-	for _, rid := range m.RoomIDs {
-		if e = appendEvent(tx, rid, "message.replay", m); e != nil {
+	for _, cid := range m.ClassIDs {
+		if e = appendEvent(tx, cid, "message.replay", m); e != nil {
 			return e
 		}
 	}
@@ -1138,20 +1138,20 @@ func (a *App) delivery(w http.ResponseWriter, r *http.Request) error {
 	if e != nil {
 		return e
 	}
-	rows, e := a.db.Query("SELECT d.id,d.label,r.name,d.last_seen_at,d.tts_status,d.revoked_at,d.token_expires_at FROM message_devices md JOIN devices d ON d.id=md.device_id JOIN rooms r ON r.id=d.room_id WHERE md.message_id=? ORDER BY d.id", m.ID)
+	rows, e := a.db.Query("SELECT d.id,d.label,c.id,c.name,d.last_seen_at,d.tts_status,d.revoked_at,d.token_expires_at FROM message_devices md JOIN devices d ON d.id=md.device_id JOIN classes c ON c.id=d.class_id WHERE md.message_id=? ORDER BY d.id", m.ID)
 	if e != nil {
 		return e
 	}
 	devices := []obj{}
 	for rows.Next() {
-		var id, label, rn, tts string
+		var id, label, cid, cn, tts string
 		var last, rev sql.NullInt64
 		var expiry int64
-		if e = rows.Scan(&id, &label, &rn, &last, &tts, &rev, &expiry); e != nil {
+		if e = rows.Scan(&id, &label, &cid, &cn, &last, &tts, &rev, &expiry); e != nil {
 			rows.Close()
 			return e
 		}
-		devices = append(devices, obj{"id": id, "label": label, "roomName": rn, "online": last.Valid && time.Now().UnixMilli()-last.Int64 < 90000 && !rev.Valid && expiry > time.Now().UnixMilli(), "receivedAt": nil, "displayedAt": nil, "revokedAt": nil, "playedRounds": 0, "generation": 0, "ttsStatus": tts, "lastSeenAt": nil})
+		devices = append(devices, obj{"id": id, "label": label, "classId": cid, "className": cn, "online": last.Valid && time.Now().UnixMilli()-last.Int64 < 90000 && !rev.Valid && expiry > time.Now().UnixMilli(), "receivedAt": nil, "displayedAt": nil, "revokedAt": nil, "playedRounds": 0, "generation": 0, "ttsStatus": tts, "lastSeenAt": nil})
 		if last.Valid {
 			devices[len(devices)-1]["lastSeenAt"] = msstamp(last.Int64)
 		}

@@ -43,10 +43,10 @@ function decorateMessages(messages) {
 
 Page({
   data: {
-    rooms: [],
-    roomIndex: 0,
-    roomId: '',
-    roomName: '',
+    classes: [],
+    classIndex: 0,
+    classId: '',
+    className: '',
     position: 'top_right',
     messages: [],
     pinnedCount: 0,
@@ -60,10 +60,10 @@ Page({
   async onLoad(query) {
     const auth = session.requireLogin();
     if (!auth) return;
-    this.preferredRoomId = query && query.roomId ? String(query.roomId) : '';
+    this.preferredClassId = query && query.classId ? String(query.classId) : '';
     this.scope = 'arrange';
     this.visible = true;
-    await this.loadRooms();
+    await this.loadClasses();
   },
 
   onUnload() {
@@ -75,15 +75,15 @@ Page({
     this.loadSettings().finally(() => wx.stopPullDownRefresh());
   },
 
-  async loadRooms() {
+  async loadClasses() {
     this.setData({ loading: true, error: '', notice: '' });
     try {
-      const result = await api.request('/rooms', { scope: this.scope });
-      const rooms = result.items || [];
-      if (!rooms.length) throw new Error('当前账号还没有可排序的教室');
-      const preferred = rooms.findIndex(room => String(room.id) === this.preferredRoomId);
-      const roomIndex = preferred >= 0 ? preferred : 0;
-      this.setData({ rooms, roomIndex, roomId: String(rooms[roomIndex].id), roomName: rooms[roomIndex].name });
+      const result = await api.request('/classes', { scope: this.scope });
+      const classes = (result.items || []).map(item => Object.assign({}, item, { id: String(item.id) }));
+      if (!classes.length) throw new Error('当前账号还没有可排序的班级');
+      const preferred = classes.findIndex(item => item.id === this.preferredClassId);
+      const classIndex = preferred >= 0 ? preferred : 0;
+      this.setData({ classes, classIndex, classId: classes[classIndex].id, className: classes[classIndex].name });
       await this.loadSettings();
     } catch (e) {
       if (!e.aborted) this.setData({ error: api.errorText(e) });
@@ -91,20 +91,20 @@ Page({
     }
   },
 
-  async roomChange(e) {
+  async classChange(e) {
     if (this.data.busy) return;
-    const roomIndex = Number(e.detail.value);
-    const room = this.data.rooms[roomIndex];
-    if (!room) return;
-    this.setData({ roomIndex, roomId: String(room.id), roomName: room.name, dirty: false, notice: '' });
+    const classIndex = Number(e.detail.value);
+    const current = this.data.classes[classIndex];
+    if (!current) return;
+    this.setData({ classIndex, classId: current.id, className: current.name, dirty: false, notice: '' });
     await this.loadSettings();
   },
 
   async loadSettings() {
-    if (!this.data.roomId) return;
+    if (!this.data.classId) return;
     this.setData({ loading: true, error: '', notice: '' });
     try {
-      const path = '/rooms/' + encodeURIComponent(this.data.roomId) + '/display-settings';
+      const path = '/classes/' + encodeURIComponent(this.data.classId) + '/display-settings';
       const result = await api.request(path, { scope: this.scope });
       const normalized = logic.normalizeDisplaySettings(result);
       this.applyMessages(logic.orderDisplayMessages(normalized.messages, normalized));
@@ -156,13 +156,13 @@ Page({
   },
 
   async saveSettings() {
-    if (this.data.busy || !this.data.roomId) return;
+    if (this.data.busy || !this.data.classId) return;
     this.setData({ busy: true, error: '', notice: '' });
     try {
-      const path = '/rooms/' + encodeURIComponent(this.data.roomId) + '/display-settings';
+      const path = '/classes/' + encodeURIComponent(this.data.classId) + '/display-settings';
       await api.request(path, {
         method: 'PUT',
-        data: logic.displaySettingsPayload(this.data.roomId, this.data.position, this.data.messages),
+        data: logic.displaySettingsPayload(this.data.classId, this.data.position, this.data.messages),
         scope: this.scope
       });
       this.setData({ busy: false, dirty: false, notice: '置顶顺序已保存，大屏同步后应用；未置顶消息继续按发布时间排列。' });

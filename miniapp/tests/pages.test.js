@@ -16,12 +16,12 @@ test('uncertain create retains full frozen payload, token and original immediate
   const calls = [], storage = new Map();
   const auth = { teacher: { id: 'teacher-a' } };
   const api = { request: async (url, opts) => { calls.push(JSON.parse(JSON.stringify(opts.data))); throw new Error('timeout'); }, errorText: e => e.message };
-  const session = { read: () => auth, key: (id, room) => id + ':' + room };
+  const session = { read: () => auth, key: (id, cls) => id + ':' + cls };
   const wx = { setStorageSync: (key, value) => storage.set(key, value) };
   const publish = page('publish/publish.js', api, session, wx);
   publish.userId = 'teacher-a';
   const end = logic.schoolParts(Date.now() + 3600000);
-  Object.assign(publish.data, { ready: true, roomId: '1', roomIds: ['1'], rooms: [{ id: '1', deviceCount: 1 }], destination: '办公室', selected: [{ id: '1', name: '同学' }], expireDate: end.date, expireTime: end.time });
+  Object.assign(publish.data, { ready: true, classId: '1', classIds: ['1'], targetClasses: [{ id: '1', deviceCount: 1 }], destination: '办公室', selected: [{ id: '1', name: '同学' }], expireDate: end.date, expireTime: end.time });
   await publish.submit();
   assert.equal(publish.data.destination, '办公室');
   assert.equal(publish.data.busy, false);
@@ -60,12 +60,12 @@ test('delivery page can resume after being hidden during a request; stale respon
   assert.equal(detail.data.message.title, '新数据');
   assert.equal(detail.data.loading, false);
 });
-test('teacher with null roomIds opens permission editor safely', () => {
+test('teacher with null classIds opens permission editor safely', () => {
   const admin = page('admin/admin.js', {}, {});
-  admin.data.teachers = [{ id: '1', roomIds: null, status: 'pending', role: 'teacher' }];
-  admin.data.rooms = [{ id: '1', name: '教室' }];
+  admin.data.teachers = [{ id: '1', classIds: null, status: 'pending', role: 'teacher' }];
+  admin.data.classes = [{ id: '1', name: '班级' }];
   admin.editTeacher({ currentTarget: { dataset: { id: '1' } } });
-  assert.equal(admin.data.teacherRooms[0].checked, false);
+  assert.equal(admin.data.teacherClasses[0].checked, false);
 });
 test('arrange page only reorders pinned messages and saves their order without a global position control', async () => {
   const calls = [];
@@ -73,10 +73,10 @@ test('arrange page only reorders pinned messages and saves their order without a
     request: async (path, options) => {
       const opts = options || {};
       calls.push({ path, method: opts.method || 'GET', data: opts.data ? JSON.parse(JSON.stringify(opts.data)) : null });
-      if (path === '/rooms') {
+      if (path === '/classes') {
         return { items: [{ id: '1', name: '一班' }, { id: '2', name: '二班' }] };
       }
-      if (path === '/rooms/2/display-settings' && !opts.method) {
+      if (path === '/classes/2/display-settings' && !opts.method) {
         return {
           displaySettings: {
             displayPosition: 'center',
@@ -89,15 +89,15 @@ test('arrange page only reorders pinned messages and saves their order without a
           ]
         };
       }
-      if (path === '/rooms/2/display-settings' && opts.method === 'PUT') return {};
+      if (path === '/classes/2/display-settings' && opts.method === 'PUT') return {};
       throw new Error('unexpected request ' + path + ' ' + (opts.method || 'GET'));
     },
     abortScope: () => {},
     errorText: error => error.message
   };
   const arrange = page('arrange/arrange.js', api, { requireLogin: () => ({ teacher: { id: 't1' } }) }, { showToast: () => {} });
-  await arrange.onLoad({ roomId: '2' });
-  assert.equal(arrange.data.roomId, '2');
+  await arrange.onLoad({ classId: '2' });
+  assert.equal(arrange.data.classId, '2');
   assert.equal(arrange.data.position, 'center');
   assert.deepEqual(arrange.data.messages.map(message => message.id), ['2', '1']);
   assert.equal(arrange.data.positionOptions, undefined);
@@ -116,9 +116,9 @@ test('arrange page only reorders pinned messages and saves their order without a
   await arrange.saveSettings();
   const save = calls.find(call => call.method === 'PUT');
   assert(save);
-  assert.equal(save.path, '/rooms/2/display-settings');
+  assert.equal(save.path, '/classes/2/display-settings');
   assert.deepEqual(save.data, {
-    roomId: '2',
+    classId: '2',
     displayPosition: 'center',
     pinnedMessageIds: ['1', '2'],
     messageOrder: ['1', '2']
@@ -171,7 +171,7 @@ test('admin chooses and uploads XLSX to the roster endpoint while preserving tex
   assert.equal(admin.data.preview.displayRows[1].studentNo, '000043');
 });
 
-test('publish keeps the current notice room fixed and sends the selected display position', async () => {
+test('publish keeps the current notice class fixed and sends the selected display position', async () => {
   const calls = [];
   const toasts = [];
   const redirects = [];
@@ -183,7 +183,7 @@ test('publish keeps the current notice room fixed and sends the selected display
     },
     errorText: error => error.message
   };
-  const session = { read: () => ({ teacher: { id: 'teacher-a' } }), key: (teacher, room) => teacher + ':' + room };
+  const session = { read: () => ({ teacher: { id: 'teacher-a' } }), key: (teacher, cls) => teacher + ':' + cls };
   const wx = {
     setStorageSync: () => {},
     removeStorageSync: () => {},
@@ -196,10 +196,10 @@ test('publish keeps the current notice room fixed and sends the selected display
     ready: true,
     editing: false,
     type: 'notice',
-    roomId: '1',
-    roomIds: ['1'],
-    rooms: [{ id: '1', name: '一班', deviceCount: 1 }, { id: '2', name: '二班', deviceCount: 1 }],
-    roomName: '一班',
+    classId: '1',
+    classIds: ['1'],
+    targetClasses: [{ id: '1', name: '一班', deviceCount: 1 }, { id: '2', name: '二班', deviceCount: 1 }],
+    className: '一班',
     title: '通知',
     body: '正文',
     expireDate: end.date,
@@ -207,24 +207,24 @@ test('publish keeps the current notice room fixed and sends the selected display
   });
   publish.userId = 'teacher-a';
 
-  publish.changed({ roomIds: ['2', '2'] });
-  assert.deepEqual(Array.from(publish.data.roomIds), ['1', '2']);
-  publish.toggleRoom({ currentTarget: { dataset: { id: '1' } } });
-  assert.deepEqual(Array.from(publish.data.roomIds), ['1', '2']);
-  assert.equal(toasts.at(-1), '当前教室无需重复选择');
+  publish.changed({ classIds: ['2', '2'] });
+  assert.deepEqual(Array.from(publish.data.classIds), ['1', '2']);
+  publish.toggleClass({ currentTarget: { dataset: { id: '1' } } });
+  assert.deepEqual(Array.from(publish.data.classIds), ['1', '2']);
+  assert.equal(toasts.at(-1), '当前班级无需重复选择');
   publish.choosePosition({ currentTarget: { dataset: { value: 'center' } } });
   await publish.submit();
 
   const create = calls.find(call => call.path === '/messages');
   assert(create);
   assert.equal(create.method, 'POST');
-  assert.deepEqual(create.data.roomIds, ['1', '2']);
+  assert.deepEqual(create.data.classIds, ['1', '2']);
   assert.equal(create.data.displayPosition, 'center');
   assert.deepEqual(create.data.studentIds, []);
   assert.equal(redirects[0], '/pages/detail/detail?id=message-new');
 });
 
-test('edit mode hydrates all message types, locks rooms and posts to the update endpoint', async () => {
+test('edit mode hydrates all message types, locks classes and posts to the update endpoint', async () => {
   const calls = [];
   const toasts = [];
   const message = {
@@ -233,7 +233,7 @@ test('edit mode hydrates all message types, locks rooms and posts to the update 
     title: '批量作业',
     body: '完成练习册',
     destination: '物理实验室',
-    roomIds: ['2'],
+    classIds: ['2'],
     targets: [{ studentId: '11', name: '陈同学', className: '三年一班', studentNoSuffix: '0042' }],
     broadcast: { times: 1 },
     startAt: new Date(Date.now() - 60000).toISOString(),
@@ -245,41 +245,41 @@ test('edit mode hydrates all message types, locks rooms and posts to the update 
       const opts = options || {};
       calls.push({ path, method: opts.method || 'GET', data: opts.data ? JSON.parse(JSON.stringify(opts.data)) : null });
       if (path === '/me') return { status: 'active' };
-      if (path === '/rooms') return { items: [{ id: '1', name: '一班', deviceCount: 1 }, { id: '2', name: '二班', deviceCount: 1 }] };
+      if (path === '/classes') return { items: [{ id: '1', name: '一班', deviceCount: 1 }, { id: '2', name: '二班', deviceCount: 1 }] };
       if (path === '/messages/88' && !opts.method) return message;
-      if (path === '/classes?roomId=2') return { items: [{ id: 'class-1', name: '三年一班' }] };
-      if (path.startsWith('/students?classId=class-1')) return { items: [{ id: '11', name: '陈同学', classId: 'class-1', studentNo: '000042' }], nextCursor: '' };
+      if (path.indexOf('/students?classId=1') === 0) return { items: [{ id: '11', name: '陈同学', classId: '1', studentNo: '000042' }], nextCursor: '' };
+      if (path.indexOf('/students?') === 0) return { items: [], nextCursor: '' };
       if (path === '/messages/88/update') return { id: '88' };
       throw new Error('unexpected request ' + path);
     },
     errorText: error => error.message
   };
   const auth = { teacher: { id: 'teacher-a' } };
-  const session = { requireLogin: () => auth, read: () => auth, key: (teacher, room) => teacher + ':' + room, clearDrafts: () => {} };
+  const session = { requireLogin: () => auth, read: () => auth, key: (teacher, cls) => teacher + ':' + cls, clearDrafts: () => {} };
   const wx = {
     removeStorageSync: () => {},
     setStorageSync: () => {},
     redirectTo: () => {},
     showToast: options => toasts.push(options.title),
-    showActionSheet: () => { throw new Error('room picker must stay locked while editing'); }
+    showActionSheet: () => { throw new Error('class picker must stay locked while editing'); }
   };
   const publish = page('publish/publish.js', api, session, wx);
-  await publish.onLoad({ editId: '88', roomId: '2' });
+  await publish.onLoad({ editId: '88', classId: '2' });
 
   assert.equal(publish.data.editing, true);
   assert.equal(publish.data.type, 'batch');
-  assert.deepEqual(Array.from(publish.data.roomIds), ['2']);
+  assert.deepEqual(Array.from(publish.data.classIds), ['2']);
   assert.deepEqual(Array.from(publish.data.selected, student => student.id), ['11']);
   assert.equal(publish.data.displayPosition, 'center');
-  publish.switchRoom();
-  assert.equal(toasts.at(-1), '编辑时不能更改目标教室');
+  publish.switchClass();
+  assert.equal(toasts.at(-1), '编辑时不能更改目标班级');
 
-  publish.populateEdit(Object.assign({}, message, { type: 'notice', roomIds: ['1', '2'], targets: [] }));
+  publish.populateEdit(Object.assign({}, message, { type: 'notice', classIds: ['1', '2'], targets: [] }));
   assert.equal(publish.data.type, 'notice');
-  assert.deepEqual(Array.from(publish.data.roomIds), ['1', '2']);
+  assert.deepEqual(Array.from(publish.data.classIds), ['1', '2']);
   publish.chooseType({ currentTarget: { dataset: { type: 'call' } } });
   assert.equal(publish.data.type, 'notice');
-  assert.equal(toasts.at(-1), '多教室通知不能改为单教室类型');
+  assert.equal(toasts.at(-1), '多班级通知不能改为单班级类型');
 
   publish.populateEdit(Object.assign({}, message, { type: 'call' }));
   assert.equal(publish.data.type, 'call');
@@ -292,7 +292,7 @@ test('edit mode hydrates all message types, locks rooms and posts to the update 
   assert.equal(update.method, 'POST');
   assert.equal(update.data.displayPosition, 'top_right');
   assert.equal(update.data.type, 'batch');
-  assert.deepEqual(update.data.roomIds, ['2']);
+  assert.deepEqual(update.data.classIds, ['2']);
   assert.deepEqual(update.data.studentIds, ['11']);
 });
 
@@ -321,10 +321,10 @@ test('records exposes edit navigation and refreshes after confirmed deletion', a
     stopPullDownRefresh: () => {}
   };
   const records = page('records/records.js', api, { requireLogin: () => ({ teacher: { id: 'teacher-a' } }) }, wx);
-  records.data.items = [{ id: '42', roomIds: ['2'], title: '待删除公告' }];
+  records.data.items = [{ id: '42', classIds: ['2'], title: '待删除公告' }];
 
   records.edit({ currentTarget: { dataset: { id: '42' } } });
-  assert.equal(navigations[0], '/pages/publish/publish?editId=42&roomId=2');
+  assert.equal(navigations[0], '/pages/publish/publish?editId=42&classId=2');
   assert.equal(modal, undefined);
 
   const removed = await records.remove({ currentTarget: { dataset: { id: '42' } } });

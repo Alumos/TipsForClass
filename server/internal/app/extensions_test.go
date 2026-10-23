@@ -14,14 +14,14 @@ import (
 	"time"
 )
 
-func (x *testAPI) teacherForRooms(id string, roomIDs ...string) string {
+func (x *testAPI) teacherForClasses(id string, classIDs ...string) string {
 	x.t.Helper()
 	_, e := x.a.db.Exec("INSERT INTO teachers(id,openid,name,role,status) VALUES(?,?,?,'teacher','active')", id, "openid-"+id, "教师"+id)
 	if e != nil {
 		x.t.Fatal(e)
 	}
-	for _, roomID := range roomIDs {
-		if _, e = x.a.db.Exec("INSERT INTO teacher_rooms VALUES(?,?)", id, roomID); e != nil {
+	for _, classID := range classIDs {
+		if _, e = x.a.db.Exec("INSERT INTO teacher_classes VALUES(?,?)", id, classID); e != nil {
 			x.t.Fatal(e)
 		}
 	}
@@ -32,10 +32,10 @@ func (x *testAPI) teacherForRooms(id string, roomIDs ...string) string {
 	return token
 }
 
-func (x *testAPI) notice(token, roomID, title string, expireAt time.Time) string {
+func (x *testAPI) notice(token, classID, title string, expireAt time.Time) string {
 	x.t.Helper()
 	payload := obj{
-		"clientToken": uuid(), "type": "notice", "roomIds": []string{roomID},
+		"clientToken": uuid(), "type": "notice", "classIds": []string{classID},
 		"studentIds": []string{}, "title": title, "body": "", "broadcastTimes": 0,
 		"expireAt": stamp(expireAt),
 	}
@@ -78,37 +78,40 @@ func (x *testAPI) uploadXLSX(classID, filename string, data []byte, want int) ob
 func TestDisplaySettingsSharedScopedAndSnapshotOrdered(t *testing.T) {
 	x := newTest(t)
 	device := x.bind("1", "display-settings-device")
-	firstTeacher := x.teacherForRooms("10", "1")
-	secondTeacher := x.teacherForRooms("11", "1")
-	roomTwoTeacher := x.teacherForRooms("12", "2")
+	firstTeacher := x.teacherForClasses("10", "1")
+	secondTeacher := x.teacherForClasses("11", "1")
+	classTwoTeacher := x.teacherForClasses("12", "2")
 	expiry := time.Now().Add(time.Hour)
 	m1 := x.notice(firstTeacher, "1", "第一条", expiry)
 	m2 := x.notice(firstTeacher, "1", "第二条", expiry)
 	m3 := x.notice(firstTeacher, "1", "第三条", expiry)
 	m4 := x.notice(firstTeacher, "1", "第四条", expiry)
-	_, body := x.req("PUT", "/rooms/1/display-settings", firstTeacher, obj{
-		"roomId": "1", "position": "center", "pinnedMessageIds": []string{m2, m1},
+	_, body := x.req("PUT", "/classes/1/display-settings", firstTeacher, obj{
+		"classId": "1", "position": "center", "pinnedMessageIds": []string{m2, m1},
 		"messageOrder": []string{m4, m3, m2, m1},
 	}, 200)
 	data := body["data"].(map[string]any)
 	if data["displayPosition"] != "center" || data["position"] != "center" || data["revision"].(float64) != 2 {
 		t.Fatalf("unexpected PUT response: %#v", data)
 	}
-	_, body = x.req("GET", "/rooms/1/display-settings", secondTeacher, nil, 200)
+	_, body = x.req("GET", "/classes/1/display-settings", secondTeacher, nil, 200)
 	data = body["data"].(map[string]any)
 	pins := data["pinnedMessageIds"].([]any)
 	if len(pins) != 2 || pins[0] != m2 || pins[1] != m1 || data["displayPosition"] != "center" {
 		t.Fatalf("shared settings not visible: %#v", data)
 	}
-	x.req("GET", "/rooms/1/display-settings", roomTwoTeacher, nil, 403)
-	x.req("PUT", "/rooms/1/display-settings", roomTwoTeacher, obj{"position": "top_right"}, 403)
-	x.req("GET", "/rooms/2/display-settings", secondTeacher, nil, 403)
+	x.req("GET", "/classes/1/display-settings", classTwoTeacher, nil, 403)
+	x.req("PUT", "/classes/1/display-settings", classTwoTeacher, obj{"position": "top_right"}, 403)
+	x.req("GET", "/classes/2/display-settings", secondTeacher, nil, 403)
 
 	_, body = x.req("GET", "/device/snapshot", device, nil, 200)
 	snapshot := body["data"].(map[string]any)
 	display := snapshot["displaySettings"].(map[string]any)
 	if display["displayPosition"] != "center" || display["revision"].(float64) != 2 {
 		t.Fatalf("snapshot display settings missing: %#v", display)
+	}
+	if class := snapshot["class"].(map[string]any); class["id"] != "1" || class["name"] != "高三（2）班" {
+		t.Fatalf("snapshot class missing: %#v", class)
 	}
 	got := []string{}
 	for _, item := range snapshot["messages"].([]any) {
@@ -119,14 +122,14 @@ func TestDisplaySettingsSharedScopedAndSnapshotOrdered(t *testing.T) {
 		t.Fatalf("snapshot order got %v want %v", got, want)
 	}
 	var raw string
-	if e := x.a.db.QueryRow("SELECT payload_json FROM events WHERE room_id='1' AND event_type='room.display' ORDER BY seq DESC LIMIT 1").Scan(&raw); e != nil {
+	if e := x.a.db.QueryRow("SELECT payload_json FROM events WHERE class_id='1' AND event_type='class.display' ORDER BY seq DESC LIMIT 1").Scan(&raw); e != nil {
 		t.Fatal(e)
 	}
 	var event struct {
 		DisplaySettings DisplaySettings `json:"displaySettings"`
 	}
 	if e := json.Unmarshal([]byte(raw), &event); e != nil || event.DisplaySettings.Revision != 2 || !sameStrings(event.DisplaySettings.PinnedMessageIDs, []string{m2, m1}) {
-		t.Fatalf("room.display payload=%s err=%v", raw, e)
+		t.Fatalf("class.display payload=%s err=%v", raw, e)
 	}
 }
 
@@ -147,7 +150,7 @@ func TestDisplayRevisionPersistsAcrossRestart(t *testing.T) {
 	x1.token = body["data"].(map[string]any)["token"].(string)
 	x1.bind("1", "restart-display-device")
 	messageID := x1.notice(x1.token, "1", "重启后仍置顶", time.Now().Add(time.Hour))
-	_, body = x1.req("PUT", "/rooms/1/display-settings", x1.token, obj{"displayPosition": "center", "pinnedMessageIds": []string{messageID}}, 200)
+	_, body = x1.req("PUT", "/classes/1/display-settings", x1.token, obj{"displayPosition": "center", "pinnedMessageIds": []string{messageID}}, 200)
 	revision := body["data"].(map[string]any)["revision"].(float64)
 	if e = a1.Close(); e != nil {
 		t.Fatal(e)
@@ -159,7 +162,7 @@ func TestDisplayRevisionPersistsAcrossRestart(t *testing.T) {
 	}
 	defer a2.Close()
 	x2 := &testAPI{a: a2, h: a2.Handler(), t: t}
-	_, body = x2.req("GET", "/rooms/1/display-settings", x1.token, nil, 200)
+	_, body = x2.req("GET", "/classes/1/display-settings", x1.token, nil, 200)
 	data := body["data"].(map[string]any)
 	if data["revision"].(float64) != revision || data["displayPosition"] != "center" || data["pinnedMessageIds"].([]any)[0] != messageID {
 		t.Fatalf("display settings did not persist: %#v", data)
@@ -171,12 +174,12 @@ func TestRevocationAndExpiryRemoveDisplayPins(t *testing.T) {
 	x.bind("1", "pin-cleanup-device")
 	revokedID := x.notice(x.token, "1", "将撤回", time.Now().Add(time.Hour))
 	expiringID := x.notice(x.token, "1", "将过期", time.Now().Add(time.Hour))
-	_, body := x.req("PUT", "/rooms/1/display-settings", x.token, obj{"pinnedMessageIds": []string{revokedID, expiringID}}, 200)
+	_, body := x.req("PUT", "/classes/1/display-settings", x.token, obj{"pinnedMessageIds": []string{revokedID, expiringID}}, 200)
 	if body["data"].(map[string]any)["revision"].(float64) != 2 {
 		t.Fatal("initial pin revision missing")
 	}
 	x.req("POST", "/messages/"+revokedID+"/revoke", x.token, obj{}, 200)
-	_, body = x.req("GET", "/rooms/1/display-settings", x.token, nil, 200)
+	_, body = x.req("GET", "/classes/1/display-settings", x.token, nil, 200)
 	pins := body["data"].(map[string]any)["pinnedMessageIds"].([]any)
 	if len(pins) != 1 || pins[0] != expiringID {
 		t.Fatalf("revoked pin remained: %v", pins)
@@ -186,7 +189,7 @@ func TestRevocationAndExpiryRemoveDisplayPins(t *testing.T) {
 	}
 	deadline := time.Now().Add(3 * time.Second)
 	for {
-		_, body = x.req("GET", "/rooms/1/display-settings", x.token, nil, 200)
+		_, body = x.req("GET", "/classes/1/display-settings", x.token, nil, 200)
 		data := body["data"].(map[string]any)
 		if len(data["pinnedMessageIds"].([]any)) == 0 {
 			if data["revision"].(float64) != 4 {
@@ -200,8 +203,8 @@ func TestRevocationAndExpiryRemoveDisplayPins(t *testing.T) {
 		time.Sleep(100 * time.Millisecond)
 	}
 	var displayEvents int
-	if e := x.a.db.QueryRow("SELECT COUNT(*) FROM events WHERE room_id='1' AND event_type='room.display'").Scan(&displayEvents); e != nil || displayEvents != 3 {
-		t.Fatalf("room.display events=%d err=%v", displayEvents, e)
+	if e := x.a.db.QueryRow("SELECT COUNT(*) FROM events WHERE class_id='1' AND event_type='class.display'").Scan(&displayEvents); e != nil || displayEvents != 3 {
+		t.Fatalf("class.display events=%d err=%v", displayEvents, e)
 	}
 }
 
@@ -224,7 +227,7 @@ func TestCallTitleOmitsStudentNameAndIncludesDestination(t *testing.T) {
 
 func TestDeleteClassSafetyAndPreviewCleanup(t *testing.T) {
 	x := newTest(t)
-	_, body := x.req("POST", "/admin/classes", x.token, obj{"name": "临时空班", "roomId": "1"}, 201)
+	_, body := x.req("POST", "/admin/classes", x.token, obj{"name": "临时空班", "status": "active"}, 201)
 	classID := body["data"].(map[string]any)["id"].(string)
 	x.req("POST", "/admin/rosters/preview", x.token, obj{"classId": classID, "rows": []obj{{"studentNo": "9001", "name": "预览学生"}}}, 200)
 	x.req("DELETE", "/admin/classes/"+classID, x.token, nil, 200)
@@ -236,6 +239,73 @@ func TestDeleteClassSafetyAndPreviewCleanup(t *testing.T) {
 	_, body = x.req("DELETE", "/admin/classes/1", x.token, nil, 409)
 	if body["code"] != "CLASS_IN_USE" {
 		t.Fatalf("class-in-use response=%#v", body)
+	}
+}
+
+func TestClassContractJSONFields(t *testing.T) {
+	x := newTest(t)
+
+	_, body := x.req("GET", "/me", x.token, nil, 200)
+	me := body["data"].(map[string]any)
+	if ids := me["classIds"].([]any); len(ids) != 2 || ids[0] != "1" || ids[1] != "2" {
+		t.Fatalf("me classIds=%#v", ids)
+	}
+
+	_, body = x.req("GET", "/classes", x.token, nil, 200)
+	items := body["data"].(map[string]any)["items"].([]any)
+	if len(items) != 2 {
+		t.Fatalf("classes=%#v", items)
+	}
+	first := items[0].(map[string]any)
+	if first["id"] != "1" || first["name"] != "高三（2）班" || first["status"] != "active" || first["deviceCount"].(float64) != 0 {
+		t.Fatalf("class card=%#v", first)
+	}
+
+	_, body = x.req("GET", "/admin/classes", x.token, nil, 200)
+	adminItems := body["data"].(map[string]any)["items"].([]any)
+	if len(adminItems) != 2 || adminItems[0].(map[string]any)["status"] != "active" {
+		t.Fatalf("admin classes=%#v", adminItems)
+	}
+
+	x.bind("1", "contract-device")
+	_, body = x.req("GET", "/admin/devices", x.token, nil, 200)
+	device := body["data"].(map[string]any)["items"].([]any)[0].(map[string]any)
+	if device["classId"] != "1" || device["className"] != "高三（2）班" {
+		t.Fatalf("device contract=%#v", device)
+	}
+
+	_, body = x.req("POST", "/admin/classes/1/bind-codes", x.token, obj{}, 201)
+	_, body = x.req("POST", "/devices/bind", "", obj{"bindCode": body["data"].(map[string]any)["bindCode"], "installationId": "contract-device-2", "label": "合同校验"}, 200)
+	bind := body["data"].(map[string]any)
+	if bind["classId"] != "1" || bind["className"] != "高三（2）班" {
+		t.Fatalf("bind contract=%#v", bind)
+	}
+
+	teacher := x.teacherForClasses("20")
+	_, body = x.req("GET", "/me", teacher, nil, 200)
+	if ids := body["data"].(map[string]any)["classIds"].([]any); len(ids) != 0 {
+		t.Fatalf("teacher started with classIds=%#v", ids)
+	}
+	x.req("PUT", "/admin/teachers/20/classes", x.token, obj{"classIds": []string{"2"}}, 200)
+	_, body = x.req("GET", "/admin/teachers", x.token, nil, 200)
+	for _, item := range body["data"].(map[string]any)["items"].([]any) {
+		entry := item.(map[string]any)
+		if entry["id"] == "20" {
+			if ids := entry["classIds"].([]any); len(ids) != 1 || ids[0] != "2" {
+				t.Fatalf("teacher classIds=%#v", ids)
+			}
+		}
+	}
+	_, body = x.req("GET", "/me", teacher, nil, 200)
+	if ids := body["data"].(map[string]any)["classIds"].([]any); len(ids) != 1 || ids[0] != "2" {
+		t.Fatalf("teacher me classIds=%#v", ids)
+	}
+
+	messageID := x.notice(x.token, "1", "合同公告", time.Now().Add(time.Hour))
+	_, body = x.req("GET", "/messages/"+messageID, x.token, nil, 200)
+	message := body["data"].(map[string]any)
+	if ids := message["classIds"].([]any); len(ids) != 1 || ids[0] != "1" {
+		t.Fatalf("message classIds=%#v", ids)
 	}
 }
 

@@ -44,15 +44,15 @@ function charCount(value) { return Array.from(value || '').length; }
 function validateMessage(payload, now) {
   const errors = [];
   const type = payload.type;
-  const roomIds = Array.isArray(payload.roomIds) ? payload.roomIds : [];
+  const classIds = Array.isArray(payload.classIds) ? payload.classIds : [];
   const studentIds = Array.isArray(payload.studentIds) ? payload.studentIds : [];
   const title = String(payload.title || '');
   const destination = String(payload.destination || '');
   const body = String(payload.body || '');
   if (!['call', 'batch', 'notice'].includes(type)) errors.push('请选择公告类型');
-  if (!roomIds.length || roomIds.length > 20) errors.push('请选择 1–20 间目标教室');
+  if (!classIds.length || classIds.length > 20) errors.push('请选择 1–20 个目标班级');
   if (payload.type !== 'notice') {
-    if (roomIds.length !== 1) errors.push('呼叫和作业布置只能选择一间教室');
+    if (classIds.length !== 1) errors.push('呼叫和作业布置只能选择一个班级');
     const max = type === 'call' ? 3 : 60;
     if (!studentIds.length || studentIds.length > max) errors.push('请选择 1–' + max + ' 名学生');
     if (!destination.trim()) errors.push(type === 'call' ? '请填写呼叫地点' : '请填写作业地点');
@@ -85,7 +85,7 @@ function normalizeDisplaySettings(value) {
   const rawOrder = settings.messageOrder || settings.orderedMessageIds || settings.order || source.messageOrder || source.orderedMessageIds || [];
   const position = settings.displayPosition || settings.position || settings.placement || source.displayPosition || source.position;
   return {
-    roomId: String(settings.roomId || source.roomId || ''),
+    classId: String(settings.classId || source.classId || ''),
     position: position === 'center' ? 'center' : 'top_right',
     displayPosition: position === 'center' ? 'center' : 'top_right',
     pinnedMessageIds: (Array.isArray(rawPinned) ? rawPinned : []).map(String),
@@ -106,10 +106,10 @@ function orderDisplayMessages(messages, config) {
   return ordered.map(message => Object.assign({}, message, { id: String(message.id || message.messageId || ''), pinned: pinned.has(String(message.id || message.messageId || '')) }));
 }
 
-function displaySettingsPayload(roomId, position, messages) {
+function displaySettingsPayload(classId, position, messages) {
   const source = Array.isArray(messages) ? messages : [];
   return {
-    roomId: String(roomId),
+    classId: String(classId),
     displayPosition: position === 'center' ? 'center' : 'top_right',
     pinnedMessageIds: source.filter(message => message.pinned).map(message => String(message.id || message.messageId)),
     messageOrder: source.map(message => String(message.id || message.messageId))

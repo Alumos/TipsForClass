@@ -8,7 +8,7 @@ import (
 
 func noticePayloadWithPosition(token, title, position string) obj {
 	payload := obj{
-		"clientToken": token, "type": "notice", "roomIds": []string{"1"},
+		"clientToken": token, "type": "notice", "classIds": []string{"1"},
 		"studentIds": []string{}, "title": title, "body": "", "broadcastTimes": 0,
 		"expireAt": stamp(time.Now().Add(time.Hour)),
 	}
@@ -78,7 +78,7 @@ func TestUpdateMessagePreservesIdentityTargetsAndBroadcastState(t *testing.T) {
 
 	updateToken := uuid()
 	firstUpdate := obj{
-		"clientToken": updateToken, "roomIds": []string{"1"}, "kind": "batch", "content": "请带新作业", "studentIds": []string{"1", "2"},
+		"clientToken": updateToken, "classIds": []string{"1"}, "kind": "batch", "content": "请带新作业", "studentIds": []string{"1", "2"},
 		"destination": "图书馆", "broadcast": obj{"times": 1}, "displayPosition": "center",
 	}
 	_, body = x.req("POST", "/messages/"+id+"/update", x.token, firstUpdate, 200)
@@ -91,15 +91,15 @@ func TestUpdateMessagePreservesIdentityTargetsAndBroadcastState(t *testing.T) {
 		t.Fatalf("update retry was not idempotent: %#v", body)
 	}
 	var updateEvents int
-	if e = x.a.db.QueryRow("SELECT COUNT(*) FROM events WHERE room_id='1' AND event_type='message.upsert' AND json_extract(payload_json,'$.revision')=2").Scan(&updateEvents); e != nil || updateEvents != 1 {
+	if e = x.a.db.QueryRow("SELECT COUNT(*) FROM events WHERE class_id='1' AND event_type='message.upsert' AND json_extract(payload_json,'$.revision')=2").Scan(&updateEvents); e != nil || updateEvents != 1 {
 		t.Fatalf("update retry emitted %d revision-2 events: %v", updateEvents, e)
 	}
 	updated, _, e := loadMessage(x.a.db, id)
 	if e != nil {
 		t.Fatal(e)
 	}
-	if updated.ID != original.ID || updated.CreatedAt != original.CreatedAt || updated.TeacherName != original.TeacherName || !sameStrings(updated.RoomIDs, original.RoomIDs) {
-		t.Fatalf("identity or target room changed: before=%#v after=%#v", original, updated)
+	if updated.ID != original.ID || updated.CreatedAt != original.CreatedAt || updated.TeacherName != original.TeacherName || !sameStrings(updated.ClassIDs, original.ClassIDs) {
+		t.Fatalf("identity or target class changed: before=%#v after=%#v", original, updated)
 	}
 	if updated.Title != "批量作业 · 2人 · 图书馆" || updated.Body != "请带新作业" || updated.DisplayPosition != "center" {
 		t.Fatalf("publication content not updated: %#v", updated)
@@ -117,7 +117,7 @@ func TestUpdateMessagePreservesIdentityTargetsAndBroadcastState(t *testing.T) {
 	}
 
 	var eventRaw string
-	if e = x.a.db.QueryRow("SELECT payload_json FROM events WHERE room_id='1' AND event_type='message.upsert' ORDER BY seq DESC LIMIT 1").Scan(&eventRaw); e != nil {
+	if e = x.a.db.QueryRow("SELECT payload_json FROM events WHERE class_id='1' AND event_type='message.upsert' ORDER BY seq DESC LIMIT 1").Scan(&eventRaw); e != nil {
 		t.Fatal(e)
 	}
 	var eventMessage Message
@@ -181,14 +181,14 @@ func TestUpdateMessagePreservesIdentityTargetsAndBroadcastState(t *testing.T) {
 		t.Fatalf("re-enabled broadcast jobs=%d err=%v", jobs, e)
 	}
 
-	x.req("POST", "/messages/"+id+"/update", x.token, obj{"title": "不应保存", "roomIds": []string{"2"}}, 400)
+	x.req("POST", "/messages/"+id+"/update", x.token, obj{"title": "不应保存", "classIds": []string{"2"}}, 400)
 	x.req("POST", "/messages/"+id+"/update", x.token, obj{"title": "不应保存", "unexpected": true}, 400)
 	unchanged, _, e := loadMessage(x.a.db, id)
 	if e != nil {
 		t.Fatal(e)
 	}
-	if unchanged.Revision != 5 || unchanged.Title == "不应保存" || !sameStrings(unchanged.RoomIDs, []string{"1"}) {
-		t.Fatalf("invalid target-room edit changed message: %#v", unchanged)
+	if unchanged.Revision != 5 || unchanged.Title == "不应保存" || !sameStrings(unchanged.ClassIDs, []string{"1"}) {
+		t.Fatalf("invalid target-class edit changed message: %#v", unchanged)
 	}
 }
 
@@ -207,12 +207,12 @@ func TestDeleteRoutesRevokeAndRetainMessages(t *testing.T) {
 		t.Fatalf("POST delete response=%#v", body)
 	}
 
-	var retained, revoked, rooms int
+	var retained, revoked, classes int
 	if e := x.a.db.QueryRow("SELECT COUNT(*),SUM(status='revoked') FROM messages").Scan(&retained, &revoked); e != nil || retained != 2 || revoked != 2 {
 		t.Fatalf("retained=%d revoked=%d err=%v", retained, revoked, e)
 	}
-	if e := x.a.db.QueryRow("SELECT COUNT(*) FROM message_rooms WHERE message_id IN (?,?)", first, second).Scan(&rooms); e != nil || rooms != 2 {
-		t.Fatalf("message-room records=%d err=%v", rooms, e)
+	if e := x.a.db.QueryRow("SELECT COUNT(*) FROM message_classes WHERE message_id IN (?,?)", first, second).Scan(&classes); e != nil || classes != 2 {
+		t.Fatalf("message-class records=%d err=%v", classes, e)
 	}
 	for _, id := range []string{first, second} {
 		message, _, e := loadMessage(x.a.db, id)

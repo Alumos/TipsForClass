@@ -1,10 +1,10 @@
 <view class="page">
   <view class="eyebrow">学校管理</view>
-  <view class="title">让每间教室准备就绪</view>
+  <view class="title">让每个班级准备就绪</view>
   <view class="subtitle">绑定设备、维护班级与名册，并把共享权限交代清楚。</view>
 
   <scroll-view scroll-x class="scroll-tabs">
-    <view class="chip {{section === 'rooms' ? 'active' : ''}}" data-section="rooms" bindtap="section">教室与绑定</view>
+    <view class="chip {{section === 'classes' ? 'active' : ''}}" data-section="classes" bindtap="section">班级与绑定</view>
     <view class="chip {{section === 'roster' ? 'active' : ''}}" data-section="roster" bindtap="section">学生名册</view>
     <view class="chip {{section === 'teachers' ? 'active' : ''}}" data-section="teachers" bindtap="section">教师权限</view>
     <view class="chip {{section === 'devices' ? 'active' : ''}}" data-section="devices" bindtap="section">大屏设备</view>
@@ -15,14 +15,14 @@
   <view wx:if="{{error}}" class="error pre">{{error}}</view>
   <view wx:if="{{notice}}" class="tip">{{notice}}</view>
 
-  <block wx:if="{{section === 'rooms'}}">
+  <block wx:if="{{section === 'classes'}}">
     <view class="card">
-      <view class="admin-card-head"><view class="admin-card-copy"><view class="card-title">绑定大屏</view><view class="helper">选择教室并生成一次性六位绑定码</view></view><text class="badge admin-head-badge">10 分钟有效</text></view>
-      <picker wx:if="{{rooms.length}}" range="{{rooms}}" range-key="name" value="{{roomIndex}}" bindchange="roomChange"><view class="field picker-field">{{selectedRoomName || '请选择教室'}} ▾</view></picker>
-      <view wx:else class="helper field-placeholder">还没有教室，请先在下方创建。</view>
-      <button class="primary" bindtap="generateCode" loading="{{busy}}" disabled="{{busy || !rooms.length}}">生成大屏绑定码</button>
+      <view class="admin-card-head"><view class="admin-card-copy"><view class="card-title">绑定大屏</view><view class="helper">选择班级并生成一次性六位绑定码</view></view><text class="badge admin-head-badge">10 分钟有效</text></view>
+      <picker wx:if="{{classes.length}}" range="{{classes}}" range-key="name" value="{{classIndex}}" bindchange="bindClassChange"><view class="field picker-field">{{selectedClassName || '请选择班级'}} ▾</view></picker>
+      <view wx:else class="helper field-placeholder">还没有班级，请先在下方创建。</view>
+      <button class="primary" bindtap="generateCode" loading="{{busy}}" disabled="{{busy || !classes.length}}">生成大屏绑定码</button>
       <view wx:if="{{bindCode}}" class="bind-code-panel">
-        <view class="helper">{{bindCode.roomName}} · 一次性绑定码</view>
+        <view class="helper">{{bindCode.className}} · 一次性绑定码</view>
         <view class="mono numeric">{{bindCode.code}}</view>
         <view class="helper">有效至 {{bindCode.expiresLabel}}（学校时区）</view>
         <button class="plain" bindtap="copyCode">复制绑定码</button>
@@ -30,12 +30,9 @@
     </view>
 
     <view class="card">
-      <view class="admin-card-head"><view class="admin-card-copy"><view class="card-title">班级管理</view><view class="helper">新增、编辑名称或移动所属教室</view></view><text class="badge admin-head-badge">{{classes.length}} 个班级</text></view>
-      <picker wx:if="{{rooms.length}}" range="{{rooms}}" range-key="name" value="{{roomIndex}}" bindchange="roomChange"><view class="field picker-field">{{selectedRoomName || '请选择教室'}} ▾</view></picker>
+      <view class="admin-card-head"><view class="admin-card-copy"><view class="card-title">班级管理</view><view class="helper">新增、编辑名称或删除班级</view></view><text class="badge admin-head-badge">{{classes.length}} 个班级</text></view>
       <view class="shared-note">
-        <view class="shared-meta"><text class="badge">{{sharedTeacherCount}} 位共享教师</text><text class="helper shared-meta-note">班级变更会同步影响</text></view>
-        <view class="shared-names">{{sharedTeacherText}}</view>
-        <view class="helper">这些教师可向该教室发布公告。同一教室的班级和学生名册由所有已授权教师共同使用；任一教师看到的是同一份数据，管理员修改后会同步影响他们。</view>
+        <view class="helper">同一班级的授权教师共享该班级与学生名册；管理员修改后会同步影响他们。</view>
       </view>
       <view wx:if="{{classes.length}}" class="class-list">
         <view wx:for="{{classes}}" wx:key="id" class="class-manage-row">
@@ -43,29 +40,20 @@
           <view class="mini-actions"><button class="plain small-button" data-id="{{item.id}}" bindtap="editClass">编辑</button><button class="danger small-button" data-id="{{item.id}}" bindtap="deleteClass">删除</button></view>
         </view>
       </view>
-      <view wx:else class="empty compact-empty">该教室还没有班级。</view>
+      <view wx:else class="empty compact-empty">还没有班级。</view>
       <text class="label">新增班级</text>
       <input class="field" placeholder="班级名称，例如：高三（2）班" value="{{className}}" data-field="className" bindinput="input" maxlength="60"/>
-      <button class="secondary" bindtap="createClass" disabled="{{busy || !rooms.length}}">在所选教室创建班级</button>
-    </view>
-
-    <view class="card">
-      <view class="card-title">新增教室</view>
-      <view class="helper">创建后可在教师权限中授权共享教师。</view>
-      <input class="field" placeholder="教室名称，例如：教学楼 302" value="{{roomName}}" data-field="roomName" bindinput="input" maxlength="60"/>
-      <button class="secondary" bindtap="createRoom" disabled="{{busy}}">创建教室</button>
+      <button class="secondary" bindtap="createClass" disabled="{{busy}}">创建班级</button>
     </view>
   </block>
 
   <block wx:if="{{section === 'roster'}}">
     <view class="card roster-scope">
       <view class="card-title">导入范围</view>
-      <text class="label">选择教室</text>
-      <picker range="{{rooms}}" range-key="name" value="{{roomIndex}}" bindchange="roomChange"><view class="field picker-field">{{selectedRoomName || '请先创建教室'}} ▾</view></picker>
       <text class="label">选择班级</text>
-      <picker range="{{classes}}" range-key="name" value="{{classIndex}}" bindchange="classChange"><view class="field picker-field">{{selectedClassName || '请先在教室中创建班级'}} ▾</view></picker>
+      <picker range="{{classes}}" range-key="name" value="{{classIndex}}" bindchange="classChange"><view class="field picker-field">{{selectedClassName || '请先创建班级'}} ▾</view></picker>
       <view class="helper">导入前会先预检；同学号更新姓名，不删除未出现的学生。</view>
-      <view class="helper">同一教室的已授权教师共享所选班级与名册，本次导入会影响所有能看到该教室的教师。</view>
+      <view class="helper">已授权教师共享所选班级与名册，本次导入会影响所有能看到该班级的教师。</view>
     </view>
 
     <view class="card upload-card">
@@ -108,17 +96,17 @@
   </block>
 
   <block wx:if="{{section === 'teachers'}}">
-    <view class="tip">教师先完成微信登录，再由管理员核验身份、审批并分配教室。管理员拥有全校管理权限。</view>
+    <view class="tip">教师先完成微信登录，再由管理员核验身份、审批并分配班级。管理员拥有全校管理权限。</view>
     <view wx:for="{{teachers}}" wx:key="id" class="card">
-      <view class="admin-card-head teacher-card-head"><view class="admin-card-copy"><view class="card-title admin-name">{{item.name}}</view><view class="helper admin-meta">申请编号 {{item.id}} · {{item.roleLabel}} · {{item.statusLabel}}</view><view class="helper">授权 {{item.roomIds.length}} 间教室</view></view><button class="secondary small-button admin-card-action" data-id="{{item.id}}" bindtap="editTeacher">编辑</button></view>
+      <view class="admin-card-head teacher-card-head"><view class="admin-card-copy"><view class="card-title admin-name">{{item.name}}</view><view class="helper admin-meta">申请编号 {{item.id}} · {{item.roleLabel}} · {{item.statusLabel}}</view><view class="helper">授权 {{item.classIds.length}} 个班级</view></view><button class="secondary small-button admin-card-action" data-id="{{item.id}}" bindtap="editTeacher">编辑</button></view>
     </view>
   </block>
 
   <block wx:if="{{section === 'devices'}}">
-    <view wx:if="{{!devices.length}}" class="card empty">暂无大屏设备，请在「教室与绑定」生成绑定码。</view>
+    <view wx:if="{{!devices.length}}" class="card empty">暂无大屏设备，请在「班级与绑定」生成绑定码。</view>
     <view wx:for="{{devices}}" wx:key="id" class="card">
       <view class="admin-card-head device-card-head"><view class="card-title admin-card-copy admin-name">{{item.label}}</view><text class="badge {{item.online ? '' : 'offline'}} admin-head-badge">{{item.revokedAt ? '已吊销' : item.online ? '在线' : '离线'}}</text></view>
-      <view class="muted admin-room-name">{{item.roomName}}</view>
+      <view class="muted admin-class-name">{{item.className}}</view>
       <view class="helper">最近心跳 {{item.lastSeenLabel}}<view></view>语音能力 {{item.ttsStatus || '未报告'}}</view>
       <button wx:if="{{!item.revokedAt}}" class="danger" data-id="{{item.id}}" bindtap="revokeDevice" disabled="{{busy}}">吊销此设备</button>
     </view>
@@ -144,10 +132,10 @@
     <text class="label">教师姓名</text><input class="field" value="{{editor.name}}" data-field="name" bindinput="editorInput" maxlength="40"/>
     <text class="label">角色</text><picker range="{{roleOptions}}" value="{{editor.roleIndex}}" data-field="roleIndex" bindchange="editorChoice"><view class="field">{{roleOptions[editor.roleIndex]}} ▾</view></picker>
     <text class="label">审核状态</text><picker range="{{statusOptions}}" value="{{editor.statusIndex}}" data-field="statusIndex" bindchange="editorChoice"><view class="field">{{statusOptions[editor.statusIndex]}} ▾</view></picker>
-    <text class="label">授权教室</text><view wx:for="{{teacherRooms}}" wx:key="id" class="student-row" data-id="{{item.id}}" bindtap="teacherRoom"><view class="check {{item.checked ? 'checked' : ''}}">{{item.checked ? '✓' : ''}}</view><text class="admin-option-copy">{{item.name}}</text></view>
+    <text class="label">授权班级</text><view wx:for="{{teacherClasses}}" wx:key="id" class="student-row" data-id="{{item.id}}" bindtap="teacherClass"><view class="check {{item.checked ? 'checked' : ''}}">{{item.checked ? '✓' : ''}}</view><text class="admin-option-copy">{{item.name}}</text></view>
     <view wx:if="{{error}}" class="error pre">{{error}}</view>
   </scroll-view>
-  <button class="primary" bindtap="saveTeacher" loading="{{busy}}" disabled="{{busy}}">保存身份与教室权限</button>
+  <button class="primary" bindtap="saveTeacher" loading="{{busy}}" disabled="{{busy}}">保存身份与班级权限</button>
 </view></view>
 
 <view wx:if="{{classEditor}}" class="overlay" bindtap="closeClassEditor"><view class="drawer drawer-compact" catchtap="noop">
@@ -155,9 +143,7 @@
   <view class="editor-body">
     <text class="label">班级名称</text>
     <input class="field" value="{{classEditor.name}}" data-field="name" bindinput="classEditorInput" maxlength="60"/>
-    <text class="label">所属教室</text>
-    <picker range="{{rooms}}" range-key="name" value="{{classEditor.roomIndex}}" bindchange="classRoomChange" disabled="{{busy || !rooms.length}}"><view class="field">{{classEditor.roomName || '请选择教室'}} ▾</view></picker>
-    <view class="helper">移动班级会影响共享教师看到的学生名单，历史公告不会随班级迁移。</view>
+    <view class="helper">修改后所有授权教师看到的班级名称会同步更新，历史公告不受影响。</view>
   </view>
   <button class="primary" bindtap="saveClass" loading="{{busy}}" disabled="{{busy}}">保存班级修改</button>
 </view></view>

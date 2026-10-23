@@ -35,10 +35,10 @@ func (a *App) teacher(r *http.Request, active bool) (Teacher, error) {
 	if active && t.Status != "active" {
 		return t, fail(403, "FORBIDDEN", "账号正在等待学校管理员审核")
 	}
-	t.RoomIDs = []string{}
-	q := "SELECT tr.room_id FROM teacher_rooms tr JOIN rooms r ON r.id=tr.room_id WHERE tr.teacher_id=? AND r.status='active' ORDER BY tr.room_id"
+	t.ClassIDs = []string{}
+	q := "SELECT tc.class_id FROM teacher_classes tc JOIN classes c ON c.id=tc.class_id WHERE tc.teacher_id=? AND c.status='active' ORDER BY tc.class_id"
 	if t.Role == "admin" {
-		q = "SELECT id FROM rooms WHERE status='active' AND ? IS NOT NULL ORDER BY id"
+		q = "SELECT id FROM classes WHERE status='active' AND ? IS NOT NULL ORDER BY id"
 	}
 	rows, e := a.db.QueryContext(r.Context(), q, t.ID)
 	if e != nil {
@@ -50,7 +50,7 @@ func (a *App) teacher(r *http.Request, active bool) (Teacher, error) {
 		if e = rows.Scan(&id); e != nil {
 			return t, e
 		}
-		t.RoomIDs = append(t.RoomIDs, id)
+		t.ClassIDs = append(t.ClassIDs, id)
 	}
 	return t, rows.Err()
 }
@@ -61,8 +61,8 @@ func (a *App) admin(r *http.Request) (Teacher, error) {
 	}
 	return t, e
 }
-func ownsRoom(t Teacher, id string) bool {
-	for _, v := range t.RoomIDs {
+func ownsClass(t Teacher, id string) bool {
+	for _, v := range t.ClassIDs {
 		if v == id {
 			return true
 		}
@@ -86,7 +86,7 @@ func (a *App) demoLogin(w http.ResponseWriter, r *http.Request) error {
 	if !a.allow("demo:"+r.RemoteAddr, 30, time.Minute) {
 		return fail(429, "RATE_LIMITED", "登录过于频繁")
 	}
-	return a.session(w, Teacher{ID: "1", Name: "演示管理员", Role: "admin", Status: "active", RoomIDs: []string{"1", "2"}})
+	return a.session(w, Teacher{ID: "1", Name: "演示管理员", Role: "admin", Status: "active", ClassIDs: []string{"1", "2"}})
 }
 func (a *App) wxLogin(w http.ResponseWriter, r *http.Request) error {
 	if a.cfg.WXAppID == "" || a.cfg.WXAppSecret == "" {
@@ -144,7 +144,7 @@ func (a *App) me(w http.ResponseWriter, r *http.Request) error {
 	if e = a.db.QueryRow("SELECT name,timezone FROM schools WHERE id=1").Scan(&name, &tz); e != nil {
 		return e
 	}
-	ok(w, 200, obj{"id": t.ID, "name": t.Name, "role": t.Role, "status": t.Status, "roomIds": t.RoomIDs, "school": obj{"id": "1", "name": name, "timezone": tz}, "mode": a.cfg.Mode})
+	ok(w, 200, obj{"id": t.ID, "name": t.Name, "role": t.Role, "status": t.Status, "classIds": t.ClassIDs, "school": obj{"id": "1", "name": name, "timezone": tz}, "mode": a.cfg.Mode})
 	return nil
 }
 func (a *App) setup(w http.ResponseWriter, r *http.Request) error {
@@ -195,17 +195,18 @@ func (a *App) setup(w http.ResponseWriter, r *http.Request) error {
 	ok(w, 200, t)
 	return nil
 }
-func (a *App) rooms(w http.ResponseWriter, r *http.Request) error {
+func (a *App) classes(w http.ResponseWriter, r *http.Request) error {
 	t, e := a.teacher(r, true)
 	if e != nil {
 		return e
 	}
+	now := time.Now()
 	items := []obj{}
-	for _, id := range t.RoomIDs {
-		var name string
+	for _, id := range t.ClassIDs {
+		var name, status string
 		var total, online int
 		var last sql.NullInt64
-		e = a.db.QueryRow("SELECT r.name,COUNT(d.id),COALESCE(SUM(CASE WHEN d.last_seen_at>? AND d.revoked_at IS NULL AND d.token_expires_at>? THEN 1 ELSE 0 END),0),MAX(d.last_seen_at) FROM rooms r LEFT JOIN devices d ON d.room_id=r.id AND d.revoked_at IS NULL AND d.token_expires_at>? WHERE r.id=? GROUP BY r.id", time.Now().Add(-90*time.Second).UnixMilli(), time.Now().UnixMilli(), time.Now().UnixMilli(), id).Scan(&name, &total, &online, &last)
+		e = a.db.QueryRow("SELECT c.name,c.status,COUNT(d.id),COALESCE(SUM(CASE WHEN d.last_seen_at>? AND d.revoked_at IS NULL AND d.token_expires_at>? THEN 1 ELSE 0 END),0),MAX(d.last_seen_at) FROM classes c LEFT JOIN devices d ON d.class_id=c.id AND d.revoked_at IS NULL AND d.token_expires_at>? WHERE c.id=? GROUP BY c.id", now.Add(-90*time.Second).UnixMilli(), now.UnixMilli(), now.UnixMilli(), id).Scan(&name, &status, &total, &online, &last)
 		if e != nil {
 			return e
 		}
@@ -213,35 +214,7 @@ func (a *App) rooms(w http.ResponseWriter, r *http.Request) error {
 		if last.Valid {
 			ls = msstamp(last.Int64)
 		}
-		items = append(items, obj{"id": id, "name": name, "onlineDeviceCount": online, "deviceCount": total, "lastSeenAt": ls})
-	}
-	ok(w, 200, obj{"items": items})
-	return nil
-}
-func (a *App) classes(w http.ResponseWriter, r *http.Request) error {
-	t, e := a.teacher(r, true)
-	if e != nil {
-		return e
-	}
-	room := r.URL.Query().Get("roomId")
-	if !ownsRoom(t, room) {
-		return fail(403, "FORBIDDEN", "无权查看该教室")
-	}
-	rows, e := a.db.Query("SELECT id,name,room_id FROM classes WHERE room_id=? ORDER BY id", room)
-	if e != nil {
-		return e
-	}
-	defer rows.Close()
-	items := []obj{}
-	for rows.Next() {
-		var id, name, rid string
-		if e = rows.Scan(&id, &name, &rid); e != nil {
-			return e
-		}
-		items = append(items, obj{"id": id, "name": name, "roomId": rid})
-	}
-	if e = rows.Err(); e != nil {
-		return e
+		items = append(items, obj{"id": id, "name": name, "status": status, "onlineDeviceCount": online, "deviceCount": total, "lastSeenAt": ls})
 	}
 	ok(w, 200, obj{"items": items})
 	return nil
@@ -252,11 +225,11 @@ func (a *App) students(w http.ResponseWriter, r *http.Request) error {
 		return e
 	}
 	cid := r.URL.Query().Get("classId")
-	var rid string
-	if e = a.db.QueryRow("SELECT room_id FROM classes WHERE id=?", cid).Scan(&rid); e != nil {
+	var status string
+	if e = a.db.QueryRow("SELECT status FROM classes WHERE id=?", cid).Scan(&status); e != nil {
 		return fail(404, "NOT_FOUND", "班级不存在")
 	}
-	if !ownsRoom(t, rid) {
+	if !ownsClass(t, cid) {
 		return fail(403, "FORBIDDEN", "无权查看该班级")
 	}
 	limit := queryLimit(r, 50, 100)

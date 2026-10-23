@@ -58,15 +58,15 @@ func (x *testAPI) req(method, path, token string, payload any, want int) (int, o
 	}
 	return w.Code, body
 }
-func (x *testAPI) bind(room, install string) string {
+func (x *testAPI) bind(class, install string) string {
 	x.t.Helper()
-	_, b := x.req("POST", "/admin/rooms/"+room+"/bind-codes", x.token, obj{}, 201)
+	_, b := x.req("POST", "/admin/classes/"+class+"/bind-codes", x.token, obj{}, 201)
 	code := b["data"].(map[string]any)["bindCode"]
 	_, b = x.req("POST", "/devices/bind", "", obj{"bindCode": code, "installationId": install, "label": "测试大屏"}, 200)
 	return b["data"].(map[string]any)["deviceToken"].(string)
 }
 func createPayload(token string) obj {
-	return obj{"clientToken": token, "type": "call", "roomIds": []string{"1"}, "studentIds": []string{"1"}, "destination": "办公室", "body": "请带作业", "broadcastTimes": 2, "expireAt": stamp(time.Now().Add(time.Hour))}
+	return obj{"clientToken": token, "type": "call", "classIds": []string{"1"}, "studentIds": []string{"1"}, "destination": "办公室", "body": "请带作业", "broadcastTimes": 2, "expireAt": stamp(time.Now().Add(time.Hour))}
 }
 func TestConcurrentCreateIdempotencyAndRollback(t *testing.T) {
 	x := newTest(t)
@@ -122,8 +122,8 @@ func TestConcurrentCreateIdempotencyAndRollback(t *testing.T) {
 }
 func TestDeviceReceiptsAreIndependentAndScoped(t *testing.T) {
 	x := newTest(t)
-	d1 := x.bind("1", "test-device-room1")
-	d2 := x.bind("2", "test-device-room2")
+	d1 := x.bind("1", "test-device-class1")
+	d2 := x.bind("2", "test-device-class2")
 	_, b := x.req("POST", "/messages", x.token, createPayload(uuid()), 201)
 	id := b["data"].(map[string]any)["id"].(string)
 	receipt := obj{"syncEpoch": x.a.epoch, "items": []obj{{"messageId": id, "kind": "delivery", "state": "received", "revision": 1}}}
@@ -152,7 +152,7 @@ func TestDeviceReceiptsAreIndependentAndScoped(t *testing.T) {
 }
 func TestBindingCodeConsumedAtomically(t *testing.T) {
 	x := newTest(t)
-	_, b := x.req("POST", "/admin/rooms/1/bind-codes", x.token, obj{}, 201)
+	_, b := x.req("POST", "/admin/classes/1/bind-codes", x.token, obj{}, 201)
 	code := b["data"].(map[string]any)["bindCode"]
 	var success atomic.Int32
 	var wg sync.WaitGroup
@@ -240,7 +240,7 @@ func TestTeacherScopeAndLastAdmin(t *testing.T) {
 	if e != nil {
 		t.Fatal(e)
 	}
-	_, e = x.a.db.Exec("INSERT INTO teacher_rooms VALUES(2,2)")
+	_, e = x.a.db.Exec("INSERT INTO teacher_classes VALUES(2,2)")
 	if e != nil {
 		t.Fatal(e)
 	}

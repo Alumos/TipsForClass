@@ -1,5 +1,5 @@
 .detail-page{padding-bottom:calc(48rpx + env(safe-area-inset-bottom))}
-.detail-page-title,.detail-title,.detail-device-name,.detail-device-room,.detail-body,.detail-speech,.detail-tts{overflow-wrap:anywhere;word-break:break-word}
+.detail-page-title,.detail-title,.detail-device-name,.detail-device-class,.detail-body,.detail-speech,.detail-tts{overflow-wrap:anywhere;word-break:break-word}
 .detail-delivery-tip .helper{line-height:1.55}
 .detail-message-meta{display:flex;align-items:flex-start;flex-wrap:wrap;gap:10rpx 16rpx}
 .detail-teacher{min-width:0;line-height:1.45}
@@ -11,7 +11,7 @@
 .detail-meta-label{font-size:22rpx;color:#7C8F84}
 .detail-device-head{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:10rpx 18rpx}
 .detail-device-head .badge{flex-shrink:0}
-.detail-device-room{margin-top:6rpx;line-height:1.45}
+.detail-device-class{margin-top:6rpx;line-height:1.45}
 .detail-receipt-list{display:flex;flex-direction:column;gap:10rpx}
 .detail-receipt{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8rpx 18rpx;min-width:0;line-height:1.5}
 .detail-receipt text:last-child{min-width:0;text-align:right;overflow-wrap:anywhere}

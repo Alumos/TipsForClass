@@ -31,7 +31,7 @@
         <view class="card-title detail-device-name">{{item.label}}</view>
         <text class="badge {{item.online ? '' : 'offline'}}">{{item.online ? '在线' : '离线'}}</text>
       </view>
-      <view class="muted detail-device-room">{{item.roomName}}</view>
+      <view class="muted detail-device-class">{{item.className}}</view>
       <view class="divider"></view>
       <view class="detail-receipt-list">
         <view class="detail-receipt"><text class="detail-receipt-label">设备接收</text><text>{{item.receivedAt ? item.receivedLabel : '等待确认'}}</text></view>
@@ -48,7 +48,7 @@
 
   <view wx:if="{{message}}" class="card detail-operation-card">
     <view class="card-title">消息操作</view>
-    <view class="helper">编辑会更新原公告；复制会带入内容后创建新公告；删除会立即从目标教室撤下。</view>
+    <view class="helper">编辑会更新原公告；复制会带入内容后创建新公告；删除会立即从目标班级撤下。</view>
     <view class="detail-actions">
       <button class="secondary" bindtap="manualRefresh" loading="{{loading}}">刷新状态</button>
       <button class="secondary" bindtap="edit" disabled="{{busy || message.status === 'revoked'}}">编辑公告</button>

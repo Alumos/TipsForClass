@@ -3,37 +3,37 @@
     <view class="home-heading-copy"><view class="eyebrow">教师工作台</view><view class="title">{{teacher.name || '老师'}}，你好</view></view>
     <button class="plain small-button home-heading-button" bindtap="arrange">屏幕排序</button>
   </view>
-  <view class="subtitle">选择教室，把下一条提醒送到大屏。</view>
-  <view class="tip row"><view><view class="card-title">{{rooms.length}} 间授权教室</view><view class="helper">最近使用的教室会优先显示</view></view><text>↗</text></view>
-  <view class="section-title">我的教室</view>
-  <view wx:if="{{loading}}" class="loading">正在获取教室与在线状态…</view>
+  <view class="subtitle">选择班级，把下一条提醒送到大屏。</view>
+  <view class="tip row"><view><view class="card-title">{{classes.length}} 个授权班级</view><view class="helper">最近使用的班级会优先显示</view></view><text>↗</text></view>
+  <view class="section-title">我的班级</view>
+  <view wx:if="{{loading}}" class="loading">正在获取班级与在线状态…</view>
   <view wx:if="{{error}}" class="error pre">{{error}}<button class="plain" bindtap="load">重新加载</button></view>
-  <view wx:for="{{rooms}}" wx:key="id" class="room-stack">
-    <view class="card room-card" data-id="{{item.id}}" bindtap="publish">
-      <view class="room-card-head">
-        <view class="room-identity">
-          <view class="room-icon room-icon-compact">{{item.initial}}</view>
-          <view class="room-heading">
-            <view class="room-kicker">教室</view>
-            <view class="room-name">{{item.name}}</view>
+  <view wx:for="{{classes}}" wx:key="id" class="class-stack">
+    <view class="card class-card" data-id="{{item.id}}" bindtap="publish">
+      <view class="class-card-head">
+        <view class="class-identity">
+          <view class="class-icon class-icon-compact">{{item.initial}}</view>
+          <view class="class-heading">
+            <view class="class-kicker">班级</view>
+            <view class="class-name">{{item.name}}</view>
           </view>
         </view>
-        <view class="room-actions">
-          <button class="plain room-sort" data-id="{{item.id}}" catchtap="arrange">排序</button>
-          <text class="room-arrow">›</text>
+        <view class="class-actions">
+          <button class="plain class-sort" data-id="{{item.id}}" catchtap="arrange">排序</button>
+          <text class="class-arrow">›</text>
         </view>
       </view>
-      <view class="room-device-status {{item.onlineDeviceCount ? 'online' : ''}}">
+      <view class="class-device-status {{item.onlineDeviceCount ? 'online' : ''}}">
         <text class="device-status-dot"></text>
-        <text class="room-status-text" wx:if="{{item.onlineDeviceCount}}">{{item.onlineDeviceCount}} / {{item.deviceCount}} 台设备在线</text>
-        <text class="room-status-text" wx:else>{{item.deviceCount ? '设备离线 · 有效期内上线同步' : '尚未绑定大屏设备'}}</text>
+        <text class="class-status-text" wx:if="{{item.onlineDeviceCount}}">{{item.onlineDeviceCount}} / {{item.deviceCount}} 台设备在线</text>
+        <text class="class-status-text" wx:else>{{item.deviceCount ? '设备离线 · 有效期内上线同步' : '尚未绑定大屏设备'}}</text>
       </view>
-      <view class="room-heartbeat">
+      <view class="class-heartbeat">
         <text class="heartbeat-label">最近心跳</text>
         <text class="heartbeat-time">{{item.lastSeenLabel}}</text>
       </view>
     </view>
   </view>
-  <view wx:if="{{ready && !rooms.length}}" class="card empty">你还没有可发布的教室。<view class="helper">请联系学校管理员配置教室权限。</view><button class="plain" bindtap="profile">前往我的</button></view>
+  <view wx:if="{{ready && !classes.length}}" class="card empty">你还没有可发布的班级。<view class="helper">请联系学校管理员配置班级权限。</view><button class="plain" bindtap="profile">前往我的</button></view>
   <view class="footer-note">发布记录可复制修改，再次使用。</view>
 </view>

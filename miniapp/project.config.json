@@ -1,5 +1,5 @@
 {
-  "description": "教室公告：原生小程序，无需 npm 构建",
+  "description": "班级公告：原生小程序，无需 npm 构建",
   "miniprogramRoot": "./",
   "compileType": "miniprogram",
   "appid": "wxa4083506823513ec",

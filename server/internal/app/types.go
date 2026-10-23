@@ -37,7 +37,7 @@ type Message struct {
 	Destination     string     `json:"destination,omitempty"`
 	DisplayPosition string     `json:"displayPosition"`
 	Targets         []Target   `json:"targets"`
-	RoomIDs         []string   `json:"roomIds"`
+	ClassIDs        []string   `json:"classIds"`
 	TeacherName     string     `json:"teacherName"`
 	SpeechText      string     `json:"speechText"`
 	Priority        int        `json:"priority"`
@@ -80,16 +80,16 @@ type DisplaySettings struct {
 	Revision         int      `json:"revision"`
 }
 type Teacher struct {
-	ID      string   `json:"id"`
-	Name    string   `json:"name"`
-	Role    string   `json:"role"`
-	Status  string   `json:"status"`
-	OpenID  string   `json:"-"`
-	RoomIDs []string `json:"roomIds"`
+	ID       string   `json:"id"`
+	Name     string   `json:"name"`
+	Role     string   `json:"role"`
+	Status   string   `json:"status"`
+	OpenID   string   `json:"-"`
+	ClassIDs []string `json:"classIds"`
 }
 type Device struct {
 	ID        string
-	RoomID    string
+	ClassID   string
 	Label     string
 	ExpiresAt int64
 }
