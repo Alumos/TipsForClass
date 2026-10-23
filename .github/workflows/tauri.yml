@@ -63,7 +63,7 @@ jobs:
 
       - name: Build Tauri bundle
         working-directory: display
-        run: npx --yes @tauri-apps/cli@^2 build
+        run: npm run tauri:build
 
       - name: Rename installer
         shell: pwsh

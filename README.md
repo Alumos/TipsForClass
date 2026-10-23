@@ -12,7 +12,7 @@
 | --- | --- |
 | `server/` | Go 标准 HTTP 服务、SQLite、REST/WebSocket、权限与持久化 |
 | `miniapp/` | 微信原生 JavaScript/WXML/WXSS 小程序，无 npm 前端构建 |
-| `display/` | Vue 3 大屏浏览器预览与 Electron 桌面应用 |
+| `display/` | Vue 3 大屏浏览器预览与 Tauri 桌面应用 |
 | `scripts/` | 本地启动、结构检查、协议联调与浏览器测试 |
 | `deploy/` | Caddy HTTPS 反向代理配置 |
 | `.github/workflows/` | 项目检查、Docker 镜像和 Windows 安装包自动构建 |
@@ -65,7 +65,7 @@
 ## 三端构建与发布
 
 - **Go 服务端：**`Server image` 工作流用 Docker Compose 构建镜像、执行健康检查、推送到 GHCR，并上传可离线部署的镜像包。国内 VPS 的完整步骤见 [Docker Compose 部署](docs/deployment.md)。
-- **Windows 大屏：**`Windows installer` 工作流在 `windows-2022` 编译中文 TTS 适配器、测试 Electron 并生成 x64 NSIS 安装包。推送 `v*` 标签时自动创建 GitHub Release；当前正式下载见 [v0.1.1 Release](https://github.com/Alumos/TipsForClass/releases/tag/v0.1.1)。普通提交也可从 Actions 运行记录下载 30 天有效的安装包。
+- **Windows 大屏：**`Windows client` 工作流在 `windows-2022` 编译中文 TTS 适配器、构建 Tauri 2 外壳并生成 x64 NSIS 安装包（约 30 MB）。推送 `v*` 标签生成正式 Release；日常提交覆盖 `tauri-latest` 测试通道。Electron 版本已下线。
 - **微信小程序：**`Project checks` 工作流执行结构和逻辑测试。发布需要自己的 AppID、合法 HTTPS/WSS 域名、微信开发者工具上传、体验版测试和平台审核，步骤见 [微信小程序发布教程](docs/miniapp-release.md)。
 
 Windows 用户应同时下载 `Setup.0.1.1.exe` 和 `SHA256SUMS.txt`。在 PowerShell 中核对：
@@ -84,7 +84,7 @@ v0.1.1 的 SHA-256 为 `b5e9df1bc80704f101cffa56194339ab9dbc5c11c762adb40310e715
 
 - Go 测试与 `go vet`；
 - 小程序逻辑、模板结构、页面配置和事件处理器检查；
-- 大屏测试及 Vue/Electron 构建。
+- 大屏测试及 Vue/Tauri 构建。
 
 `node scripts/smoke.mjs` 使用真实 HTTP/WebSocket 和临时 SQLite 数据库验证核心协议场景。Mac Chrome 在 `1440×1000` 下验证了后台待机、两种提醒位置的网页渲染、约 15 秒隐藏、刷新不补弹历史以及页面无脚本错误；居中正文约 30px，右上角正文约 22px。浏览器截图只证明网页行为；Windows 原生尺寸、完全托盘待机和焦点行为仍需 Win10/11 实机验收。具体结果与截图见 [验证记录](docs/verification.md)。
 
