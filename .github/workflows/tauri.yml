@@ -1,6 +1,8 @@
-name: Tauri shell (experimental)
+name: Windows client
 
-# 换壳还在验证阶段，不参与正式发布；改动外壳或前端时自动构建一份测试包。
+# Electron 已退出，桌面端统一由 Tauri 构建。
+# 日常推送到 main：出测试包，覆盖到 tauri-latest 预发布通道。
+# 打 v* 标签：出正式安装包，作为该版本的 Release 资产。
 on:
   workflow_dispatch:
   push:
@@ -12,6 +14,8 @@ on:
       - "display/package.json"
       - "display/vite.config.ts"
       - ".github/workflows/tauri.yml"
+    tags:
+      - "v*"
 
 permissions:
   contents: write
@@ -67,30 +71,39 @@ jobs:
           $version = (Get-Content display/package.json -Raw | ConvertFrom-Json).version
           $exe = Get-ChildItem display/src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
           New-Item -ItemType Directory -Force -Path display/release | Out-Null
-          $name = "Setup.Tauri.$version.exe"
+          $name = if ("${{ github.ref_type }}" -eq "tag") { "Setup.$version.exe" } else { "Setup.Tauri.$version.exe" }
           Copy-Item $exe.FullName (Join-Path display/release $name)
           $hash = (Get-FileHash (Join-Path display/release $name) -Algorithm SHA256).Hash.ToLowerInvariant()
-          "$hash  $name" | Set-Content display/release/SHA256SUMS-tauri.txt
+          "$hash  $name" | Set-Content display/release/SHA256SUMS.txt
           Write-Host "产物：$name（$([math]::Round((Get-Item (Join-Path display/release $name)).Length/1MB,1)) MB）"
 
-      - name: Publish rolling release
+      - name: Publish versioned release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            display/release/Setup.*.exe
+            display/release/SHA256SUMS.txt
+          generate_release_notes: true
+
+      - name: Publish rolling test release
+        if: ${{ !startsWith(github.ref, 'refs/tags/v') }}
         uses: softprops/action-gh-release@v2
         with:
           tag_name: tauri-latest
-          name: 桌面端 · Tauri 测试包（自动更新）
+          name: 桌面端 · 测试包（自动更新）
           body: |
-            每次 Tauri 外壳构建自动覆盖更新，包含最新的弹窗、已读与开机自启改动。
-
-            这是测试通道，正式版本仍以 `v*` 标签的 Electron 安装包为准。
+            日常构建的测试包，每次覆盖更新。
+            正式版本请用 `v*` 标签的 Release。
           prerelease: true
           files: |
             display/release/Setup.Tauri.*.exe
-            display/release/SHA256SUMS-tauri.txt
+            display/release/SHA256SUMS.txt
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
         with:
-          name: classroom-display-tauri-windows-x64
-          path: display/src-tauri/target/release/bundle/nsis/*.exe
+          name: classroom-display-windows-x64
+          path: display/release/*.exe
           if-no-files-found: error
           retention-days: 14
