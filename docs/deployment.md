@@ -124,7 +124,7 @@ docker compose pull && docker compose up -d
 
 ```yaml
 environment:
-  ALLOWED_ORIGINS: "https://notice.example.com"
+  ALLOWED_ORIGINS: "https://notice.example.com,http://tauri.localhost,tauri://localhost"
 ports:
   - "18080:8080"
 ```
