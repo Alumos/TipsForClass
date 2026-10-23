@@ -48,6 +48,21 @@ Page({
     if (this.replayPending) { this.sendReplay(); return; }
     wx.showActionSheet({ itemList: ['重新播报 1 遍', '重新播报 2 遍'], success: r => { this.replayPending = { clientToken: logic.token(), times: r.tapIndex + 1 }; this.sendReplay(); } });
   },
+  cancelBroadcast() {
+    if (this.data.busy) return;
+    wx.showModal({
+      title: '停止语音播报？',
+      content: '公告仍会留在大屏上，只是不再朗读尚未播出的内容。',
+      success: result => {
+        if (!result.confirm) return;
+        this.setData({ busy: true, error: '' });
+        api.request('/messages/' + encodeURIComponent(this.data.message.id) + '/cancel-broadcast', { method: 'POST', data: {} })
+          .then(() => this.refresh())
+          .catch(e => this.setData({ error: api.errorText(e) }))
+          .then(() => this.setData({ busy: false }));
+      }
+    });
+  },
   async sendReplay() {
     this.setData({ busy: true, error: '' });
     try { await api.request('/messages/' + this.data.id + '/rebroadcast', { method: 'POST', data: this.replayPending, scope: this.scope }); this.replayPending = null; wx.showToast({ title: '重播任务已保存', icon: 'none' }); await this.refresh(); }

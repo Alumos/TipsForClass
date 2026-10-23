@@ -1218,3 +1218,61 @@ func (a *App) delivery(w http.ResponseWriter, r *http.Request) error {
 	ok(w, 200, obj{"messageId": m.ID, "targetDeviceCount": len(devices), "displayedDeviceCount": displayed, "devices": devices, "status": m.Status})
 	return nil
 }
+
+// cancelBroadcast 停止尚未播出的语音，但保留公告本身。
+// times 归零后，大屏的播报队列不会再排到它；已播过的记录保持不变。
+func (a *App) cancelBroadcast(w http.ResponseWriter, r *http.Request) error {
+	t, _, e := a.teacherMessage(r)
+	if e != nil {
+		return e
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	tx, e := a.db.Begin()
+	if e != nil {
+		return e
+	}
+	defer tx.Rollback()
+	t, e = currentTeacher(tx, t.ID)
+	if e != nil {
+		return e
+	}
+	m, _, _, e := loadMessageState(tx, r.PathValue("id"))
+	if e != nil {
+		return e
+	}
+	if m.Broadcast == nil || m.Broadcast.Times == 0 {
+		return fail(409, "NO_BROADCAST", "这条公告没有待播报的内容")
+	}
+	for _, cid := range m.ClassIDs {
+		if !ownsClass(t, cid) {
+			return fail(403, "FORBIDDEN", "目标班级权限已变化")
+		}
+	}
+	now := time.Now()
+	expire, _ := time.Parse(time.RFC3339Nano, m.ExpireAt)
+	if m.Status != "active" || !now.Before(expire) {
+		return bad("message", "公告已结束，无需取消播报")
+	}
+	m.Broadcast.Times = 0
+	m.Revision++
+	if _, e = tx.Exec("UPDATE messages SET revision=?,payload_json=? WHERE id=?", m.Revision, jsonText(m), m.ID); e != nil {
+		return e
+	}
+	if _, e = tx.Exec("DELETE FROM broadcast_jobs WHERE message_id=?", m.ID); e != nil {
+		return e
+	}
+	for _, cid := range m.ClassIDs {
+		if e = appendEvent(tx, cid, "message.upsert", m); e != nil {
+			return e
+		}
+	}
+	if e = audit(tx, t.ID, "message.cancel-broadcast", m.ID); e != nil {
+		return e
+	}
+	if e = tx.Commit(); e != nil {
+		return e
+	}
+	ok(w, 200, obj{"message": m})
+	return nil
+}

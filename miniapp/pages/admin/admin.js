@@ -40,7 +40,7 @@ Page({
     error: '',
     classes: [],
     teachers: [],
-    devices: [],
+    devices: [], hasRevoked: false,
     classIndex: 0,
     selectedClassName: '',
     className: '',
@@ -89,6 +89,7 @@ Page({
         classes,
         teachers,
         devices: (result[2].items || []).map(device => Object.assign({}, device, { lastSeenLabel: logic.formatTime(device.lastSeenAt) })),
+        hasRevoked: (result[2].items || []).some(device => device.revokedAt),
         settings: result[3],
         quietRules: (result[3].quietHours || []).map(rule => ({ daysText: rule.days.join(','), start: rule.start, end: rule.end })),
         classIndex,
@@ -114,6 +115,45 @@ Page({
       patch.csvReady = Boolean(String(value || '').trim());
     }
     this.setData(patch);
+  },
+
+  clearRevoked() {
+    wx.showModal({
+      title: '清除已吊销设备记录？',
+      content: '只删除已吊销的设备及其回执，在线设备不受影响。',
+      success: result => {
+        if (!result.confirm) return;
+        this.action(async () => {
+          const res = await api.request('/admin/devices/revoked', { method: 'DELETE' });
+          this.setData({ notice: '已清除 ' + (res.removed || 0) + ' 条吊销记录' });
+          await this.load();
+        });
+      }
+    });
+  },
+
+  resetServerData() {
+    wx.showModal({
+      title: '清空服务端数据？',
+      content: '公告、班级、名册、大屏设备、其他教师都会被删除，只保留你自己。此操作不可恢复。',
+      editable: true,
+      placeholderText: '输入“清空”确认',
+      confirmText: '清空',
+      confirmColor: '#A93230',
+      success: result => {
+        if (!result.confirm) return;
+        const typed = String(result.content || '').trim();
+        if (typed !== '清空') {
+          this.setData({ error: '请输入“清空”两个字再确认，未执行任何删除。' });
+          return;
+        }
+        this.action(async () => {
+          await api.request('/admin/reset', { method: 'POST', data: { confirm: typed } });
+          this.setData({ notice: '服务端数据已清空' });
+          await this.load();
+        });
+      }
+    });
   },
 
   async loadClasses() {

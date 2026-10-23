@@ -103,6 +103,7 @@
   </block>
 
   <block wx:if="{{section === 'devices'}}">
+    <view wx:if="{{hasRevoked}}" class="admin-card"><view class="card-title">历史记录</view><view class="helper">已吊销的设备会一直留在列表里，可以在这里清理。</view><button class="plain small-button" bindtap="clearRevoked" disabled="{{busy}}">清除已吊销记录</button></view>
     <view wx:if="{{!devices.length}}" class="card empty">暂无大屏设备，请在「班级与绑定」生成绑定码。</view>
     <view wx:for="{{devices}}" wx:key="id" class="card">
       <view class="admin-card-head device-card-head"><view class="card-title admin-card-copy admin-name">{{item.label}}</view><text class="badge {{item.online ? '' : 'offline'}} admin-head-badge">{{item.revokedAt ? '已吊销' : item.online ? '在线' : '离线'}}</text></view>
@@ -147,3 +148,9 @@
   </view>
   <button class="primary" bindtap="saveClass" loading="{{busy}}" disabled="{{busy}}">保存班级修改</button>
 </view></view>
+
+<view class="card" style="margin-top:18px">
+  <view class="card-title">危险操作</view>
+  <view class="helper">清空后公告、班级、名册、大屏设备与其他教师都会被删除，只保留当前管理员账号。适合学期切换或试点结束后重来。</view>
+  <button class="danger" bindtap="resetServerData" disabled="{{busy}}">清空服务端数据</button>
+</view>

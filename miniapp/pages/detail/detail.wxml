@@ -56,6 +56,7 @@
     </view>
     <view wx:if="{{message.status !== 'revoked'}}" class="detail-danger-actions">
       <button wx:if="{{message.type !== 'notice'}}" class="secondary" bindtap="replay" disabled="{{busy}}" loading="{{busy}}">重新播报</button>
+      <button wx:if="{{message.type !== 'notice' && message.broadcast && message.broadcast.times > 0}}" class="secondary" bindtap="cancelBroadcast" disabled="{{busy}}">停止播报</button>
       <button class="danger detail-delete" bindtap="remove" disabled="{{busy}}">删除公告</button>
     </view>
   </view>

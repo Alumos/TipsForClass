@@ -838,3 +838,104 @@ func (a *App) rosterCommit(w http.ResponseWriter, r *http.Request) error {
 	ok(w, 200, data)
 	return nil
 }
+
+// clearRevokedDevices 清掉已吊销设备及其回执，避免列表里堆历史记录。
+func (a *App) clearRevokedDevices(w http.ResponseWriter, r *http.Request) error {
+	actor, e := a.admin(r)
+	if e != nil {
+		return e
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	tx, e := a.db.Begin()
+	if e != nil {
+		return e
+	}
+	defer tx.Rollback()
+	if e = activeAdmin(tx, actor.ID); e != nil {
+		return e
+	}
+	var removed int
+	if e = tx.QueryRow("SELECT COUNT(*) FROM devices WHERE revoked_at IS NOT NULL").Scan(&removed); e != nil {
+		return e
+	}
+	for _, q := range []string{
+		"DELETE FROM delivery_receipts WHERE device_id IN (SELECT id FROM devices WHERE revoked_at IS NOT NULL)",
+		"DELETE FROM broadcast_receipts WHERE device_id IN (SELECT id FROM devices WHERE revoked_at IS NOT NULL)",
+		"DELETE FROM message_devices WHERE device_id IN (SELECT id FROM devices WHERE revoked_at IS NOT NULL)",
+		"DELETE FROM devices WHERE revoked_at IS NOT NULL",
+	} {
+		if _, e = tx.Exec(q); e != nil {
+			return e
+		}
+	}
+	if e = audit(tx, actor.ID, "devices.clear-revoked", strconv.Itoa(removed)); e != nil {
+		return e
+	}
+	if e = tx.Commit(); e != nil {
+		return e
+	}
+	ok(w, 200, obj{"removed": removed})
+	return nil
+}
+
+// resetData 把学校数据恢复到刚激活管理员的状态，只保留当前管理员账号。
+// 用于学期切换或试点结束后重来一遍，必须带 confirm 才执行。
+func (a *App) resetData(w http.ResponseWriter, r *http.Request) error {
+	actor, e := a.admin(r)
+	if e != nil {
+		return e
+	}
+	var in struct {
+		Confirm string `json:"confirm"`
+	}
+	if e = readJSON(w, r, &in); e != nil {
+		return e
+	}
+	if strings.TrimSpace(in.Confirm) != "清空" {
+		return bad("confirm", "请输入“清空”两个字确认")
+	}
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	tx, e := a.db.Begin()
+	if e != nil {
+		return e
+	}
+	defer tx.Rollback()
+	if e = activeAdmin(tx, actor.ID); e != nil {
+		return e
+	}
+	for _, q := range []string{
+		"DELETE FROM delivery_receipts",
+		"DELETE FROM broadcast_receipts",
+		"DELETE FROM message_devices",
+		"DELETE FROM broadcast_jobs",
+		"DELETE FROM message_classes",
+		"DELETE FROM messages",
+		"DELETE FROM devices",
+		"DELETE FROM bind_codes",
+		"DELETE FROM students",
+		"DELETE FROM roster_previews",
+		"DELETE FROM events",
+		"DELETE FROM teacher_classes",
+		"DELETE FROM teacher_sessions",
+		"DELETE FROM operation_keys",
+		"DELETE FROM classes",
+		"DELETE FROM audit_logs",
+	} {
+		if _, e = tx.Exec(q); e != nil {
+			return e
+		}
+	}
+	if _, e = tx.Exec("DELETE FROM teachers WHERE id<>?", actor.ID); e != nil {
+		return e
+	}
+	if e = audit(tx, actor.ID, "school.reset", "all"); e != nil {
+		return e
+	}
+	if e = tx.Commit(); e != nil {
+		return e
+	}
+	ok(w, 200, obj{"reset": true})
+	return nil
+}
