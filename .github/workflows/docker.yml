@@ -26,16 +26,12 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare Compose environment
-        run: cp .env.production.example .env
-
       - name: Validate Compose file
         run: docker compose config --quiet
 
-      - name: Build server image with Compose
-        env:
-          IMAGE_TAG: ${{ github.sha }}
-        run: docker compose build api
+      - name: Build server image
+        # 国内 VPS 用 Dockerfile 默认的 goproxy.cn；CI 在境外，走官方代理更稳。
+        run: docker build --build-arg GOPROXY=https://proxy.golang.org,direct --tag "${IMAGE_NAME}:${GITHUB_SHA}" server
 
       - name: Test image health
         env:
