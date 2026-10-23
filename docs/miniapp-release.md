@@ -52,14 +52,14 @@ wss://notice.example.edu.cn/ws/device
 
 ## 4. 修改小程序生产配置
 
-打开 `miniapp/config.js`，正式上传前改成自己的 HTTPS API：
+打开 `miniapp/config.js`，确认 `USE_LOCAL` 为 `false`、`remote` 为已备案的 HTTPS API 地址：
 
 ```js
-module.exports = {
-  apiBase: 'https://notice.example.edu.cn/api/v1',
-  enableDemoLogin: false
-};
+const USE_LOCAL = false;
+const remote = 'https://notice.alumos.cn/api/v1';
 ```
+
+`USE_LOCAL` 为 `true` 时连的是 `http://127.0.0.1:8080/api/v1`，只能用于本机调试，不能带进审核版本。
 
 确认 `miniapp/project.config.json` 中的 `appid` 是自己的正式 AppID。`AppSecret` 不能出现在这里。
 

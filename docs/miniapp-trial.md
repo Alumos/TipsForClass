@@ -48,14 +48,14 @@ WECHAT_APP_SECRET=你的AppSecret
 
 ## 3. 改小程序生产配置
 
-`miniapp/config.js`：
+`miniapp/config.js` 默认已经指向线上域名，开发者工具和真机走同一套后端：
 
 ```js
-module.exports = {
-  apiBase: 'https://你的域名/api/v1',
-  enableDemoLogin: false
-};
+const USE_LOCAL = false;                                  // 默认，连线上
+const remote = 'https://notice.alumos.cn/api/v1';          // 改域名时只动这一行
 ```
+
+只有在没有服务器、想连本机 Go 服务做纯前端调试时，才把 `USE_LOCAL` 改成 `true`，此时 `apiBase` 变成 `http://127.0.0.1:8080/api/v1`，并同时打开演示登录入口。改完记得在开发者工具里重新编译一次，底部「服务地址」会跟着变。
 
 `enableDemoLogin: false` 必须改。生产服务本身不提供演示登录，留着 true 会在体验版上直接报错。
 
