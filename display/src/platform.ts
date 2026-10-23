@@ -10,4 +10,23 @@ class BrowserSpeech implements Speech {
 export function isTauriDesktop(){return !!(window as unknown as {__TAURI__?:unknown}).__TAURI__;}
 export function isOverlayWindow(){if(location.hash==='#overlay')return true;try{const tauri=(window as unknown as {__TAURI__?:{window:{getCurrentWindow():{label:string}}}}).__TAURI__;return tauri?.window.getCurrentWindow().label==='overlay';}catch{return false;}}
 export async function bridge():Promise<DisplayBridge>{if(window.classroom)return window.classroom;if(isTauriDesktop()){const {createTauriBridge}=await import('./tauri/bridge');return createTauriBridge();}const store={async load(){try{return JSON.parse(localStorage.getItem('classroom-display-v1')||'null') as Saved|null;}catch{return null;}},async save(s:Saved){localStorage.setItem('classroom-display-v1',JSON.stringify(s));}};return Engine.create(store,new BrowserSpeech(),'浏览器预览 · 中文 Web Speech 回退，无法验证 Windows 焦点与语音');}
+type TauriCore = {core: {invoke<T = unknown>(command: string, args?: Record<string, unknown>): Promise<T>}};
+function tauriCore(): TauriCore | undefined {
+  return (window as unknown as {__TAURI__?: TauriCore}).__TAURI__;
+}
+export async function autoStartEnabled(): Promise<boolean> {
+  try {
+    return await tauriCore()!.core.invoke<boolean>('autostart_enabled');
+  } catch {
+    return false;
+  }
+}
+export async function setAutoStart(enabled: boolean): Promise<boolean> {
+  try {
+    return await tauriCore()!.core.invoke<boolean>('set_autostart', {enabled});
+  } catch {
+    return false;
+  }
+}
+
 export const initialState:ViewState={bound:false,className:'等待绑定班级',label:'班级屏幕 A',online:false,live:false,syncing:false,lastSync:'',error:'',ttsStatus:'unknown',capability:'正在初始化',messages:[],now:Date.now(),quiet:false,paused:false,muted:true,alerts:[],speaking:null,lastAppliedSeq:'0',syncEpoch:'',apiBase:DEFAULT_API_BASE,pinSet:false,displayPosition:'top_right',pinnedMessageIds:[]};

@@ -74,3 +74,7 @@
  .native-overlay.center .overlay-title{font-size:35px}
  .native-overlay.center .overlay-info{font-size:30px}
 }
+
+.autostart-row{display:flex;align-items:center;justify-content:space-between;gap:14px;margin:17px 0;font-size:13px;color:#536c5d}
+.autostart-row small{display:block;font-size:11px;color:#819086;margin-top:4px}
+.autostart-row button{flex:0 0 auto;padding:8px 14px;font-size:12px}

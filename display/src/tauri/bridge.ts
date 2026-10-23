@@ -105,8 +105,6 @@ class TauriBridge implements DisplayBridge {
 
   async bind(input: {apiBase: string; bindCode: string; label: string; pin: string}) {
     await this.engine.bind(input);
-    // 教室机绑定即视为长期值守：写入开机自启，重启后自动回到托盘待机。
-    await api().core.invoke('set_autostart', {enabled: true}).catch(() => undefined);
     await api().core.invoke('hide_main').catch(() => undefined);
   }
 

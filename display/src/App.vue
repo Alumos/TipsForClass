@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import {computed,nextTick,onMounted,onUnmounted,ref,shallowRef,watch} from 'vue';
-import {bridge,initialState,isOverlayWindow,isTauriDesktop} from './platform';
+import {autoStartEnabled,bridge,initialState,isOverlayWindow,isTauriDesktop,setAutoStart} from './platform';
 import {DEFAULT_API_BASE} from './core/engine';
 import type {DisplayBridge,Message} from './core/types';
 import {displayPositionFor,legacyDestination,textPages} from './core/rules';
@@ -15,6 +15,7 @@ const settings=ref(false);
 const unlocked=ref(false);
 const pin=ref('');
 const form=ref({apiBase:DEFAULT_API_BASE,bindCode:'',label:'班级屏幕 A',pin:''});
+const autoStart=ref(false);
 const elapsed=ref(0),previewId=ref(''),overlayId=ref(''),overlayShown=ref(false),lastSerial=ref(0),showPreview=ref(false);
 
 const visible=computed(()=>{
@@ -49,7 +50,8 @@ let unsubscribe:(()=>void)|undefined,timer:ReturnType<typeof setInterval>,hideTi
 // 引擎每秒推送状态，API 地址只在首次同步时回填一次；否则用户输入会被立刻覆盖回旧值。
 let apiSeeded=false;
 async function attempt(action:()=>Promise<unknown>){busy.value=true;error.value='';try{await action();}catch(e){error.value=(e as Error).message;}finally{busy.value=false;}}
-async function bindNow(){await attempt(async()=>{await api.value?.bind({...form.value});form.value.pin='';form.value.bindCode='';});}
+async function bindNow(){await attempt(async()=>{await api.value?.bind({...form.value});if(native)await setAutoStart(autoStart.value);form.value.pin='';form.value.bindCode='';});}
+async function toggleAutoStart(){const next=!autoStart.value;autoStart.value=await setAutoStart(next)?next:autoStart.value;}
 async function unlock(){await attempt(async()=>{if(!await api.value?.unlock(pin.value))throw Error('PIN 不正确');unlocked.value=true;pin.value='';activity();});}
 function activity(){clearTimeout(idleTimer);idleTimer=setTimeout(()=>{unlocked.value=false;void api.value?.maintain('lock');},300000);}
 async function action(name:string,value?:unknown){await attempt(async()=>{await api.value?.maintain(name,value);activity();});}
@@ -87,6 +89,7 @@ onMounted(async()=>{
   document.addEventListener('visibilitychange',handleVisibility);
   window.addEventListener('classroom-overlay',overlayEvent);
   window.addEventListener('classroom-settings',openSettings);
+  if(native)autoStart.value=await autoStartEnabled();
   timer=setInterval(()=>{elapsed.value++;},1000);
   void reportVisible();
 });
@@ -109,7 +112,8 @@ onUnmounted(()=>{unsubscribe?.();clearInterval(timer);clearTimeout(hideTimer);cl
 
  <main v-else-if="!state.bound" class="bind-screen">
   <div class="bind-story"><div class="brand-mark">告</div><span class="eyebrow">CLASSROOM NOTICE</span><h1>每一条消息，<br>都被好好看见。</h1><p>日常保持安静，需要时轻轻提醒。<br>连接教师与班级，课件与课堂照常进行。</p><div class="quiet-promise">○ 后台托盘　○ 默认静音　○ 不抢课件焦点</div></div>
-  <form class="bind-form" @submit.prevent="bindNow"><span class="eyebrow">CONNECT YOUR CLASSROOM</span><h2>绑定班级屏幕</h2><p>请管理员在小程序「管理」中生成一次性绑定码。</p><label>API 服务地址<input v-model="form.apiBase" type="url" required placeholder="https://notice.alumos.cn/api/v1"></label><label>设备名称<input v-model="form.label" maxlength="40" required></label><label>6 位绑定码<input v-model="form.bindCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="code-input" required placeholder="000000"></label><label>设置维护 PIN<input v-model="form.pin" type="password" inputmode="numeric" pattern="[0-9]{6,12}" minlength="6" maxlength="12" required placeholder="6–12 位数字，请妥善保存"></label><p v-if="error" class="error" role="alert">{{error}}</p><button class="primary" :disabled="busy">{{busy?'正在连接…':'连接班级 →'}}</button><small>{{native?'设备凭据由桌面安全存储保护。':'浏览器预览将设备凭据存入本机 localStorage；请仅用于本机试点。'}}</small><small>{{state.capability}}</small></form>
+  <form class="bind-form" @submit.prevent="bindNow"><span class="eyebrow">CONNECT YOUR CLASSROOM</span><h2>绑定班级屏幕</h2><p>请管理员在小程序「管理」中生成一次性绑定码。</p><label>API 服务地址<input v-model="form.apiBase" type="url" required placeholder="https://notice.alumos.cn/api/v1"></label><label>设备名称<input v-model="form.label" maxlength="40" required></label><label>6 位绑定码<input v-model="form.bindCode" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" class="code-input" required placeholder="000000"></label><label>设置维护 PIN<input v-model="form.pin" type="password" inputmode="numeric" pattern="[0-9]{6,12}" minlength="6" maxlength="12" required placeholder="6–12 位数字，请妥善保存"></label>
+   <div v-if="native" class="autostart-row"><span>开机自启<small>教室机建议开启，重启后自动回到托盘待机</small></span><button type="button" @click="autoStart=!autoStart">{{autoStart?'已开启':'已关闭'}}</button></div><p v-if="error" class="error" role="alert">{{error}}</p><button class="primary" :disabled="busy">{{busy?'正在连接…':'连接班级 →'}}</button><small>{{native?'设备凭据由桌面安全存储保护。':'浏览器预览将设备凭据存入本机 localStorage；请仅用于本机试点。'}}</small><small>{{state.capability}}</small></form>
  </main>
 
  <main v-else class="preview-stage">
@@ -140,6 +144,7 @@ onUnmounted(()=>{unsubscribe?.();clearInterval(timer);clearTimeout(hideTimer);cl
       <p class="capability">{{state.capability}}</p>
       <div class="setting-row"><span>提醒位置<small>每条消息在发布或编辑时单独选择</small></span><b>逐条设置</b></div>
       <div class="setting-row"><span>语音提醒<small>默认关闭，开启后可能打断课件音频</small></span><button type="button" @click="action('mute',!state.muted)">{{state.muted?'开启语音':'关闭语音'}}</button></div>
+      <div class="setting-row"><span>开机自启<small>重启后自动回到托盘待机</small></span><button type="button" @click="toggleAutoStart">{{autoStart?'已开启':'已关闭'}}</button></div>
       <div class="setting-row"><span>暂停提醒</span><button type="button" @click="action('pause',!state.paused)">{{state.paused?'恢复':'暂停'}}</button></div>
       <div class="setting-row"><span>语音状态<small>{{state.ttsStatus}}</small></span><button type="button" @click="action('test')">测试声音</button></div>
       <div class="setting-row"><span>重新同步公告</span><button type="button" @click="action('resync')">立即同步</button></div>
