@@ -10,7 +10,7 @@ function inDevtools() {
   }
 }
 const local = 'http://127.0.0.1:8080/api/v1';
-const remote = 'https://notice.alomos.cn/api/v1';
+const remote = 'https://notice.alumos.cn/api/v1';
 const devtools = inDevtools();
 module.exports = {
   apiBase: devtools ? local : remote,

@@ -4,7 +4,7 @@
 
 ## 本地启动
 
-需要 Node.js 22.12+（当前构建在 Node 26 执行）。先按根目录说明启动 Go API，本地联调时把绑定表单里的服务地址改成 `http://127.0.0.1:8080/api/v1`；打包给教室使用的安装包默认填 `https://notice.alomos.cn/api/v1`，教师只需输入绑定码。
+需要 Node.js 22.12+（当前构建在 Node 26 执行）。先按根目录说明启动 Go API，本地联调时把绑定表单里的服务地址改成 `http://127.0.0.1:8080/api/v1`；打包给教室使用的安装包默认填 `https://notice.alumos.cn/api/v1`，教师只需输入绑定码。
 
 ```sh
 cd display

@@ -23,7 +23,7 @@
 
 不备案 ≠ 可以不管域名。微信校验的是「服务器域名是否合法」，这条和备案无关，但同样卡人：
 
-1. API 域名已完成 ICP 备案（本项目使用 `alomos.cn` 及其子域名）。
+1. API 域名已完成 ICP 备案（本项目使用 `alumos.cn` 及其子域名）。
 2. 域名有有效 HTTPS 证书，证书链完整，**不能带端口**（`https://notice.example.cn` 可以，`https://notice.example.cn:8443` 不行）。
 3. 服务端以生产模式运行：
 
@@ -35,7 +35,7 @@ WECHAT_APP_SECRET=你的AppSecret
 
 `curl https://你的域名/healthz` 应返回 `"mode":"production"`。
 
-如果给公告系统单独开子域名（如 `notice.alomos.cn`），需要在腾讯云做一次「新增域名」备案，同主体下通常 1–3 个工作日，不重做主体核验。想完全省掉这一步，也可以复用 `gomoku.alomos.cn` 并在 Caddy 里加一段 `/notice/*` 反向代理，代价是两个服务共享域名和证书配置。
+如果给公告系统单独开子域名（如 `notice.alumos.cn`），需要在腾讯云做一次「新增域名」备案，同主体下通常 1–3 个工作日，不重做主体核验。想完全省掉这一步，也可以复用 `gomoku.alumos.cn` 并在 Caddy 里加一段 `/notice/*` 反向代理，代价是两个服务共享域名和证书配置。
 
 ## 2. 配置微信合法域名
 

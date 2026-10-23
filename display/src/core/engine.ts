@@ -2,7 +2,7 @@ import type { DisplayBridge, Ledger, Message, Receipt, Saved, Snapshot, Speech, 
 import {compareSeq,isActive,quietAt,receiptKey,sortMessages,speechKey} from './rules.js';
 const version='0.2.0';
 // 默认服务地址：教室现场装好就能用，只有本机联调时才手动改。
-export const DEFAULT_API_BASE='https://notice.alomos.cn/api/v1';
+export const DEFAULT_API_BASE='https://notice.alumos.cn/api/v1';
 export function validBase(value:string):string {const u=new URL(value);if(u.username||u.password||u.search||u.hash||!['https:','http:'].includes(u.protocol))throw Error('请输入有效的 API 地址');if(u.protocol==='http:'&&!['localhost','127.0.0.1','[::1]'].includes(u.hostname))throw Error('非本机服务必须使用 HTTPS');if(u.pathname.replace(/\/$/,'')!=='/api/v1')throw Error('API 地址须以 /api/v1 结尾');return u.href.replace(/\/$/,'');}
 async function hashPin(pin:string,salt:string){const key=await crypto.subtle.importKey('raw',new TextEncoder().encode(pin),'PBKDF2',false,['deriveBits']);const bits=await crypto.subtle.deriveBits({name:'PBKDF2',salt:new TextEncoder().encode(salt),iterations:120000,hash:'SHA-256'},key,256);return Array.from(new Uint8Array(bits),b=>b.toString(16).padStart(2,'0')).join('');}
 export class Engine implements DisplayBridge {
