@@ -2,7 +2,7 @@
   "description": "班级公告：原生小程序，无需 npm 构建",
   "miniprogramRoot": "./",
   "compileType": "miniprogram",
-  "appid": "wxa4083506823513ec",
+  "appid": "wxde2bb9bf3262c57e",
   "projectname": "班级公告-新版",
   "setting": {
     "urlCheck": false,
