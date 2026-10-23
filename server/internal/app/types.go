@@ -36,6 +36,7 @@ type Message struct {
 	Body            string     `json:"body"`
 	Destination     string     `json:"destination,omitempty"`
 	DisplayPosition string     `json:"displayPosition"`
+	DisplayMinutes  int        `json:"displayMinutes"`
 	Targets         []Target   `json:"targets"`
 	ClassIDs        []string   `json:"classIds"`
 	TeacherName     string     `json:"teacherName"`

@@ -21,6 +21,7 @@ type createRequest struct {
 	Destination     string   `json:"destination,omitempty"`
 	Body            string   `json:"body"`
 	DisplayPosition string   `json:"displayPosition,omitempty"`
+	DisplayMinutes  int      `json:"displayMinutes,omitempty"`
 	BroadcastTimes  int      `json:"broadcastTimes"`
 	StartAt         string   `json:"startAt,omitempty"`
 	ExpireAt        string   `json:"expireAt"`
@@ -239,7 +240,14 @@ type assembleOptions struct {
 }
 
 func (a *App) assembleWithOptions(q queryer, t Teacher, in createRequest, now time.Time, options assembleOptions) (Message, []string, error) {
-	m := Message{Revision: 1, Type: in.Type, Body: in.Body, Destination: in.Destination, DisplayPosition: in.DisplayPosition, Targets: []Target{}, ClassIDs: in.ClassIDs, TeacherName: t.Name, Status: "active", CreatedAt: stamp(now)}
+	minutes := in.DisplayMinutes
+	if minutes == 0 {
+		minutes = 1
+	}
+	if minutes < 1 || minutes > 60 {
+		return Message{}, nil, bad("displayMinutes", "大屏显示时长需为 1–60 分钟")
+	}
+	m := Message{Revision: 1, Type: in.Type, Body: in.Body, Destination: in.Destination, DisplayPosition: in.DisplayPosition, DisplayMinutes: minutes, Targets: []Target{}, ClassIDs: in.ClassIDs, TeacherName: t.Name, Status: "active", CreatedAt: stamp(now)}
 	var status, role string
 	if e := q.QueryRow("SELECT status,role FROM teachers WHERE id=?", t.ID).Scan(&status, &role); e != nil {
 		return m, nil, e

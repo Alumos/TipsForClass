@@ -81,6 +81,11 @@
       </view>
     </view>
     <view class="helper">这里的「不播报」只影响教室电脑是否朗读，大屏弹窗照常出现。</view>
+    <view class="row">
+      <text>大屏显示时长</text>
+      <picker range="{{minuteOptions}}" value="{{minuteIndex}}" bindchange="chooseMinutes"><view class="link picker-value">{{minuteOptions[minuteIndex]}} ›</view></picker>
+    </view>
+    <view class="helper">到时间自动收起；学生也可以在大屏上点「已读」提前关闭。</view>
     <view wx:if="{{type !== 'notice'}}" class="divider"></view>
     <view wx:if="{{type !== 'notice'}}" class="row">
       <text>语音播报</text>

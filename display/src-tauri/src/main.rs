@@ -214,12 +214,13 @@ fn overlay_show(
     window
         .set_always_on_top(true)
         .map_err(|error| error.to_string())?;
+    // 先把载荷放进缓存，再显示窗口：页面可能在 show 的瞬间就开始拉取。
+    *cache.0.lock().unwrap() = Some(payload.clone());
     window.show().map_err(|error| {
         trace(&format!("overlay_show: show 失败 {error}"));
         error.to_string()
     })?;
     trace(&format!("overlay_show: 已显示 {width}x{height} @ {x},{y}"));
-    *cache.0.lock().unwrap() = Some(payload.clone());
     window
         .emit("overlay-payload", payload)
         .map_err(|error| error.to_string())?;
@@ -340,7 +341,7 @@ fn build_overlay(app: &AppHandle) -> tauri::Result<()> {
         .title("班级提醒")
         .inner_size(476.0, 338.0)
         .decorations(false)
-        .transparent(false)
+        .transparent(true)
         .shadow(false)
         .always_on_top(true)
         .skip_taskbar(true)

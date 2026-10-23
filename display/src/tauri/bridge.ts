@@ -166,7 +166,8 @@ class TauriBridge implements DisplayBridge {
       });
       this.lastSerial = Math.max(...fresh.map(alert => alert.serial));
       clearTimeout(this.timer);
-      this.timer = setTimeout(() => void this.hide(), OVERLAY_MS);
+      const minutes = Math.min(60, Math.max(1, message.displayMinutes ?? 1));
+      this.timer = setTimeout(() => void this.hide(), minutes * 60000);
     } catch (error) {
       trace(`show 失败 ${String(error)}`);
       this.overlayId = '';

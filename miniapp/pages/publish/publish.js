@@ -23,6 +23,8 @@ Page({
   data: {
     classId: '', classIds: [], className: '', targetClasses: [], otherClasses: [], lockedClassNames: '',
     type: 'call', displayPosition: 'top_right', editing: false, editId: '',
+    minuteOptions: ['1 分钟', '3 分钟', '5 分钟', '10 分钟', '15 分钟', '30 分钟'],
+    minuteValues: [1, 3, 5, 10, 15, 30], minuteIndex: 0,
     title: '', destination: '', body: '', broadcastTimes: 0,
     broadcastOptions: ['不播报', '播报 1 遍', '播报 2 遍'],
     students: [], selected: [], audienceMode: '待选择', classes: [], classIndex: 0,
@@ -135,6 +137,9 @@ Page({
       this.setData({ loading: false });
     }
   },
+  chooseMinutes(e) {
+    this.setData({ minuteIndex: Number(e.detail.value) || 0 });
+  },
   populateEdit(message) {
     const type = ['call', 'batch', 'notice'].includes(message.type) ? message.type : 'call';
     const startAt = Date.parse(message.startAt);
@@ -163,6 +168,7 @@ Page({
       expireDate: end.date,
       expireTime: end.time,
       displayPosition: normalizePosition(message.displayPosition || message.position),
+      minuteIndex: Math.max(0, this.data.minuteValues.indexOf(Number(message.displayMinutes) || 1)),
       restored: false
     }));
   },
@@ -359,6 +365,8 @@ Page({
         clientToken: logic.token(),
         type: this.data.type,
         displayPosition: normalizePosition(this.data.displayPosition),
+        // 只有非默认值才下发，旧服务端不认识该字段会直接 400。
+        ...(this.data.minuteValues[this.data.minuteIndex] > 1 ? { displayMinutes: this.data.minuteValues[this.data.minuteIndex] } : {}),
         classIds,
         studentIds: this.data.type === 'notice' ? [] : this.data.selected.map(student => student.id),
         title: this.data.type === 'notice' ? this.data.title.trim() : '',

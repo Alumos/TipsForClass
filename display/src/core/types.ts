@@ -14,6 +14,8 @@ export interface Message {
   createdAt: string;
   status: 'active' | 'revoked';
   displayPosition?: DisplayPosition;
+  /** 这条提醒在大屏上停留多少分钟，默认 1。 */
+  displayMinutes?: number;
   speechText: string;
   broadcast: null | { generation: number; times: number; notBefore: string; deadlineAt: string };
 }
@@ -59,6 +61,8 @@ export interface ViewState {
   apiBase: string;
   pinSet: boolean;
   displayPosition: DisplayPosition;
+  /** 这条提醒在大屏上停留多少分钟，默认 1。 */
+  displayMinutes?: number;
   pinnedMessageIds: string[];
 }
 export interface DisplayBridge {
