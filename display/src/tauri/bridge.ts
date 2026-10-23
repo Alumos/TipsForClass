@@ -25,6 +25,15 @@ export function currentLabel(): string {
   }
 }
 
+/** 写入 overlay.log，排查弹窗问题时不用靠猜。 */
+function trace(message: string) {
+  try {
+    void api().core.invoke('trace_from_page', {message}).catch(() => undefined);
+  } catch {
+    /* 非 Tauri 环境忽略 */
+  }
+}
+
 const STORAGE_KEY = 'classroom-display-v2';
 const OVERLAY_MS = 15000;
 
@@ -135,13 +144,17 @@ class TauriBridge implements DisplayBridge {
 
     // 用户正在看设置页时不打断；托盘待机时才弹。
     const mainVisible = await api().core.invoke<boolean>('main_visible').catch(() => false);
-    if (mainVisible) return;
+    if (mainVisible) {
+      trace(`skip: 主窗口可见 ${message.id}`);
+      return;
+    }
 
     const bounds = overlayBounds(
       {x: 0, y: 0, width: window.screen.availWidth, height: window.screen.availHeight},
       displayPositionFor(message, state.displayPosition),
     );
     this.overlayId = message.id;
+    trace(`show ${message.id}`);
     await api().core
       .invoke('overlay_show', {
         x: bounds.x,
@@ -154,7 +167,8 @@ class TauriBridge implements DisplayBridge {
           className: state.className,
         } satisfies OverlayPayload),
       })
-      .catch(() => {
+      .catch(error => {
+        trace(`show 失败 ${String(error)}`);
         this.overlayId = '';
       });
     clearTimeout(this.timer);
@@ -176,9 +190,11 @@ class OverlayBridge implements DisplayBridge {
   constructor() {
     void api().event.listen<OverlayPayload>('overlay-payload', event => this.apply(event.payload));
     // 首次弹窗时页面往往还没加载完，事件会丢，这里补拉一份缓存。
+    trace('overlay 页面已挂载');
     void api().core
       .invoke<string | null>('overlay_payload')
       .then(raw => {
+        trace(`overlay 拉取载荷 ${raw ? '成功' : '为空'}`);
         if (!raw) return;
         try {
           this.apply(JSON.parse(raw) as OverlayPayload);
@@ -237,6 +253,7 @@ class OverlayBridge implements DisplayBridge {
 }
 
 export async function createTauriBridge(): Promise<DisplayBridge> {
+  trace(`boot label=${currentLabel()}`);
   if (currentLabel() === 'overlay') return new OverlayBridge();
   const engine = await Engine.create(store, await nativeSpeech(), 'WebView2 · 需在 Windows 上验收焦点与语音');
   return new TauriBridge(engine);

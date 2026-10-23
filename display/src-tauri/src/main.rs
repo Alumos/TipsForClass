@@ -226,6 +226,12 @@ fn overlay_show(
     Ok(())
 }
 
+/// 前端写入诊断日志，排查“弹了但没内容”的问题。
+#[tauri::command]
+fn trace_from_page(message: String) {
+    trace(&format!("page: {message}"));
+}
+
 #[tauri::command]
 fn overlay_payload(cache: tauri::State<OverlayCache>) -> Option<String> {
     cache.0.lock().unwrap().clone()
@@ -334,7 +340,7 @@ fn build_overlay(app: &AppHandle) -> tauri::Result<()> {
         .title("班级提醒")
         .inner_size(476.0, 338.0)
         .decorations(false)
-        .transparent(true)
+        .transparent(false)
         .shadow(false)
         .always_on_top(true)
         .skip_taskbar(true)
@@ -434,6 +440,7 @@ fn main() {
             speech_play,
             speech_stop,
             overlay_show,
+            trace_from_page,
             overlay_payload,
             overlay_dismiss,
             overlay_hide,
