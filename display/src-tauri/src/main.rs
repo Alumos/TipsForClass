@@ -13,8 +13,9 @@ use std::time::{Duration, Instant};
 
 use tauri::menu::{Menu, MenuItem};
 use tauri::tray::{MouseButton, TrayIconBuilder, TrayIconEvent};
+use tauri_plugin_autostart::{MacosLauncher, ManagerExt};
 use tauri::{
-    AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, WebviewUrl, WebviewWindowBuilder,
+    AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, WebviewUrl, WebviewWindowBuilder, Wry,
 };
 
 /// 常驻的 .NET 语音适配器。沿用现有实现，避免这次换壳引入语音回归。
@@ -241,6 +242,35 @@ fn uuid_like() -> String {
     format!("{nanos:x}")
 }
 
+fn tray_menu(app: &AppHandle, autostart: bool) -> tauri::Result<Menu<Wry>> {
+    let open = MenuItem::with_id(app, "open", "打开设置与维护", true, None::<&str>)?;
+    let pause = MenuItem::with_id(app, "pause", "暂停提醒", true, None::<&str>)?;
+    let label = if autostart {
+        "开机自启：已开启"
+    } else {
+        "开机自启：已关闭"
+    };
+    let autostart_item = MenuItem::with_id(app, "autostart", label, true, None::<&str>)?;
+    let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
+    Menu::with_items(app, &[&open, &pause, &autostart_item, &quit])
+}
+
+#[tauri::command]
+fn autostart_enabled(app: AppHandle) -> bool {
+    app.autolaunch().is_enabled().unwrap_or(false)
+}
+
+/// 绑定成功后由前端调用，让教室机重启后自动回到托盘待机。
+#[tauri::command]
+fn set_autostart(app: AppHandle, enabled: bool) -> bool {
+    let applied = if enabled {
+        app.autolaunch().enable()
+    } else {
+        app.autolaunch().disable()
+    };
+    applied.is_ok() && app.autolaunch().is_enabled().unwrap_or(false) == enabled
+}
+
 fn build_overlay(app: &AppHandle) -> tauri::Result<()> {
     let window = WebviewWindowBuilder::new(app, "overlay", WebviewUrl::App("index.html".into()))
         .title("班级提醒")
@@ -271,15 +301,17 @@ fn main() {
                 let _ = window.set_focus();
             }
         }))
+        .plugin(tauri_plugin_autostart::init(
+            MacosLauncher::LaunchAgent,
+            Some(vec!["--autostart"]),
+        ))
         .manage(Speech::new())
         .setup(|app| {
             let handle = app.handle().clone();
             build_overlay(&handle)?;
 
-            let open = MenuItem::with_id(app, "open", "打开设置与维护", true, None::<&str>)?;
-            let pause = MenuItem::with_id(app, "pause", "暂停提醒", true, None::<&str>)?;
-            let quit = MenuItem::with_id(app, "quit", "退出", true, None::<&str>)?;
-            let menu = Menu::with_items(app, &[&open, &pause, &quit])?;
+            let autostart = app.autolaunch().is_enabled().unwrap_or(false);
+            let menu = tray_menu(&handle, autostart)?;
             let icon = app
                 .default_window_icon()
                 .cloned()
@@ -296,6 +328,19 @@ fn main() {
                             let _ = window.emit("classroom-toggle-pause", ());
                         }
                     }
+                    "autostart" => {
+                        let enabled = app.autolaunch().is_enabled().unwrap_or(false);
+                        let _ = if enabled {
+                            app.autolaunch().disable()
+                        } else {
+                            app.autolaunch().enable()
+                        };
+                        if let Some(tray) = app.tray_by_id("main") {
+                            if let Ok(menu) = tray_menu(app, !enabled) {
+                                let _ = tray.set_menu(Some(menu));
+                            }
+                        }
+                    }
                     "quit" => app.exit(0),
                     _ => {}
                 })
@@ -310,8 +355,11 @@ fn main() {
                 })
                 .build(app)?;
 
-            if let Some(window) = app.get_webview_window("main") {
-                let _ = window.show();
+            // 开机自启时直接进托盘，避免每次开机闪一下设置窗。
+            if !std::env::args().any(|arg| arg == "--autostart") {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.show();
+                }
             }
             Ok(())
         })
@@ -331,7 +379,9 @@ fn main() {
             main_visible,
             overlay_displayed,
             show_main,
-            hide_main
+            hide_main,
+            autostart_enabled,
+            set_autostart
         ])
         .run(tauri::generate_context!())
         .expect("启动班级公告大屏失败");
