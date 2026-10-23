@@ -382,7 +382,12 @@ func (a *App) deleteClass(w http.ResponseWriter, r *http.Request) error {
 		return e
 	}
 	if n > 0 {
-		return fail(409, "CLASS_IN_USE", "班级仍有学生，不能删除")
+		if r.URL.Query().Get("force") != "1" {
+			return fail(409, "CLASS_IN_USE", "班级仍有"+strconv.Itoa(n)+" 名学生，确认后可连同名册一起删除")
+		}
+		if _, e = tx.Exec("DELETE FROM students WHERE class_id=?", classID); e != nil {
+			return e
+		}
 	}
 	if e = tx.QueryRow("SELECT COUNT(*) FROM devices WHERE class_id=?", classID).Scan(&n); e != nil {
 		return e
