@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import {computed,nextTick,onMounted,onUnmounted,ref,shallowRef,watch} from 'vue';
-import {bridge,initialState} from './platform';
+import {bridge,initialState,isOverlayWindow,isTauriDesktop} from './platform';
 import {DEFAULT_API_BASE} from './core/engine';
 import type {DisplayBridge,Message} from './core/types';
 import {displayPositionFor,legacyDestination,textPages} from './core/rules';
 
-const native=!!window.classroom;
-const overlay=location.hash==='#overlay';
+const native=isTauriDesktop()||!!window.classroom;
+const overlay=isOverlayWindow();
 const state=ref({...initialState});
 const api=shallowRef<DisplayBridge>();
 const error=ref('');

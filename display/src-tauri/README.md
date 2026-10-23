@@ -6,8 +6,9 @@
 
 - **已就绪**：托盘菜单（打开/暂停/退出）、主窗口、透明置顶提醒窗口、鼠标穿透、
   单实例、语音适配器调用、`cargo check` 通过。
-- **未接线**：前端仍在用 Electron 的 `window.classroom` 桥；Tauri 版本的桥接还没写，
-  所以现在构建出来的包只能显示界面，无法绑定和收消息。**不要用于生产。**
+- **已接线**：`src/tauri/bridge.ts` 提供与 Electron 相同的 `window.classroom` 契约，
+  引擎跑在主窗口 WebView2 里，提醒窗口收到 `overlay-payload` 后渲染，回执经主窗口转发。
+- **待验收**：鼠标穿透、不抢焦点、语音出声、托盘暂停这四件事只能在 Windows 真机上确认。
 - Electron 版本仍是唯一的正式发布路径，`Windows installer` 工作流不受影响。
 
 ## 为什么不是简单替换

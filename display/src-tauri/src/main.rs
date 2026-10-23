@@ -198,6 +198,21 @@ fn overlay_visible(app: AppHandle) -> bool {
         .unwrap_or(false)
 }
 
+
+#[tauri::command]
+fn main_visible(app: AppHandle) -> bool {
+    app.get_webview_window("main")
+        .and_then(|window| window.is_visible().ok())
+        .unwrap_or(false)
+}
+
+/// 提醒窗口渲染完成后回报，转给主窗口写投递回执。
+#[tauri::command]
+fn overlay_displayed(app: AppHandle, ids: Vec<String>) -> Result<(), String> {
+    app.emit_to("main", "overlay-displayed", ids)
+        .map_err(|error| error.to_string())
+}
+
 #[tauri::command]
 fn show_main(app: AppHandle, settings: bool) {
     if let Some(window) = app.get_webview_window("main") {
@@ -244,6 +259,11 @@ fn build_overlay(app: &AppHandle) -> tauri::Result<()> {
 }
 
 fn main() {
+    // 隐藏到托盘后 WebView2 会节流定时器，心跳和回执会被拖慢甚至停摆。
+    std::env::set_var(
+        "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
+        "--disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-renderer-backgrounding",
+    );
     tauri::Builder::default()
         .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
             if let Some(window) = app.get_webview_window("main") {
@@ -308,6 +328,8 @@ fn main() {
             overlay_show,
             overlay_hide,
             overlay_visible,
+            main_visible,
+            overlay_displayed,
             show_main,
             hide_main
         ])
