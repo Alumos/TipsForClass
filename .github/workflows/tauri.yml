@@ -12,7 +12,7 @@ on:
       - ".github/workflows/tauri.yml"
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   build:
@@ -58,6 +58,32 @@ jobs:
       - name: Build Tauri bundle
         working-directory: display
         run: npx --yes @tauri-apps/cli@^2 build
+
+      - name: Rename installer
+        shell: pwsh
+        run: |
+          $version = (Get-Content display/package.json -Raw | ConvertFrom-Json).version
+          $exe = Get-ChildItem display/src-tauri/target/release/bundle/nsis/*.exe | Select-Object -First 1
+          New-Item -ItemType Directory -Force -Path display/release | Out-Null
+          $name = "Setup.Tauri.$version.exe"
+          Copy-Item $exe.FullName (Join-Path display/release $name)
+          $hash = (Get-FileHash (Join-Path display/release $name) -Algorithm SHA256).Hash.ToLowerInvariant()
+          "$hash  $name" | Set-Content display/release/SHA256SUMS-tauri.txt
+          Write-Host "产物：$name（$([math]::Round((Get-Item (Join-Path display/release $name)).Length/1MB,1)) MB）"
+
+      - name: Publish rolling release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: tauri-latest
+          name: 桌面端 · Tauri 测试包（自动更新）
+          body: |
+            每次 Tauri 外壳构建自动覆盖更新，包含最新的弹窗、已读与开机自启改动。
+
+            这是测试通道，正式版本仍以 `v*` 标签的 Electron 安装包为准。
+          prerelease: true
+          files: |
+            display/release/Setup.Tauri.*.exe
+            display/release/SHA256SUMS-tauri.txt
 
       - name: Upload installer
         uses: actions/upload-artifact@v4
